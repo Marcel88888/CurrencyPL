@@ -1,0 +1,15 @@
+{
+  "currencies":[
+    "eur",
+    "pln",
+    "chf",
+    "gbp",
+    "usd"
+  ],
+  "exchange":{
+    "pln":4.68,
+    "chf":0.90,
+    "gbd":0.5,
+    "usd":300
+  }
+}
