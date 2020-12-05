@@ -30,6 +30,7 @@ class Tokens:
         ',': TokenTypes.COMMA,
         ';': TokenTypes.SEMICOLON,
         '.': TokenTypes.DOT,
+        '"': TokenTypes.QUOTATION_MARK,
         '!': TokenTypes.NOT,
         '&': TokenTypes.AND,
         '|': TokenTypes.OR

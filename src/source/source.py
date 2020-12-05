@@ -11,7 +11,7 @@ class Source:
 
 class FileSource(Source):
     def __init__(self):
-        self.line_number = 1
+        self.line = 1
         self.column = 0
         self.character = self.get_next_char()
 
@@ -23,11 +23,11 @@ class FileSource(Source):
                 while self.character != '\n':
                     self.character = self.source_stream.read(1)
         if self.character == '\n':
-            self.line_number += 1
+            self.line += 1
             self.column = 0
         else:
             self.column += 1
         return self.character
 
     def get_position(self):
-        return self.line_number, self.column
+        return self.line, self.column

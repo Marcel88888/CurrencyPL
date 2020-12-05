@@ -3,12 +3,12 @@ from ..numbers.currency_value import CurrencyValue
 
 
 class Token:
-    def __init__(self, _type, value, line, column):
+    def __init__(self, line, column, _type, value):
+        self.line = line
+        self.column = column
         self.type = _type
         self.value = value
         self.numerical_value = None
-        self.line = line
-        self.column = column
         self.set_numerical_value()
 
     def __repr__(self):

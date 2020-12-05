@@ -21,6 +21,7 @@ class TokenTypes(Enum):
     SEMICOLON = auto()
     DOT = auto()
     COMMA = auto()
+    QUOTATION_MARK = auto()
     NOT = auto()
     IF = auto()
     ELSE = auto()
