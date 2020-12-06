@@ -10,7 +10,8 @@ class Source:
 
 
 class FileSource(Source):
-    def __init__(self):
+    def __init__(self, file_source):
+        super(FileSource, self).__init__(file_source)
         self.line = 1
         self.column = 0
         self.character = self.get_next_char()

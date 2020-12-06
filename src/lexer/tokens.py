@@ -13,7 +13,7 @@ class Tokens:
         'getCurrency': TokenTypes.GET_CURRENCY
     }
 
-    single_symbols = {
+    single_operators = {
         '(': TokenTypes.OP_BRACKET,
         ')': TokenTypes.CL_BRACKET,
         '{': TokenTypes.OP_CURLY_BRACKET,
@@ -30,13 +30,14 @@ class Tokens:
         ',': TokenTypes.COMMA,
         ';': TokenTypes.SEMICOLON,
         '.': TokenTypes.DOT,
+        '_': TokenTypes.UNDERLINE,
         '"': TokenTypes.QUOTATION_MARK,
         '!': TokenTypes.NOT,
         '&': TokenTypes.AND,
         '|': TokenTypes.OR
     }
 
-    double_symbols = {
+    double_operators = {
         '==': TokenTypes.EQUAL,
         '!=': TokenTypes.NOT_EQUAL,
         '>=': TokenTypes.GREATER_OR_EQUAL,

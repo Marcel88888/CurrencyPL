@@ -3,7 +3,7 @@ from ..numbers.currency_value import CurrencyValue
 
 
 class Token:
-    def __init__(self, line, column, _type, value):
+    def __init__(self, _type, line, column, value=None):
         self.line = line
         self.column = column
         self.type = _type
