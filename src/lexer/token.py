@@ -18,4 +18,5 @@ class Token:
 
     def set_numerical_value(self):
         if self.type == TokenTypes.NUMBER:
-            self.numerical_value = CurrencyValue(self.value)
+            # self.numerical_value = CurrencyValue(self.value)
+            self.numerical_value = float(self.value)

@@ -14,7 +14,7 @@ class FileSource(Source):
         super(FileSource, self).__init__(file_source)
         self.line = 1
         self.column = 0
-        self.character = self.get_next_char()
+        self.character = None
 
     def get_next_char(self):
         self.character = self.source_stream.read(1)

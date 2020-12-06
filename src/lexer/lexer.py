@@ -1,4 +1,3 @@
-from typing import Final
 from .token import Token
 from .tokens import Tokens
 from .token_types import TokenTypes
@@ -8,22 +7,22 @@ from ..exceptions.exceptions import StringTooLongError
 
 
 class Lexer:
-    def __init__(self, source, currencies):
+    def __init__(self, source, currencies=None):
         self.source = source
         self.currencies = currencies
         self.char = None
         self.token = None
         self.line = None
         self.column = None
-        self.TOKEN_MAX_LENGTH: Final = 50
-        self.STRING_MAX_LENGTH: Final = 1000
+        self.TOKEN_MAX_LENGTH = 50
+        self.STRING_MAX_LENGTH = 1000
         # TODO add currencies
 
     def get_next_token(self):
+        self.char = self.source.get_next_char()
         self.skip_spaces()
         self.line = self.source.line
         self.column = self.source.column
-        self.char = self.source.get_next_char()
         self.build_token()
 
     def build_token(self):
@@ -35,8 +34,7 @@ class Lexer:
         elif self.char.isdigit():
             self.build_number()
             return
-        elif self.char == Tokens.single_operators.keys()[Tokens.single_operators.values().index(TokenTypes.QUOTATION_MARK)]:
-            # if self.char is '"'
+        elif self.char == '"':
             self.build_string()
             return
         elif self.try_to_build_double_operator():
@@ -57,8 +55,7 @@ class Lexer:
 
     def read_keyword_or_identifier(self):
         kw_or_id = ""
-        while self.char.isalpha() or self.char.isdigit() or self.char == \
-                Tokens.single_operators.keys()[Tokens.single_operators.values().index(TokenTypes.UNDERLINE)]:
+        while self.char.isalpha() or self.char.isdigit() or self.char == '_':
             kw_or_id += self.char
             self.char = self.source.get_next_char()
         return kw_or_id
@@ -66,14 +63,14 @@ class Lexer:
     def build_number(self):
         number = self.read_number()
         # checks the occurrence of '.' in number
-        if number.count(Tokens.single_operators.keys()[Tokens.single_operators.values().index(TokenTypes.DOT)]) > 1:
+        if number.count('.') > 1:
             raise InvalidTokenError(self.source.line, self.source.column)
         self.token = Token(TokenTypes.NUMBER, self.line, self.column, number)
+        self.token.set_numerical_value()
 
     def read_number(self):
         number = ""
-        while self.char.isdigit() or self.char == Tokens.single_operators.keys()[Tokens.single_operators.values().index(
-                TokenTypes.DOT)]:
+        while self.char.isdigit() or self.char == '.':
             number += self.char
             if len(number) >= self.TOKEN_MAX_LENGTH:
                 raise TokenTooLongError(self.source.line, self.source.column)
@@ -86,7 +83,8 @@ class Lexer:
 
     def read_string(self):
         string = ""
-        while self.char != Tokens.single_operators.keys()[Tokens.single_operators.values().index(TokenTypes.QUOTATION_MARK)]:
+        while self.char != '"':
+            # TODO Checking EOT
             string += self.char
             if len(string) >= self.STRING_MAX_LENGTH:
                 raise StringTooLongError(self.source.line, self.source.column)
@@ -113,7 +111,7 @@ class Lexer:
 
     def skip_spaces(self):
         while self.char.isspace():
-            self.source.get_next_char()
+            self.char = self.source.get_next_char()
 
     def is_eof(self):
         return self.char == ''
