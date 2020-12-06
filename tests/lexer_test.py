@@ -12,8 +12,17 @@ def create_lexer(source_string):
     return Lexer(FileSource(io.StringIO(source_string)))
 
 
+def test_eof():
+    lexer = create_lexer("")
+
+    lexer.get_next_token()
+    assert lexer.token.type == TokenTypes.EOT
+
+
+
 def test_identifier1():
     lexer = create_lexer("identifier")
+
     lexer.get_next_token()
     assert lexer.token.type == TokenTypes.IDENTIFIER
     assert lexer.token.value == "identifier"
@@ -25,6 +34,7 @@ def test_identifier1():
 
 def test_identifier2():
     lexer = create_lexer("id_ent1if_ier2")
+
     lexer.get_next_token()
     assert lexer.token.type == TokenTypes.IDENTIFIER
     assert lexer.token.value == "id_ent1if_ier2"
@@ -32,6 +42,17 @@ def test_identifier2():
     lexer.get_next_token()
     assert lexer.token.type == TokenTypes.EOT
     assert lexer.token.value is None
+
+
+def test_identifier3():
+    lexer = create_lexer("id_ent1??if_ier2")
+
+    lexer.get_next_token()
+    assert lexer.token.type == TokenTypes.IDENTIFIER
+    assert lexer.token.value == "id_ent1"
+
+    with pytest.raises(InvalidTokenError):
+        lexer.get_next_token()
 
 
 def test_int():
@@ -60,6 +81,13 @@ def test_float():
     assert lexer.token.value is None
 
 
+def test_incorrect_number():
+    lexer = create_lexer("123.45.67")
+
+    with pytest.raises(InvalidNumberTokenError):
+        lexer.get_next_token()
+
+
 # KEYWORDS
 
 def test_keyword_if():
@@ -69,6 +97,53 @@ def test_keyword_if():
     assert lexer.token.type == TokenTypes.IF
 
 
+def test_keyword_else():
+    lexer = create_lexer("else")
+
+    lexer.get_next_token()
+    assert lexer.token.type == TokenTypes.ELSE
+
+
+def test_keyword_while():
+    lexer = create_lexer("while")
+
+    lexer.get_next_token()
+    assert lexer.token.type == TokenTypes.WHILE
+
+
+def test_keyword_return():
+    lexer = create_lexer("return")
+
+    lexer.get_next_token()
+    assert lexer.token.type == TokenTypes.RETURN
+
+
+def test_keyword_dec():
+    lexer = create_lexer("dec")
+
+    lexer.get_next_token()
+    assert lexer.token.type == TokenTypes.DECIMAL
+
+
+def test_keyword_cur():
+    lexer = create_lexer("cur")
+
+    lexer.get_next_token()
+    assert lexer.token.type == TokenTypes.CURRENCY
+
+
+def test_keyword_print():
+    lexer = create_lexer("print")
+
+    lexer.get_next_token()
+    assert lexer.token.type == TokenTypes.PRINT
+
+
+def test_keyword_get_currency():
+    lexer = create_lexer("get_currency")
+
+    lexer.get_next_token()
+    assert lexer.token.type == TokenTypes.GET_CURRENCY
 
 
 
@@ -80,6 +155,7 @@ def test_keyword_if():
 
 
 
+# TODO: sprawdzanie komentarzy, sprawdzanie liczenia kolumn i linii, sprawdzanie getcurrency(), sprawdzanie walut
 
 # def test_keywords():
 #     keywords = list(Tokens.keywords.keys())

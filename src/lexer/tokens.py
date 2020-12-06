@@ -10,7 +10,7 @@ class Tokens:
         'dec': TokenTypes.DECIMAL,
         'cur': TokenTypes.CURRENCY,
         'print': TokenTypes.PRINT,
-        'getCurrency': TokenTypes.GET_CURRENCY
+        'get_currency': TokenTypes.GET_CURRENCY
     }
 
     single_operators = {

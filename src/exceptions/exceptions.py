@@ -6,6 +6,14 @@ class InvalidTokenError(Exception):
         super().__init__(self.massage)
 
 
+class InvalidNumberTokenError(Exception):
+    def __init__(self, line, column):
+        self.line = line
+        self.column = column
+        self.massage = f"Invalid number token on position: {self.line}, {self.column}"
+        super().__init__(self.massage)
+
+
 class TokenTooLongError(Exception):
     def __init__(self, line, column):
         self.line = line

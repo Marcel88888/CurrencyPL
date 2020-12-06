@@ -1,9 +1,7 @@
 from .token import Token
 from .tokens import Tokens
 from .token_types import TokenTypes
-from ..exceptions.exceptions import InvalidTokenError
-from ..exceptions.exceptions import TokenTooLongError
-from ..exceptions.exceptions import StringTooLongError
+from ..exceptions.exceptions import *
 
 
 class Lexer:
@@ -46,6 +44,7 @@ class Lexer:
 
     def build_keyword_or_identifier(self):
         kw_or_id = self.read_keyword_or_identifier()
+        print(kw_or_id)
         if kw_or_id in Tokens.keywords:
             # keyword
             self.token = Token(Tokens.keywords[kw_or_id], self.line, self.column, kw_or_id, )
@@ -64,7 +63,7 @@ class Lexer:
         number = self.read_number()
         # checks the occurrence of '.' in number
         if number.count('.') > 1:
-            raise InvalidTokenError(self.source.line, self.source.column)
+            raise InvalidNumberTokenError(self.source.line, self.source.column)
         self.token = Token(TokenTypes.NUMBER, self.line, self.column, number)
         self.token.set_numerical_value()
 
