@@ -20,7 +20,8 @@ class Lexer:
         self.char = self.source.get_next_char()
         self.skip_spaces()
         self.line = self.source.line
-        self.column = self.source.column
+        print(self.source.line)
+        self.column = self.source.column - 1
         self.build_token()
 
     def build_token(self):
@@ -35,6 +36,8 @@ class Lexer:
         elif self.char == '"':
             self.build_string()
             return
+        elif self.char == '#':
+            self.skip_comment()
         elif self.try_to_build_double_operator():
             return
         elif self.try_to_build_single_operator():
@@ -44,7 +47,6 @@ class Lexer:
 
     def build_keyword_or_identifier(self):
         kw_or_id = self.read_keyword_or_identifier()
-        print(kw_or_id)
         if kw_or_id in Tokens.keywords:
             # keyword
             self.token = Token(Tokens.keywords[kw_or_id], self.line, self.column, kw_or_id, )
@@ -53,11 +55,13 @@ class Lexer:
             self.token = Token(TokenTypes.IDENTIFIER, self.line, self.column, kw_or_id, )
 
     def read_keyword_or_identifier(self):
-        kw_or_id = ""
+        chars = []
         while self.char.isalpha() or self.char.isdigit() or self.char == '_':
-            kw_or_id += self.char
+            chars.append(self.char)
+            if len(chars) > self.TOKEN_MAX_LENGTH:
+                raise TokenTooLongError(self.line, self.column)
             self.char = self.source.get_next_char()
-        return kw_or_id
+        return ''.join(chars)
 
     def build_number(self):
         number = self.read_number()
@@ -68,27 +72,29 @@ class Lexer:
         self.token.set_numerical_value()
 
     def read_number(self):
-        number = ""
+        chars = []
         while self.char.isdigit() or self.char == '.':
-            number += self.char
-            if len(number) >= self.TOKEN_MAX_LENGTH:
+            chars.append(self.char)
+            if len(chars) > self.TOKEN_MAX_LENGTH:
                 raise TokenTooLongError(self.source.line, self.source.column)
             self.char = self.source.get_next_char()
-        return number
+        return ''.join(chars)
 
     def build_string(self):
         string = self.read_string()
         self.token = Token(TokenTypes.STRING, self.line, self.column, string)
 
     def read_string(self):
-        string = ""
+        chars = [self.char]
+        self.char = self.source.get_next_char()
         while self.char != '"':
             # TODO Checking EOT
-            string += self.char
-            if len(string) >= self.STRING_MAX_LENGTH:
+            chars.append(self.char)
+            if len(chars) > self.STRING_MAX_LENGTH:
                 raise StringTooLongError(self.source.line, self.source.column)
             self.char = self.source.get_next_char()
-        return string
+        chars.append(self.char)
+        return ''.join(chars)
 
     def try_to_build_single_operator(self):
         if self.char in Tokens.single_operators.keys():
@@ -111,6 +117,12 @@ class Lexer:
     def skip_spaces(self):
         while self.char.isspace():
             self.char = self.source.get_next_char()
+
+    def skip_comment(self):
+        while self.char != '\n' and self.char != '':
+            self.char = self.source.get_next_char()
+        self.skip_spaces()
+        self.build_token()
 
     def is_eof(self):
         return self.char == ''

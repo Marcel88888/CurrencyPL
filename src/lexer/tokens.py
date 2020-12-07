@@ -31,7 +31,6 @@ class Tokens:
         ';': TokenTypes.SEMICOLON,
         '.': TokenTypes.DOT,
         '_': TokenTypes.UNDERLINE,
-        '"': TokenTypes.QUOTATION_MARK,
         '!': TokenTypes.NOT,
         '&': TokenTypes.AND,
         '|': TokenTypes.OR
