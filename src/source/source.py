@@ -18,16 +18,11 @@ class FileSource(Source):
 
     def get_next_char(self):
         self.character = self.source_stream.read(1)
-        print(self.character)
         if self.character == '\n':
-            print("AAAAAAAAAAAAAAAAAAAA")
             self.line += 1
             self.column = 1
-            print(self.line)
         else:
-            # print("BBBBBBBBBBBBBBB")
             self.column += 1
-            print(self.line)
         return self.character
 
     def get_position(self):

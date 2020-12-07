@@ -358,7 +358,7 @@ def test_fake_comment():
 
 
 def test_tokens_lines():
-    lexer = create_lexer("a + b\n print\n\n return")
+    lexer = create_lexer("a + b    \n print   \n   \nreturn")
 
     lexer.get_next_token()
     assert lexer.token.line == 1
@@ -376,11 +376,70 @@ def test_tokens_lines():
     assert lexer.token.line == 4
 
 
+def test_tokens_columns():
+    lexer = create_lexer("a + b\n print\n\n return")
+
+    lexer.get_next_token()
+    assert lexer.token.column == 1
+
+    lexer.get_next_token()
+    assert lexer.token.column == 3
+
+    lexer.get_next_token()
+    assert lexer.token.column == 5
+
+    lexer.get_next_token()
+    assert lexer.token.column == 2
+
+    lexer.get_next_token()
+    assert lexer.token.column == 2
+
+
+def test_get_currency_operation():
+    lexer = create_lexer("a.get_currency()")
+
+    lexer.get_next_token()
+    assert lexer.token.type == TokenTypes.IDENTIFIER
+    assert lexer.token.value == "a"
+
+    lexer.get_next_token()
+    assert lexer.token.type == TokenTypes.DOT
+
+    lexer.get_next_token()
+    assert lexer.token.type == TokenTypes.GET_CURRENCY
+
+    lexer.get_next_token()
+    assert lexer.token.type == TokenTypes.OP_BRACKET
+
+    lexer.get_next_token()
+    assert lexer.token.type == TokenTypes.CL_BRACKET
+
+
+def test_print_operation1():
+    lexer = create_lexer('print("abcd")')
+
+    lexer.get_next_token()
+    assert lexer.token.type == TokenTypes.PRINT
+
+    lexer.get_next_token()
+    assert lexer.token.type == TokenTypes.OP_BRACKET
+
+    lexer.get_next_token()
+    assert lexer.token.type == TokenTypes.STRING
+    assert lexer.token.value == '"abcd"'
+
+    lexer.get_next_token()
+    assert lexer.token.type == TokenTypes.CL_BRACKET
 
 
 
 
-# TODO:sprawdzanie liczenia kolumn i linii, sprawdzanie getcurrency(), sprawdzanie printa,
+
+
+
+
+
+# TODO:sprawdzanie printa,
 #  sprawdzanie walut, wszystkie wyjatki
 
 # def test_keywords():

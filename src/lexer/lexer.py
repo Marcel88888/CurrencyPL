@@ -8,7 +8,7 @@ class Lexer:
     def __init__(self, source, currencies=None):
         self.source = source
         self.currencies = currencies
-        self.char = None
+        self.char = self.source.get_next_char()
         self.token = None
         self.line = None
         self.column = None
@@ -17,11 +17,12 @@ class Lexer:
         # TODO add currencies
 
     def get_next_token(self):
-        self.char = self.source.get_next_char()
+        # self.char = self.source.get_next_char()
+        # print(self.char)
         self.skip_spaces()
         self.line = self.source.line
-        print(self.source.line)
         self.column = self.source.column - 1
+        print(self.char)
         self.build_token()
 
     def build_token(self):
@@ -29,18 +30,24 @@ class Lexer:
             self.token = Token(TokenTypes.EOT, self.line, self.column)
         elif self.char.isalpha():
             self.build_keyword_or_identifier()
+            # print(self.token.type)
             return
         elif self.char.isdigit():
             self.build_number()
+            # print(self.token.type)
             return
         elif self.char == '"':
             self.build_string()
+            # print(self.token.type)
             return
         elif self.char == '#':
             self.skip_comment()
         elif self.try_to_build_double_operator():
+            # print(self.token.type)
             return
         elif self.try_to_build_single_operator():
+            # print(self.token.type)
+            print("AAAAAAAAAAAA")
             return
         else:
             raise InvalidTokenError(self.source.line, self.source.column)
@@ -60,6 +67,7 @@ class Lexer:
             chars.append(self.char)
             if len(chars) > self.TOKEN_MAX_LENGTH:
                 raise TokenTooLongError(self.line, self.column)
+            char = self
             self.char = self.source.get_next_char()
         return ''.join(chars)
 
@@ -94,16 +102,20 @@ class Lexer:
                 raise StringTooLongError(self.source.line, self.source.column)
             self.char = self.source.get_next_char()
         chars.append(self.char)
+        self.char = self.source.get_next_char()
         return ''.join(chars)
 
     def try_to_build_single_operator(self):
         if self.char in Tokens.single_operators.keys():
+            print("ZZZZZZZZZ")
+            print(self.char)
             self.token = Token(Tokens.single_operators[self.char], self.line, self.column)
+            print(self.token.type)
+            self.char = self.source.get_next_char()
             return True
         return False
 
     def try_to_build_double_operator(self):
-        operator = ""
         for double_operator in Tokens.double_operators.keys():
             if self.char == double_operator[0]:
                 second_char = self.source.get_next_char()
@@ -111,6 +123,7 @@ class Lexer:
                     operator = double_operator
                     self.char = second_char
                     self.token = Token(Tokens.double_operators[operator], self.line, self.column)
+                    self.char = self.source.get_next_char()
                     return True
         return False
 
