@@ -1,5 +1,4 @@
 from .token_types import TokenTypes
-from ..numbers.currency_value import CurrencyValue
 
 
 class Token:

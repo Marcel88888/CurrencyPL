@@ -1,14 +1,18 @@
-import sys
 import io
 import pytest
 from ..src.lexer.lexer import Lexer
-from ..src.lexer.token import Token, TokenTypes
+from ..src.lexer.token import TokenTypes
 from ..src.lexer.tokens import Tokens
+from ..src.source.currencies_reader import CurrenciesReader
 from ..src.source.source import FileSource
 from ..src.exceptions.exceptions import *
 
 
 def create_lexer(source_string):
+    currencies_reader = CurrenciesReader("resources/currencies.json")
+    currencies = currencies_reader.currencies
+    for currency in currencies:
+        Tokens.keywords[currency] = TokenTypes.CURRENCY_TYPE
     return Lexer(FileSource(io.StringIO(source_string)))
 
 
@@ -432,6 +436,88 @@ def test_print_operation1():
     assert lexer.token.type == TokenTypes.CL_BRACKET
 
 
+def test_print_operation2():
+    lexer = create_lexer('print("abcd", id1, id2)')
+
+    lexer.get_next_token()
+    assert lexer.token.type == TokenTypes.PRINT
+
+    lexer.get_next_token()
+    assert lexer.token.type == TokenTypes.OP_BRACKET
+
+    lexer.get_next_token()
+    assert lexer.token.type == TokenTypes.STRING
+    assert lexer.token.value == '"abcd"'
+
+    lexer.get_next_token()
+    assert lexer.token.type == TokenTypes.COMMA
+
+    lexer.get_next_token()
+    assert lexer.token.type == TokenTypes.IDENTIFIER
+    assert lexer.token.value == "id1"
+
+    lexer.get_next_token()
+    assert lexer.token.type == TokenTypes.COMMA
+
+    lexer.get_next_token()
+    assert lexer.token.type == TokenTypes.IDENTIFIER
+    assert lexer.token.value == "id2"
+
+    lexer.get_next_token()
+    assert lexer.token.type == TokenTypes.CL_BRACKET
+
+
+def test_invalid_token_error1():
+    lexer = create_lexer(" @ ")
+
+    with pytest.raises(InvalidTokenError):
+        lexer.get_next_token()
+
+
+def test_invalid_token_error2():
+    lexer = create_lexer("$id1")
+
+    with pytest.raises(InvalidTokenError):
+        lexer.get_next_token()
+
+
+def test_pln():
+    lexer = create_lexer("pln")
+
+    lexer.get_next_token()
+    assert lexer.token.type == TokenTypes.CURRENCY_TYPE
+    assert lexer.token.value == "pln"
+
+
+def test_pln_with_parameter():
+    lexer = create_lexer("pln id1")
+
+    lexer.get_next_token()
+    assert lexer.token.type == TokenTypes.CURRENCY_TYPE
+    assert lexer.token.value == "pln"
+
+    lexer.get_next_token()
+    assert lexer.token.type == TokenTypes.IDENTIFIER
+    assert lexer.token.value == "id1"
+
+
+def test_pln_with_expression():
+    lexer = create_lexer("pln a + b")
+
+    lexer.get_next_token()
+    assert lexer.token.type == TokenTypes.CURRENCY_TYPE
+    assert lexer.token.value == "pln"
+
+    lexer.get_next_token()
+    assert lexer.token.type == TokenTypes.IDENTIFIER
+    assert lexer.token.value == "a"
+
+    lexer.get_next_token()
+    assert lexer.token.type == TokenTypes.PLUS
+
+    lexer.get_next_token()
+    assert lexer.token.type == TokenTypes.IDENTIFIER
+    assert lexer.token.value == "b"
 
 
 
@@ -439,33 +525,9 @@ def test_print_operation1():
 
 
 
-# TODO:sprawdzanie printa,
-#  sprawdzanie walut, wszystkie wyjatki
 
-# def test_keywords():
-#     keywords = list(Tokens.keywords.keys())
-#     keywords_token_types = list(Tokens.keywords.values())
-#     for index, keyword in enumerate(keywords):
-#         lexer = create_lexer(keyword)
-#         lexer.get_next_token()
-#         assert lexer.token.type == keywords_token_types[index]
-#
-#
-# def test_single_operators():
-#     single_operators = list(Tokens.single_operators.keys())
-#     single_operators_token_types = list(Tokens.single_operators.values())
-#     for index, single_operator in enumerate(single_operators):
-#         lexer = create_lexer(single_operator)
-#         lexer.get_next_token()
-#         assert lexer.token.type == single_operators_token_types[index]
-#
-#
-# def test_double_operators():
-#     double_operators = list(Tokens.double_operators.keys())
-#     double_operators_token_types = list(Tokens.double_operators.values())
-#     for index, double_operator in enumerate(double_operators):
-#         lexer = create_lexer(double_operator)
-#         lexer.get_next_token()
-#         assert lexer.token.type == double_operators_token_types[index]
+
+# TODO: sprawdzanie walut, wszystkie wyjatki
+
 
 

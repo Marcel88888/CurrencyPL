@@ -7,6 +7,7 @@ class TokenTypes(Enum):
     NUMBER = auto()
     DECIMAL = auto()
     CURRENCY = auto()
+    CURRENCY_TYPE = auto()
     STRING = auto()
     PLUS = auto()
     MINUS = auto()

@@ -17,12 +17,9 @@ class Lexer:
         # TODO add currencies
 
     def get_next_token(self):
-        # self.char = self.source.get_next_char()
-        # print(self.char)
         self.skip_spaces()
         self.line = self.source.line
         self.column = self.source.column - 1
-        print(self.char)
         self.build_token()
 
     def build_token(self):
@@ -30,24 +27,18 @@ class Lexer:
             self.token = Token(TokenTypes.EOT, self.line, self.column)
         elif self.char.isalpha():
             self.build_keyword_or_identifier()
-            # print(self.token.type)
             return
         elif self.char.isdigit():
             self.build_number()
-            # print(self.token.type)
             return
         elif self.char == '"':
             self.build_string()
-            # print(self.token.type)
             return
         elif self.char == '#':
             self.skip_comment()
         elif self.try_to_build_double_operator():
-            # print(self.token.type)
             return
         elif self.try_to_build_single_operator():
-            # print(self.token.type)
-            print("AAAAAAAAAAAA")
             return
         else:
             raise InvalidTokenError(self.source.line, self.source.column)
@@ -56,10 +47,12 @@ class Lexer:
         kw_or_id = self.read_keyword_or_identifier()
         if kw_or_id in Tokens.keywords:
             # keyword
-            self.token = Token(Tokens.keywords[kw_or_id], self.line, self.column, kw_or_id, )
+            self.token = Token(Tokens.keywords[kw_or_id], self.line, self.column)
+            if self.token.type == TokenTypes.CURRENCY_TYPE:
+                self.token.value = kw_or_id
         else:
             # identifier
-            self.token = Token(TokenTypes.IDENTIFIER, self.line, self.column, kw_or_id, )
+            self.token = Token(TokenTypes.IDENTIFIER, self.line, self.column, kw_or_id)
 
     def read_keyword_or_identifier(self):
         chars = []
@@ -107,10 +100,7 @@ class Lexer:
 
     def try_to_build_single_operator(self):
         if self.char in Tokens.single_operators.keys():
-            print("ZZZZZZZZZ")
-            print(self.char)
             self.token = Token(Tokens.single_operators[self.char], self.line, self.column)
-            print(self.token.type)
             self.char = self.source.get_next_char()
             return True
         return False
