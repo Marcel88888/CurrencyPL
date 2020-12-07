@@ -518,16 +518,3 @@ def test_pln_with_expression():
     lexer.get_next_token()
     assert lexer.token.type == TokenTypes.IDENTIFIER
     assert lexer.token.value == "b"
-
-
-
-
-
-
-
-
-
-# TODO: sprawdzanie walut, wszystkie wyjatki
-
-
-

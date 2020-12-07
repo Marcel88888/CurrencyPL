@@ -14,7 +14,6 @@ class Lexer:
         self.column = None
         self.TOKEN_MAX_LENGTH = 50
         self.STRING_MAX_LENGTH = 1000
-        # TODO add currencies
 
     def get_next_token(self):
         self.skip_spaces()
@@ -89,7 +88,6 @@ class Lexer:
         chars = [self.char]
         self.char = self.source.get_next_char()
         while self.char != '"':
-            # TODO Checking EOT
             chars.append(self.char)
             if len(chars) > self.STRING_MAX_LENGTH:
                 raise StringTooLongError(self.source.line, self.source.column)
