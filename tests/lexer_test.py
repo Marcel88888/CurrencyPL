@@ -84,11 +84,74 @@ def test_float():
     assert lexer.token.numerical_value == 123.45
 
 
-def test_incorrect_number():
+def test_float2():
+    lexer = create_lexer("123.45000")
+
+    lexer.get_next_token()
+    assert lexer.token.type == TokenTypes.NUMBER
+    assert lexer.token.value == "123.45000"
+    assert lexer.token.numerical_value == 123.45
+
+
+def test_numbers_with_chars():
+    lexer = create_lexer("123abc")
+
+    lexer.get_next_token()
+    assert lexer.token.type == TokenTypes.NUMBER
+    assert lexer.token.value == "123"
+    assert lexer.token.numerical_value == 123
+
+    lexer.get_next_token()
+    assert lexer.token.type == TokenTypes.IDENTIFIER
+    assert lexer.token.value == "abc"
+
+
+def test_fract_less_than_1():
+    lexer = create_lexer("0.45")
+
+    lexer.get_next_token()
+    assert lexer.token.type == TokenTypes.NUMBER
+    assert lexer.token.value == "0.45"
+    assert lexer.token.numerical_value == 0.45
+
+
+def test_fract_with_0():
+    lexer = create_lexer("123.045")
+
+    lexer.get_next_token()
+    assert lexer.token.type == TokenTypes.NUMBER
+    assert lexer.token.value == "123.045"
+    assert lexer.token.numerical_value == 123.045
+
+
+def test_negative_float():
+    lexer = create_lexer("-123.45")
+
+    lexer.get_next_token()
+    assert lexer.token.type == TokenTypes.MINUS
+
+    lexer.get_next_token()
+    assert lexer.token.type == TokenTypes.NUMBER
+    assert lexer.token.value == "123.45"
+    assert lexer.token.numerical_value == 123.45
+
+
+def test_zero():
+    lexer = create_lexer("0")
+
+    lexer.get_next_token()
+    assert lexer.token.type == TokenTypes.NUMBER
+    assert lexer.token.value == "0"
+    assert lexer.token.numerical_value == 0
+
+
+def test_number_with_too_many_dots():
     lexer = create_lexer("123.45.67")
 
-    with pytest.raises(InvalidNumberTokenError):
-        lexer.get_next_token()
+    lexer.get_next_token()
+    assert lexer.token.type == TokenTypes.NUMBER
+    assert lexer.token.value == "123.45"
+    assert lexer.token.numerical_value == 123.45
 
 
 def test_string1():

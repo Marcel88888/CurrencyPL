@@ -64,20 +64,37 @@ class Lexer:
 
     def build_number(self):
         number = self.read_number()
-        # checks the occurrence of '.' in number
-        if number.count('.') > 1:
-            raise InvalidNumberTokenError(self.__source.line, self.__source.column)
         self.token = Token(TokenTypes.NUMBER, self.__line, self.__column, number)
         self.token.set_numerical_value()
 
     def read_number(self):
         chars = []
-        while self.__char.isdigit() or self.__char == '.':
+        if self.__char in ['1', '2', '3', '4', '5', '6', '7', '8', '9']:
+            chars = self.read_digits(chars)
+            if self.__char == '.':
+                chars.append(self.__char)
+                self.get_next_char()
+                if self.__char.isdigit():
+                    chars = self.read_digits(chars)
+        else:   # '0'
+            chars.append(self.__char)
+            self.get_next_char()
+            if self.__char == '.':
+                chars.append(self.__char)
+                self.get_next_char()
+                if self.__char.isdigit():
+                    chars = self.read_digits(chars)
+        return ''.join(chars)
+
+    def read_digits(self, chars):
+        while True:
             chars.append(self.__char)
             if len(chars) > self.__TOKEN_MAX_LENGTH:
                 raise TokenTooLongError(self.__source.line, self.__source.column)
             self.get_next_char()
-        return ''.join(chars)
+            if not self.__char.isdigit():
+                break
+        return chars
 
     def build_string(self):
         string = self.read_string()
