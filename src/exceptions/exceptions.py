@@ -28,3 +28,11 @@ class StringTooLongError(Exception):
         self.column = column
         self.massage = f"Token too long on position: {self.line}, {self.column}"
         super().__init__(self.massage)
+
+
+class _SyntaxError(Exception):
+    def __init__(self, line, column):
+        self.line = line
+        self.column = column
+        self.massage = f"Syntax error on position: {self.line}, {self.column}"
+        super().__init__(self.massage)

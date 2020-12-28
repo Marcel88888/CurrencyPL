@@ -11,20 +11,20 @@ class Lexer:
         self.__source.move_carr_one_pos()
         self.__char = self.__source.character
         self.token = None
-        self.__line = None
-        self.__column = None
+        self.line = None
+        self.column = None
         self.__TOKEN_MAX_LENGTH = 50
         self.__STRING_MAX_LENGTH = 1000
 
     def get_next_token(self):
         self.skip_spaces()
-        self.__line = self.__source.line
-        self.__column = self.__source.column - 1
+        self.line = self.__source.line
+        self.column = self.__source.column - 1
         self.build_token()
 
     def build_token(self):
         if self.is_eof():
-            self.token = Token(TokenTypes.EOT, self.__line, self.__column)
+            self.token = Token(TokenTypes.EOT, self.line, self.column)
         elif self.__char.isalpha():
             self.build_keyword_or_identifier()
         elif self.__char.isdigit():
@@ -46,25 +46,25 @@ class Lexer:
         kw_or_id = self.read_keyword_or_identifier()
         if kw_or_id in Tokens.keywords:
             # keyword
-            self.token = Token(Tokens.keywords[kw_or_id], self.__line, self.__column)
+            self.token = Token(Tokens.keywords[kw_or_id], self.line, self.column)
             if self.token.type == TokenTypes.CURRENCY_TYPE:
                 self.token.value = kw_or_id
         else:
             # identifier
-            self.token = Token(TokenTypes.IDENTIFIER, self.__line, self.__column, kw_or_id)
+            self.token = Token(TokenTypes.IDENTIFIER, self.line, self.column, kw_or_id)
 
     def read_keyword_or_identifier(self):
         chars = []
         while self.__char.isalpha() or self.__char.isdigit() or self.__char == '_':
             chars.append(self.__char)
             if len(chars) > self.__TOKEN_MAX_LENGTH:
-                raise TokenTooLongError(self.__line, self.__column)
+                raise TokenTooLongError(self.line, self.column)
             self.get_next_char()
         return ''.join(chars)
 
     def build_number(self):
         number = self.read_number()
-        self.token = Token(TokenTypes.NUMBER, self.__line, self.__column, number)
+        self.token = Token(TokenTypes.NUMBER, self.line, self.column, number)
         self.token.set_numerical_value()
 
     def read_number(self):
@@ -98,7 +98,7 @@ class Lexer:
 
     def build_string(self):
         string = self.read_string()
-        self.token = Token(TokenTypes.STRING, self.__line, self.__column, string)
+        self.token = Token(TokenTypes.STRING, self.line, self.column, string)
 
     def read_string(self):
         chars = [self.__char]
@@ -116,7 +116,7 @@ class Lexer:
 
     def try_to_build_single_operator(self):
         if self.__char in Tokens.single_operators.keys():
-            self.token = Token(Tokens.single_operators[self.__char], self.__line, self.__column)
+            self.token = Token(Tokens.single_operators[self.__char], self.line, self.column)
             self.get_next_char()
             return True
         return False
@@ -129,7 +129,7 @@ class Lexer:
                 if second_char == double_operator[1]:
                     operator = double_operator
                     self.__char = second_char
-                    self.token = Token(Tokens.double_operators[operator], self.__line, self.__column)
+                    self.token = Token(Tokens.double_operators[operator], self.line, self.column)
                     self.__source.move_carr_one_pos()
                     self.__char = self.__source.character
                     return True

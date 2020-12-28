@@ -9,6 +9,7 @@ class Tokens:
         'return': TokenTypes.RETURN,
         'dec': TokenTypes.DECIMAL,
         'cur': TokenTypes.CURRENCY,
+        'void': TokenTypes.VOID,
         'print': TokenTypes.PRINT,
         'get_currency': TokenTypes.GET_CURRENCY
     }
