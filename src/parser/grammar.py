@@ -32,6 +32,35 @@ class IfStatement:  # “if”, “(”, condition, “)”, “{“, block, “
         self.block = block
 
 
+class WhileStatement:  # “while”, “(“, condition, “)”, “{“, block, “}“ ;
+    def __init__(self, condition, block):
+        self.condition = condition
+        self.block = block
+
+
+class ReturnStatement:  # “return”, expression, “;” ;
+    def __init__(self, expression):
+        self.expression = expression
+
+
+class InitStatement:  # signature, [ assignmentOp, expression ], “;” ;
+    def __init__(self, signature, expression=None):
+        self.signature = signature
+        self.expression = expression
+
+
+class AssignStatement:  # id, assignmentOp, expression, “;” ;
+    def __init__(self, _id, expression):
+        self.id = _id
+        self.expression = expression
+
+
+class FunctionCall:  # id, “(“, arguments, “)”, “;” ;
+    def __init__(self, _id, arguments):
+        self.id = _id
+        self.arguments = arguments
+
+
 class Condition:  # andCond, { orOp, andCond } ;
     def __init__(self, and_conds):
         self.and_conds = and_conds
@@ -53,7 +82,7 @@ class RelationalCond:  # primaryCond, [ relationOp, primaryCond ];
 
 
 class PrimaryCond:  # [ unaryOp ], ( parenthCond | expression ) ;
-    def __init__(self, unary_op=None, parenth_cond=None, expression=None):
+    def __init__(self, unary_op=False, parenth_cond=None, expression=None):
         self.unary_op = unary_op
         self.parenth_cond = parenth_cond
         self.expression = expression
@@ -90,12 +119,6 @@ class PrimaryExpr:  # [ “-” ], [currency | getCurrency], ( number | id | par
 class ParenthExpr:  # “(”, expression, “)” ;
     def __init__(self, expression):
         self.expression = expression
-
-
-class FunctionCall:  # id, “(“, arguments, “)”, “;” ;
-    def __init__(self, _id, arguments):
-        self.id = _id
-        self.arguments = arguments
 
 
 class GetCurrency:  # id, “.”, “getCurrency()” ;
