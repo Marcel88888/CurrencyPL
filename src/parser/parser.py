@@ -64,6 +64,23 @@ class Parser:
             return Parameters(signatures)
         return None
 
+    def parse_arguments(self):  # [ expression { “,”, expression } ] ;
+        expressions = []
+        expression = self.parse_expression()
+        if expression is not None:
+            expressions.append(expression)
+            self.__lexer.get_next_token()
+            while self.__lexer.token.type == TokenTypes.COMMA:
+                self.__lexer.get_next_token()
+                expression = self.parse_expression()
+                if expression is not None:
+                    expressions.append(expression)
+                else:
+                    raise _SyntaxError(self.__lexer.line, self.__lexer.column)
+                self.__lexer.get_next_token()
+            return Arguments(expressions)
+        return None
+
     def parse_block(self):  # { statement };
         statements = []
         statement = self.parse_statement()
@@ -95,8 +112,24 @@ class Parser:
             return statement
         return None
 
-    def parse_if_statement(self):
-        pass
+    def parse_if_statement(self):  # “if”, “(”, condition, “)”, “{“, block, “}“ ;
+        if self.__lexer.token.type == TokenTypes.IF:
+            self.__lexer.get_next_token()
+            if self.__lexer.token.type == TokenTypes.OP_BRACKET:
+                self.__lexer.get_next_token()
+                condition = self.parse_condition()
+                if condition is not None:
+                    self.__lexer.get_next_token()
+                    if self.__lexer.token.type == TokenTypes.CL_BRACKET:
+                        self.__lexer.get_next_token()
+                        if self.__lexer.token.type == TokenTypes.OP_CURLY_BRACKET:
+                            block = self.parse_block()
+                            if block is not None:
+                                self.__lexer.get_next_token()
+                                if self.__lexer.token.type == TokenTypes.CL_CURLY_BRACKET:
+                                    return IfStatement(condition, block)
+            return _SyntaxError(self.__lexer.line, self.__lexer.column)
+        return None
 
     def parse_while_statement(self):
         pass
@@ -111,4 +144,50 @@ class Parser:
         pass
 
     def parse_function_call(self):
+        pass
+
+    def parse_condition(self):  # andCond, { orOp, andCond } ;
+        and_conds = []
+        and_cond = self.parse_and_cond()
+        if and_cond is not None:
+            and_conds.append(and_cond)
+            self.__lexer.get_next_token()
+            while self.__lexer.token.type == TokenTypes.OR:
+                self.__lexer.get_next_token()
+                and_cond = self.parse_and_cond()
+                if and_cond is not None:
+                    and_conds.append(and_cond)
+                else:
+                    raise _SyntaxError(self.__lexer.line, self.__lexer.column)
+                self.__lexer.get_next_token()
+            return Condition(and_conds)
+        return None
+
+    def parse_and_cond(self):  # equalityCond, { andOp, equalityCond } ;
+        equality_conds = []
+        equality_cond = self.parse_equality_cond()
+        if equality_cond is not None:
+            equality_conds.append(equality_cond)
+            self.__lexer.get_next_token()
+            while self.__lexer.token.type == TokenTypes.AND:
+                self.__lexer.get_next_token()
+                equality_cond = self.parse_equality_cond()
+                if equality_cond is not None:
+                    equality_conds.append(equality_cond)
+                else:
+                    raise _SyntaxError(self.__lexer.line, self.__lexer.column)
+                self.__lexer.get_next_token()
+            return AndCond(equality_conds)
+        return None
+
+    def parse_equality_cond(self):  # relationalCond, [ equalOp, relationalCond ] ;
+        pass
+
+    def parse_relational_cond(self):  # primaryCond, [ relationOp, primaryCond ];
+        pass
+
+    def parse_primary_cond(self):  # [ unaryOp ], ( parentCond | expression ) ;
+        pass
+
+    def parse_expression(self):  # multiplExpr, { additiveOp, multiplExpr } ;
         pass
