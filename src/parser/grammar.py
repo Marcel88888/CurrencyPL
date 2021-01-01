@@ -5,6 +5,12 @@ class FunctionDef:  # signature, “(”, parameters, “)”, “{“, block, �
         self.block = block
 
 
+class FunctionCall:  # id, “(“, arguments, “)”, “;” ;
+    def __init__(self, _id, arguments):
+        self.id = _id
+        self.arguments = arguments
+
+
 class Signature:  # type, id ;
     def __init__(self, _type, _id):
         self.type = _type
@@ -53,12 +59,6 @@ class AssignStatement:  # id, assignmentOp, expression, “;” ;
     def __init__(self, _id, expression):
         self.id = _id
         self.expression = expression
-
-
-class FunctionCall:  # id, “(“, arguments, “)”, “;” ;
-    def __init__(self, _id, arguments):
-        self.id = _id
-        self.arguments = arguments
 
 
 class Condition:  # andCond, { orOp, andCond } ;
@@ -124,3 +124,8 @@ class ParenthExpr:  # “(”, expression, “)” ;
 class GetCurrency:  # id, “.”, “getCurrency()” ;
     def __init__(self, _id):
         self.id = _id
+
+
+class String:  # “””, { ( anyVisibleChar - “”” ) | “ ” }, “”” ;
+    def __init__(self, string):
+        self.string = string

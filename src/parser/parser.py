@@ -7,6 +7,8 @@ class Parser:
     def __init__(self, lexer):
         self.__lexer = lexer
         self.__function_data_types = [TokenTypes.DECIMAL, TokenTypes.CURRENCY, TokenTypes.VOID]
+        self.relation_ops = [TokenTypes.GREATER_THAN, TokenTypes.LESS_THAN, TokenTypes.GREATER_OR_EQUAL,
+                             TokenTypes.LESS_OR_EQUAL]
 
     def parse_program(self):
         function_defs = []
@@ -106,10 +108,7 @@ class Parser:
         statement = self.parse_init_statement()
         if statement is not None:
             return statement
-        statement = self.parse_assign_statement()
-        if statement is not None:
-            return statement
-        statement = self.parse_function_call()
+        statement = self.parse_assign_statement_or_function_call()
         if statement is not None:
             return statement
         return None
@@ -179,8 +178,7 @@ class Parser:
             raise _SyntaxError(self.__lexer.line, self.__lexer.column)
         return None
 
-    # TODO ASSIGN_STATEMENT I FUNCTION_CALL DO JEDNEJ METODY, BO MAJA CZESC WSPOLNA
-    def parse_assign_statement(self):  # id, assignmentOp, expression, “;” ;
+    def parse_assign_statement(self, _id):  # id, assignmentOp, expression, “;” ;
         if self.__lexer.token.type == TokenTypes.IDENTIFIER:
             _id = self.__lexer.token.value
             self.__lexer.get_next_token()
@@ -193,20 +191,27 @@ class Parser:
             raise _SyntaxError(self.__lexer.line, self.__lexer.column)
         return None
 
-    def parse_function_call(self):  # id, “(“, arguments, “)”, “;” ;
+    def parse_function_call(self, _id):  # id, “(“, arguments, “)”, “;” ;
+        if self.__lexer.token.type == TokenTypes.OP_BRACKET:
+            self.__lexer.get_next_token()
+            arguments = self.parse_arguments()
+            if arguments is not None:
+                if self.__lexer.token.type == TokenTypes.CL_BRACKET:
+                    self.__lexer.get_next_token()
+                    if self.__lexer.token.type == TokenTypes.SEMICOLON:
+                        return FunctionCall(_id, arguments)
+        raise _SyntaxError(self.__lexer.line, self.__lexer.column)
+
+    def parse_assign_statement_or_function_call(self):
         if self.__lexer.token.type == TokenTypes.IDENTIFIER:
             _id = self.__lexer.token.value
             self.__lexer.get_next_token()
-            if self.__lexer.token.type == TokenTypes.OP_BRACKET:
-                self.__lexer.get_next_token()
-                arguments = self.parse_arguments()
-                if arguments is not None:
-                    if self.__lexer.token.type == TokenTypes.CL_BRACKET:
-                        self.__lexer.get_next_token()
-                        if self.__lexer.token.type == TokenTypes.SEMICOLON:
-                            return FunctionCall(_id, arguments)
-            raise _SyntaxError(self.__lexer.line, self.__lexer.column)
-        return None
+            statement = self.parse_assign_statement(_id)
+            if statement is not None:
+                return statement
+            statement = self.parse_function_call(_id)
+            if statement is not None:
+                return statement
 
     # ONE TOKEN MORE (WHILE)
     def parse_condition(self):  # andCond, { orOp, andCond } ;
@@ -243,14 +248,56 @@ class Parser:
         return None
 
     def parse_equality_cond(self):  # relationalCond, [ equalOp, relationalCond ] ;
-        pass
+        relational_cond1 = self.parse_relational_cond()
+        if relational_cond1 is not None:
+            self.__lexer.get_next_token()
+            if self.__lexer.token.type == TokenTypes.EQUAL:
+                self.__lexer.get_next_token()
+                relational_cond2 = self.parse_relational_cond()
+                if relational_cond2 is not None:
+                    relational_conds = relational_cond1, relational_cond2
+                    return EqualityCond(relational_conds)
+                raise _SyntaxError(self.__lexer.line, self.__lexer.column)
+            return EqualityCond(relational_cond1)
+        return None
 
     def parse_relational_cond(self):  # primaryCond, [ relationOp, primaryCond ];
-        pass
+        primary_cond1 = self.parse_primary_cond()
+        if primary_cond1 is not None:
+            self.__lexer.get_next_token()
+            if self.__lexer.token.type in self.relation_ops:
+                self.__lexer.get_next_token()
+                primary_cond2 = self.parse_primary_cond()
+                if primary_cond2 is not None:
+                    primary_conds = primary_cond1, primary_cond2
+                    return RelationalCond(primary_conds)
+                raise _SyntaxError(self.__lexer.line, self.__lexer.column)
+            return EqualityCond(primary_cond1)
+        return None
 
     def parse_primary_cond(self):  # [ unaryOp ], ( parentCond | expression ) ;
+        pass
+
+    def parse_parenth_cond(self):  # “(“, condition, “)” ;
         pass
 
     # ONE TOKEN MORE (WHILE)
     def parse_expression(self):  # multiplExpr, { additiveOp, multiplExpr } ;
         pass
+
+    def parse_multipl_expression(self):  # primaryExpr, { multiplOp, primaryExpr } ;
+        pass
+
+    def parse_primary_expr(self):  # [ “-” ], [currency | getCurrency], ( number | id | parenthExpr | functionCall ),
+        # [currency | getCurrency] ;
+        pass
+
+    def parse_parenth_expr(self):  # “(”, expression, “)” ;
+        pass
+
+    def parse_get_currency(self):  # id, “.”, “getCurrency()” ;
+        pass
+
+    def parse_string(self):  # “””, { ( anyVisibleChar - “”” ) | “ ” }, “”” ;
+        pass
+
