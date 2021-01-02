@@ -61,6 +61,11 @@ class AssignStatement:  # id, assignmentOp, expression, “;” ;
         self.expression = expression
 
 
+class PrintStatement:  # “print”, “(“, printable { “,”, printable }, “)” ;
+    def __init__(self, printables):
+        self.printables = printables
+
+
 class Condition:  # andCond, { orOp, andCond } ;
     def __init__(self, and_conds):
         self.and_conds = and_conds

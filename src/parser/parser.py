@@ -96,7 +96,7 @@ class Parser:
         return Block(statements)
 
     def parse_statement(self):  # ifStatement | whileStatement | returnStatement | initStatement | assignStatement |
-        # functionCall ;
+        # printStatement | functionCall ;
         statement = self.parse_if_statement()
         if statement is not None:
             return statement
@@ -110,6 +110,9 @@ class Parser:
         if statement is not None:
             return statement
         statement = self.parse_assign_statement_or_function_call()
+        if statement is not None:
+            return statement
+        statement = self.parse_print_statement()
         if statement is not None:
             return statement
         return None
@@ -189,6 +192,35 @@ class Parser:
                 if expression is not None:
                     if self.__lexer.token.type == TokenTypes.SEMICOLON:
                         return AssignStatement(_id, expression)
+            raise _SyntaxError(self.__lexer.line, self.__lexer.column)
+        return None
+
+    def parse_print_statement(self):  # “print”, “(“, printable { “,”, printable }, “)” ;
+        if self.__lexer.token.type == TokenTypes.PRINT:
+            self.__lexer.get_next_token()
+            if self.__lexer.token.type == TokenTypes.OP_BRACKET:
+                self.__lexer.get_next_token()
+                printables = []
+                if self.__lexer.token.type == TokenTypes.STRING:
+                    printable = self.__lexer.token.value
+                else:
+                    printable = self.parse_expression()
+                if printable is not None:
+                    printables.append(printable)
+                    self.__lexer.get_next_token()
+                    while self.__lexer.token.type == TokenTypes.COMMA:
+                        self.__lexer.get_next_token()
+                        if self.__lexer.token.type == TokenTypes.STRING:
+                            printable = self.__lexer.token.value
+                        else:
+                            printable = self.parse_expression()
+                        if printable is not None:
+                            printables.append(printable)
+                            self.__lexer.get_next_token()
+                        else:
+                            raise _SyntaxError(self.__lexer.line, self.__lexer.column)
+                    if self.__lexer.token.type == TokenTypes.CL_BRACKET:
+                        return PrintStatement(printables)
             raise _SyntaxError(self.__lexer.line, self.__lexer.column)
         return None
 
@@ -380,10 +412,29 @@ class Parser:
                            get_currency2=get_currency2)
 
     def parse_parenth_expr(self):  # “(”, expression, “)” ;
-        pass
+        if self.__lexer.token.type == TokenTypes.OP_BRACKET:
+            self.__lexer.get_next_token()
+            expression = self.parse_expression()
+            if expression is not None:
+                if self.__lexer.token.type == TokenTypes.CL_BRACKET:
+                    return ParenthExpr(expression)
+            raise _SyntaxError(self.__lexer.line, self.__lexer.column)
+        return None
 
     def parse_get_currency(self):  # id, “.”, “getCurrency()” ;
-        pass
+        if self.__lexer.token.type == TokenTypes.IDENTIFIER:
+            _id = self.__lexer.token.value
+            self.__lexer.get_next_token()
+            if self.__lexer.token.type == TokenTypes.DOT:
+                self.__lexer.get_next_token()
+                if self.__lexer.token.type == TokenTypes.GET_CURRENCY:
+                    self.__lexer.get_next_token()
+                    if self.__lexer.token.type == TokenTypes.OP_BRACKET:
+                        self.__lexer.get_next_token()
+                        if self.__lexer.token.type == TokenTypes.CL_BRACKET:
+                            return GetCurrency(_id)
+            return _SyntaxError(self.__lexer.line, self.__lexer.column)
+        return None
 
     def parse_string(self):  # “””, { ( anyVisibleChar - “”” ) | “ ” }, “”” ;
         pass
