@@ -1,24 +1,30 @@
-from src.lexer.token_types import TokenTypes
-from src.exceptions.exceptions import _SyntaxError
+from ..exceptions.exceptions import _SyntaxError
+from ..lexer.token_types import TokenTypes
 from .grammar import *
+from .program import Program
+
+
+function_data_types = [TokenTypes.DECIMAL, TokenTypes.CURRENCY, TokenTypes.VOID]
+relation_ops = [TokenTypes.GREATER_THAN, TokenTypes.LESS_THAN, TokenTypes.GREATER_OR_EQUAL, TokenTypes.LESS_OR_EQUAL]
 
 
 class Parser:
     def __init__(self, lexer):
         self.__lexer = lexer
-        self.__function_data_types = [TokenTypes.DECIMAL, TokenTypes.CURRENCY, TokenTypes.VOID]
-        self.relation_ops = [TokenTypes.GREATER_THAN, TokenTypes.LESS_THAN, TokenTypes.GREATER_OR_EQUAL,
-                             TokenTypes.LESS_OR_EQUAL]
+        self.program = None
+        self.__lexer.get_next_token()
 
+    # TODO test
     def parse_program(self):
         function_defs = []
         function_def = self.parse_function_def()
         while function_def is not None:
             function_defs.append(function_def)
             function_def = self.parse_function_def()
+        self.program = Program(function_defs)
 
+    # TODO test
     def parse_function_def(self):  # signature, “(”, parameters, “)”, “{“, block, “}” ;
-        self.__lexer.get_next_token()
         signature = self.parse_signature()
         if signature is not None:
             self.__lexer.get_next_token()
@@ -38,9 +44,10 @@ class Parser:
             raise _SyntaxError(self.__lexer.line, self.__lexer.column)
         return None
 
+    # TODO test
     def parse_signature(self):  # type, id ;
         token_type = self.__lexer.token.type
-        if token_type in self.__function_data_types:
+        if token_type in function_data_types:
             _type = token_type
             self.__lexer.get_next_token()
             if self.__lexer.token.type == TokenTypes.IDENTIFIER:
@@ -49,6 +56,7 @@ class Parser:
             raise _SyntaxError(self.__lexer.line, self.__lexer.column)
         return None
 
+    # TODO test
     # ONE TOKEN MORE (WHILE)
     def parse_parameters(self):  # [ signature, { “,”, signature } ];
         signatures = []
@@ -67,6 +75,7 @@ class Parser:
             return Parameters(signatures)
         return None
 
+    # TODO test
     # ONE TOKEN MORE (WHILE)
     def parse_arguments(self):  # [ expression { “,”, expression } ] ;
         expressions = []
@@ -85,6 +94,7 @@ class Parser:
             return Arguments(expressions)
         return None
 
+    # TODO test
     # ONE TOKEN MORE (WHILE)
     def parse_block(self):  # { statement };
         statements = []
@@ -95,6 +105,7 @@ class Parser:
             statement = self.parse_statement()
         return Block(statements)
 
+    # TODO test
     def parse_statement(self):  # ifStatement | whileStatement | returnStatement | initStatement | assignStatement |
         # printStatement | functionCall ;
         statement = self.parse_if_statement()
@@ -117,6 +128,7 @@ class Parser:
             return statement
         return None
 
+    # TODO test
     def parse_if_statement(self):  # “if”, “(”, condition, “)”, “{“, block, “}“ ;
         if self.__lexer.token.type == TokenTypes.IF:
             self.__lexer.get_next_token()
@@ -135,6 +147,7 @@ class Parser:
             raise _SyntaxError(self.__lexer.line, self.__lexer.column)
         return None
 
+    # TODO test
     def parse_while_statement(self):  # “while”, “(“, condition, “)”, “{“, block, “}“ ;
         if self.__lexer.token.type == TokenTypes.WHILE:
             self.__lexer.get_next_token()
@@ -154,6 +167,7 @@ class Parser:
             raise _SyntaxError(self.__lexer.line, self.__lexer.column)
         return None
 
+    # TODO test
     def parse_return_statement(self):  # “return”, expression, “;” ;
         if self.__lexer.token.type == TokenTypes.RETURN:
             self.__lexer.get_next_token()
@@ -165,6 +179,7 @@ class Parser:
             raise _SyntaxError(self.__lexer.line, self.__lexer.column)
         return None
 
+    # TODO test
     def parse_init_statement(self):  # signature, [ assignmentOp, expression ], “;” ;
         signature = self.parse_signature()
         if signature is not None:
@@ -182,6 +197,7 @@ class Parser:
             raise _SyntaxError(self.__lexer.line, self.__lexer.column)
         return None
 
+    # TODO test
     def parse_assign_statement(self, _id):  # id, assignmentOp, expression, “;” ;
         if self.__lexer.token.type == TokenTypes.IDENTIFIER:
             _id = self.__lexer.token.value
@@ -195,6 +211,7 @@ class Parser:
             raise _SyntaxError(self.__lexer.line, self.__lexer.column)
         return None
 
+    # TODO test
     def parse_print_statement(self):  # “print”, “(“, printable { “,”, printable }, “)” ;
         if self.__lexer.token.type == TokenTypes.PRINT:
             self.__lexer.get_next_token()
@@ -224,6 +241,7 @@ class Parser:
             raise _SyntaxError(self.__lexer.line, self.__lexer.column)
         return None
 
+    # TODO test
     def parse_function_call(self, _id):  # id, “(“, arguments, “)”, “;” ;
         if self.__lexer.token.type == TokenTypes.OP_BRACKET:
             self.__lexer.get_next_token()
@@ -235,6 +253,7 @@ class Parser:
                         return FunctionCall(_id, arguments)
         raise _SyntaxError(self.__lexer.line, self.__lexer.column)
 
+    # TODO test
     def parse_assign_statement_or_function_call(self):
         if self.__lexer.token.type == TokenTypes.IDENTIFIER:
             _id = self.__lexer.token.value
@@ -246,6 +265,7 @@ class Parser:
             if statement is not None:
                 return statement
 
+    # TODO test
     # ONE TOKEN MORE (WHILE)
     def parse_condition(self):  # andCond, { orOp, andCond } ;
         and_conds = []
@@ -262,6 +282,7 @@ class Parser:
             return Condition(and_conds)
         return None
 
+    # TODO test
     # ONE TOKEN MORE (WHILE)
     def parse_and_cond(self):  # equalityCond, { andOp, equalityCond } ;
         equality_conds = []
@@ -280,38 +301,43 @@ class Parser:
             return AndCond(equality_conds)
         return None
 
+    # TODO test
     # ONE TOKEN MORE
     def parse_equality_cond(self):  # relationalCond, [ equalOp, relationalCond ] ;
         relational_cond1 = self.parse_relational_cond()
         if relational_cond1 is not None:
             self.__lexer.get_next_token()
-            if self.__lexer.token.type == TokenTypes.EQUAL:
+            if self.__lexer.token.type == TokenTypes.EQUAL or self.__lexer.token.type == TokenTypes.NOT_EQUAL:
+                equal_op = self.__lexer.token.type
                 self.__lexer.get_next_token()
                 relational_cond2 = self.parse_relational_cond()
                 if relational_cond2 is not None:
                     relational_conds = relational_cond1, relational_cond2
                     self.__lexer.get_next_token()
-                    return EqualityCond(relational_conds)
+                    return EqualityCond(relational_conds, equal_op)
                 raise _SyntaxError(self.__lexer.line, self.__lexer.column)
             return EqualityCond(relational_cond1)
         return None
 
+    # TODO test
     # ONE TOKEN MORE
     def parse_relational_cond(self):  # primaryCond, [ relationOp, primaryCond ];
         primary_cond1 = self.parse_primary_cond()
         if primary_cond1 is not None:
             self.__lexer.get_next_token()
-            if self.__lexer.token.type in self.relation_ops:
+            if self.__lexer.token.type in relation_ops:
+                relation_op = self.__lexer.token.type
                 self.__lexer.get_next_token()
                 primary_cond2 = self.parse_primary_cond()
                 if primary_cond2 is not None:
                     primary_conds = primary_cond1, primary_cond2
                     self.__lexer.get_next_token()
-                    return RelationalCond(primary_conds)
+                    return RelationalCond(primary_conds, relation_op)
                 raise _SyntaxError(self.__lexer.line, self.__lexer.column)
             return EqualityCond(primary_cond1)
         return None
 
+    # TODO test
     def parse_primary_cond(self):  # [ unaryOp ], ( parenthCond | expression ) ;
         unary_op = False
         if self.__lexer.token.type == TokenTypes.NOT:
@@ -325,6 +351,7 @@ class Parser:
             return PrimaryCond(unary_op=unary_op, expression=expression)
         raise _SyntaxError(self.__lexer.line, self.__lexer.column)
 
+    # TODO test
     def parse_parenth_cond(self):  # “(“, condition, “)” ;
         if self.__lexer.token.type == TokenTypes.OP_BRACKET:
             self.__lexer.get_next_token()
@@ -335,14 +362,17 @@ class Parser:
             raise _SyntaxError(self.__lexer.line, self.__lexer.column)
         return None
 
+    # TODO test
     # ONE TOKEN MORE (WHILE)
     def parse_expression(self):  # multiplExpr, { additiveOp, multiplExpr } ;
         multipl_exprs = []
         multipl_expr = self.parse_multipl_expr()
         if multipl_expr is not None:
+            additive_op = None
             multipl_exprs.append(multipl_expr)
             self.__lexer.get_next_token()
             while self.__lexer.token.type == TokenTypes.PLUS or self.__lexer.token.type == TokenTypes.MINUS:
+                additive_op = self.__lexer.token.type
                 self.__lexer.get_next_token()
                 multipl_expr = self.parse_multipl_expr()
                 if multipl_expr is not None:
@@ -350,16 +380,19 @@ class Parser:
                     self.__lexer.get_next_token()
                 else:
                     raise _SyntaxError(self.__lexer.line, self.__lexer.column)
-            return Expression(multipl_exprs)
+            return Expression(multipl_exprs, additive_op)
         return None
 
+    # TODO test
     def parse_multipl_expr(self):  # primaryExpr, { multiplOp, primaryExpr } ;
         primary_exprs = []
         primary_expr = self.parse_primary_expr()
         if primary_expr is not None:
+            multipl_op = None
             primary_exprs.append(primary_expr)
             self.__lexer.get_next_token()
             while self.__lexer.token.type == TokenTypes.MULTIPLY or self.__lexer.token.type == TokenTypes.DIVIDE:
+                multipl_op = self.__lexer.token.type
                 self.__lexer.get_next_token()
                 primary_expr = self.parse_primary_expr()
                 if primary_expr is not None:
@@ -367,9 +400,10 @@ class Parser:
                     self.__lexer.get_next_token()
                 else:
                     raise _SyntaxError(self.__lexer.line, self.__lexer.column)
-            return MultiplExpr(primary_exprs)
+            return MultiplExpr(primary_exprs, multipl_op)
         return None
 
+    # TODO test
     def parse_primary_expr(self):  # [ “-” ], [currency | getCurrency], ( number | id | parenthExpr | functionCall ),
         # [currency | getCurrency] ;
         minus = False
@@ -411,6 +445,7 @@ class Parser:
                            parenth_expr=parenth_expr, function_call=function_call, currency2=currency2,
                            get_currency2=get_currency2)
 
+    # TODO test
     def parse_parenth_expr(self):  # “(”, expression, “)” ;
         if self.__lexer.token.type == TokenTypes.OP_BRACKET:
             self.__lexer.get_next_token()
@@ -421,6 +456,7 @@ class Parser:
             raise _SyntaxError(self.__lexer.line, self.__lexer.column)
         return None
 
+    # TODO test
     def parse_get_currency(self):  # id, “.”, “getCurrency()” ;
         if self.__lexer.token.type == TokenTypes.IDENTIFIER:
             _id = self.__lexer.token.value
@@ -435,7 +471,3 @@ class Parser:
                             return GetCurrency(_id)
             return _SyntaxError(self.__lexer.line, self.__lexer.column)
         return None
-
-    def parse_string(self):  # “””, { ( anyVisibleChar - “”” ) | “ ” }, “”” ;
-        pass
-

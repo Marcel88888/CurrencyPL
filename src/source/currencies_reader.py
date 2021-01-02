@@ -1,5 +1,5 @@
 import json
-from currency import Currency
+from .currency import Currency
 
 
 class CurrenciesReader:

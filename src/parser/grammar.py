@@ -77,13 +77,15 @@ class AndCond:  # equalityCond, { andOp, equalityCond } ;
 
 
 class EqualityCond:  # relationalCond, [ equalOp, relationalCond ] ;
-    def __init__(self, relational_conds):
+    def __init__(self, relational_conds, equal_op=None):
         self.relational_conds = relational_conds
+        self.equal_op = equal_op
 
 
 class RelationalCond:  # primaryCond, [ relationOp, primaryCond ];
-    def __init__(self, primary_conds):
+    def __init__(self, primary_conds, relation_op):
         self.primary_conds = primary_conds
+        self.relation_op = relation_op
 
 
 class PrimaryCond:  # [ unaryOp ], ( parenthCond | expression ) ;
@@ -99,13 +101,15 @@ class ParenthCond:  # “(“, condition, “)” ;
 
 
 class Expression:  # multiplExpr, { additiveOp, multiplExpr } ;
-    def __init__(self, multipl_exprs):
+    def __init__(self, multipl_exprs, additive_op):
         self.multipl_exprs = multipl_exprs
+        self.additive_op = additive_op
 
 
 class MultiplExpr:  # primaryExpr, { multiplOp, primaryExpr } ;
-    def __init__(self, primary_exprs):
+    def __init__(self, primary_exprs, multipl_op=None):
         self.primary_exprs = primary_exprs
+        self.multipl_op = multipl_op
 
 
 class PrimaryExpr:  # [ “-” ], [currency | getCurrency], ( number | id | parenthExpr | functionCall ),
@@ -131,8 +135,3 @@ class ParenthExpr:  # “(”, expression, “)” ;
 class GetCurrency:  # id, “.”, “getCurrency()” ;
     def __init__(self, _id):
         self.id = _id
-
-
-class String:  # “””, { ( anyVisibleChar - “”” ) | “ ” }, “”” ;
-    def __init__(self, string):
-        self.string = string
