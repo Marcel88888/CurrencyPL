@@ -10,5 +10,5 @@ if __name__ == "__main__":
     currencies_reader = CurrenciesReader("resources/currencies.json")
     currencies = currencies_reader.currencies
     for currency in currencies:
-        Tokens.keywords[currency] = TokenTypes.CURRENCY_TYPE
+        Tokens.keywords[currency.name] = TokenTypes.CURRENCY_TYPE
 

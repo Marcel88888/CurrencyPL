@@ -1,4 +1,5 @@
 import json
+from currency import Currency
 
 
 class CurrenciesReader:
@@ -7,4 +8,5 @@ class CurrenciesReader:
         self.rates = json.load(file)
         self.currencies = []
         for key, value in self.rates.items():
-            self.currencies.append(key)
+            currency = Currency(key, value)
+            self.currencies.append(currency)

@@ -105,15 +105,17 @@ class MultiplExpr:  # primaryExpr, { multiplOp, primaryExpr } ;
 
 class PrimaryExpr:  # [ “-” ], [currency | getCurrency], ( number | id | parenthExpr | functionCall ),
     # [currency | getCurrency] ;
-    def __init__(self, minus=False, currency=None, get_currency=None, number=None, _id=None, parenth_expr=None,
-                 function_call=None):
+    def __init__(self, minus=False, currency1=None, get_currency1=None, number=None, _id=None, parenth_expr=None,
+                 function_call=None, currency2=None, get_currency2=None):
         self.minus = minus
-        self.currency = currency
-        self.get_currency = get_currency
+        self.currency1 = currency1
+        self.get_currency1 = get_currency1
         self.number = number
         self.id = _id
         self.parenth_expr = parenth_expr
         self.function_call = function_call
+        self.currency2 = currency2
+        self.get_currency2 = get_currency2
 
 
 class ParenthExpr:  # “(”, expression, “)” ;
