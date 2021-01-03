@@ -321,27 +321,21 @@ class Parser:
     # ONE TOKEN MORE
     def parse_relational_cond(self):  # primaryCond, [ relationOp, primaryCond ];
         primary_cond1 = self.parse_primary_cond()
-        print(self.__lexer.token.type)
         if primary_cond1 is not None:
-            self.__lexer.get_next_token()
-            print(self.__lexer.token.type)
             relation_op = None
             if self.__lexer.token.type in relation_ops:
-                print("UHU")
                 relation_op = self.__lexer.token.type
                 self.__lexer.get_next_token()
                 primary_cond2 = self.parse_primary_cond()
                 if primary_cond2 is not None:
                     primary_conds = primary_cond1, primary_cond2
                     self.__lexer.get_next_token()
-                    print("AAAAAAAAAAAAAAAAAAAAAAAA")
                     return RelationalCond(primary_conds, relation_op)
                 raise _SyntaxError(self.__lexer.line, self.__lexer.column)
-            print("BBBBBBBBBBBBBBBBBBBBBBBBBB")
             return RelationalCond(primary_cond1, relation_op)
         return None
 
-    # TODO test
+    # ONE TOKEN MORE
     def parse_primary_cond(self):  # [ unaryOp ], ( parenthCond | expression ) ;
         unary_op = False
         if self.__lexer.token.type == TokenTypes.NOT:
@@ -349,11 +343,10 @@ class Parser:
             self.__lexer.get_next_token()
         parenth_cond = self.parse_parenth_cond()
         if parenth_cond is not None:
+            self.__lexer.get_next_token()
             return PrimaryCond(unary_op=unary_op, parenth_cond=parenth_cond)
         expression = self.parse_expression()
         if expression is not None:
-            print("exprrrrrrrrrr")
-            print(self.__lexer.token.type)
             return PrimaryCond(unary_op=unary_op, expression=expression)
         raise _SyntaxError(self.__lexer.line, self.__lexer.column)
 
@@ -368,7 +361,6 @@ class Parser:
             raise _SyntaxError(self.__lexer.line, self.__lexer.column)
         return None
 
-    # TODO test
     # ONE TOKEN MORE (WHILE)
     def parse_expression(self):  # multiplExpr, { additiveOp, multiplExpr } ;
         multipl_exprs = []
@@ -376,7 +368,6 @@ class Parser:
         if multipl_expr is not None:
             additive_op = None
             multipl_exprs.append(multipl_expr)
-            self.__lexer.get_next_token()
             while self.__lexer.token.type == TokenTypes.PLUS or self.__lexer.token.type == TokenTypes.MINUS:
                 additive_op = self.__lexer.token.type
                 self.__lexer.get_next_token()
@@ -389,7 +380,6 @@ class Parser:
             return Expression(multipl_exprs, additive_op)
         return None
 
-    # TODO test
     def parse_multipl_expr(self):  # primaryExpr, { multiplOp, primaryExpr } ;
         primary_exprs = []
         primary_expr = self.parse_primary_expr()
@@ -402,7 +392,6 @@ class Parser:
                 primary_expr = self.parse_primary_expr()
                 if primary_expr is not None:
                     primary_exprs.append(primary_expr)
-                    self.__lexer.get_next_token()
                 else:
                     raise _SyntaxError(self.__lexer.line, self.__lexer.column)
             return MultiplExpr(primary_exprs, multipl_op)
@@ -415,25 +404,29 @@ class Parser:
         minus = False
         currency1 = None
         get_currency1 = None
+        _id = None
+        number = None
         if self.__lexer.token.type == TokenTypes.MINUS:
             minus = True
             self.__lexer.get_next_token()
         if self.__lexer.token.type == TokenTypes.CURRENCY_TYPE:
             currency1 = self.__lexer.token.value
-        else:
-            get_currency1 = self.parse_get_currency()
-        number = None
-        _id = None
-        self.__lexer.get_next_token()
-        if self.__lexer.token.type == TokenTypes.NUMBER:
-            number = self.__lexer.token.value
+            self.__lexer.get_next_token()
         elif self.__lexer.token.type == TokenTypes.IDENTIFIER:
             _id = self.__lexer.token.value
-            print(_id)
+            get_currency1 = self.parse_get_currency()
+            if get_currency1 is not None:
+                _id = None
+                self.__lexer.get_next_token()
+        if self.__lexer.token.type == TokenTypes.NUMBER:
+            number = self.__lexer.token.numerical_value
+            self.__lexer.get_next_token()
+        elif self.__lexer.token.type == TokenTypes.IDENTIFIER:
+            _id = self.__lexer.token.value
+            self.__lexer.get_next_token()
         parenth_expr = None
         function_call = None
         if number is None and _id is None:
-            print("o nie")
             parenth_expr = self.parse_parenth_expr()
             if parenth_expr is None:
                 if self.__lexer.token.type == TokenTypes.IDENTIFIER:
@@ -442,9 +435,6 @@ class Parser:
                     function_call = self.parse_function_call(_id)
                 else:
                     raise _SyntaxError(self.__lexer.line, self.__lexer.column)
-        self.__lexer.get_next_token()
-        print("aaaaaaaaa")
-        print(self.__lexer.token.type)
         currency2 = None
         get_currency2 = None
         if self.__lexer.token.type == TokenTypes.CURRENCY_TYPE:
@@ -453,8 +443,6 @@ class Parser:
         elif self.__lexer.token.type == TokenTypes.IDENTIFIER:
             get_currency2 = self.parse_get_currency()
             self.__lexer.get_next_token()
-        print("uuuuuuuuuuuuu")
-        print(self.__lexer.token.type)
         return PrimaryExpr(minus=minus, currency1=currency1, get_currency1=get_currency1, number=number, _id=_id,
                            parenth_expr=parenth_expr, function_call=function_call, currency2=currency2,
                            get_currency2=get_currency2)
