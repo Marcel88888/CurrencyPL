@@ -280,14 +280,12 @@ class Parser:
             return Condition(and_conds)
         return None
 
-    # TODO test
     # ONE TOKEN MORE (WHILE)
     def parse_and_cond(self):  # equalityCond, { andOp, equalityCond } ;
         equality_conds = []
         equality_cond = self.parse_equality_cond()
         if equality_cond is not None:
             equality_conds.append(equality_cond)
-            self.__lexer.get_next_token()
             while self.__lexer.token.type == TokenTypes.AND:
                 self.__lexer.get_next_token()
                 equality_cond = self.parse_equality_cond()
@@ -308,7 +306,6 @@ class Parser:
                 self.__lexer.get_next_token()
                 relational_cond2 = self.parse_relational_cond()
                 if relational_cond2 is not None:
-                    self.__lexer.get_next_token()
                     return EqualityCond(relational_cond1, equal_op, relational_cond2)
                 raise _SyntaxError(self.__lexer.line, self.__lexer.column)
             return EqualityCond(relational_cond1)
