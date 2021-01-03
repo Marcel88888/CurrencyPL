@@ -225,19 +225,14 @@ class Parser:
             raise _SyntaxError(self.__lexer.line, self.__lexer.column)
         return None
 
-    # TODO test
     def parse_assign_statement(self, _id):  # id, assignmentOp, expression, “;” ;
-        if self.__lexer.token.type == TokenTypes.IDENTIFIER:
-            _id = self.__lexer.token.value
+        if self.__lexer.token.type == TokenTypes.ASSIGNMENT:
             self.__lexer.get_next_token()
-            if self.__lexer.token.type == TokenTypes.ASSIGNMENT:
-                self.__lexer.get_next_token()
-                expression = self.parse_expression()
-                if expression is not None:
-                    if self.__lexer.token.type == TokenTypes.SEMICOLON:
-                        return AssignStatement(_id, expression)
-            raise _SyntaxError(self.__lexer.line, self.__lexer.column)
-        return None
+            expression = self.parse_expression()
+            if expression is not None:
+                if self.__lexer.token.type == TokenTypes.SEMICOLON:
+                    return AssignStatement(_id, expression)
+        raise _SyntaxError(self.__lexer.line, self.__lexer.column)
 
     # TODO test
     def parse_function_call(self, _id):  # id, “(“, arguments, “)”, “;” ;

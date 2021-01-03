@@ -33,21 +33,28 @@ def test_signature_without_type():
 def test_parameters():
     parser = create_parser("dec a, cur b, dec var")
     parameters = parser.parse_parameters()
-
     assert parameters.signatures[0].type == TokenTypes.DECIMAL
     assert parameters.signatures[0].id == 'a'
-
     assert parameters.signatures[1].type == TokenTypes.CURRENCY
     assert parameters.signatures[1].id == 'b'
-
     assert parameters.signatures[2].type == TokenTypes.DECIMAL
     assert parameters.signatures[2].id == 'var'
+
+
+# def test_arguments():  # [ expression { “,”, expression } ] ;
+#     parser = create_parser("a+b, c/d, e")
 
 
 def test_incorrect_parameters():
     parser = create_parser("dec a, b")
     with pytest.raises(_SyntaxError):
         parser.parse_parameters()
+
+
+def test_assign_statement():  # id, assignmentOp, expression, “;” ;
+    parser = create_parser("a = b + c;")
+    assign_statement = parser.parse_assign_statement_or_function_call()
+    assert assign_statement is not None
 
     # ------------------------------------CONDITIONS------------------------------------------------------
 
