@@ -164,6 +164,27 @@ def test_primary_expr7():  # def __init__(self, minus=False, currency1=None, get
     # ------------------------------------CONDITIONS------------------------------------------------------
 
 
+def test_condition():  # andCond, { orOp, andCond } ;
+    parser = create_parser("a==b & c!=d | e<=f")
+    condition = parser.parse_condition()
+    assert condition is not None
+    assert condition.and_conds[0].equality_conds[0].relational_cond1.primary_cond1.expression.multipl_exprs[0].primary_exprs[0].id \
+           == 'a'
+    assert condition.and_conds[0].equality_conds[0].equal_op == TokenTypes.EQUAL
+    assert condition.and_conds[0].equality_conds[0].relational_cond2.primary_cond1.expression.multipl_exprs[0].primary_exprs[0].id \
+           == 'b'
+    assert condition.and_conds[0].equality_conds[1].relational_cond1.primary_cond1.expression.multipl_exprs[0].primary_exprs[0].id \
+           == 'c'
+    assert condition.and_conds[0].equality_conds[1].equal_op == TokenTypes.NOT_EQUAL
+    assert condition.and_conds[0].equality_conds[1].relational_cond2.primary_cond1.expression.multipl_exprs[0].primary_exprs[0].id \
+           == 'd'
+    assert condition.and_conds[1].equality_conds[0].relational_cond1.primary_cond1.expression.multipl_exprs[0].primary_exprs[0].id \
+           == 'e'
+    assert condition.and_conds[1].equality_conds[0].relational_cond1.relation_op == TokenTypes.LESS_OR_EQUAL
+    assert condition.and_conds[1].equality_conds[0].relational_cond1.primary_cond2.expression.multipl_exprs[0].primary_exprs[0].id \
+           == 'f'
+
+
 def test_and_cond():  # equalityCond, { andOp, equalityCond } ;
     parser = create_parser("a==b & c!=d")
     and_cond = parser.parse_and_cond()

@@ -291,7 +291,6 @@ class Parser:
                 equality_cond = self.parse_equality_cond()
                 if equality_cond is not None:
                     equality_conds.append(equality_cond)
-                    self.__lexer.get_next_token()
                 else:
                     raise _SyntaxError(self.__lexer.line, self.__lexer.column)
             return AndCond(equality_conds)
