@@ -77,15 +77,17 @@ class AndCond:  # equalityCond, { andOp, equalityCond } ;
 
 
 class EqualityCond:  # relationalCond, [ equalOp, relationalCond ] ;
-    def __init__(self, relational_conds, equal_op=None):
-        self.relational_conds = relational_conds
+    def __init__(self, relational_cond1, equal_op=None, relational_cond2=None):
+        self.relational_cond1 = relational_cond1
         self.equal_op = equal_op
+        self.relational_cond2 = relational_cond2
 
 
 class RelationalCond:  # primaryCond, [ relationOp, primaryCond ];
-    def __init__(self, primary_conds, relation_op):
-        self.primary_conds = primary_conds
+    def __init__(self, primary_cond1, relation_op=None, primary_cond2=None):
+        self.primary_cond1 = primary_cond1
         self.relation_op = relation_op
+        self.primary_cond2 = primary_cond2
 
 
 class PrimaryCond:  # [ unaryOp ], ( parenthCond | expression ) ;

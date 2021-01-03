@@ -299,40 +299,34 @@ class Parser:
             return AndCond(equality_conds)
         return None
 
-    # TODO test
     # ONE TOKEN MORE
     def parse_equality_cond(self):  # relationalCond, [ equalOp, relationalCond ] ;
         relational_cond1 = self.parse_relational_cond()
         if relational_cond1 is not None:
-            self.__lexer.get_next_token()
             if self.__lexer.token.type == TokenTypes.EQUAL or self.__lexer.token.type == TokenTypes.NOT_EQUAL:
                 equal_op = self.__lexer.token.type
                 self.__lexer.get_next_token()
                 relational_cond2 = self.parse_relational_cond()
                 if relational_cond2 is not None:
-                    relational_conds = relational_cond1, relational_cond2
                     self.__lexer.get_next_token()
-                    return EqualityCond(relational_conds, equal_op)
+                    return EqualityCond(relational_cond1, equal_op, relational_cond2)
                 raise _SyntaxError(self.__lexer.line, self.__lexer.column)
             return EqualityCond(relational_cond1)
         return None
 
-    # TODO test
     # ONE TOKEN MORE
     def parse_relational_cond(self):  # primaryCond, [ relationOp, primaryCond ];
         primary_cond1 = self.parse_primary_cond()
         if primary_cond1 is not None:
-            relation_op = None
             if self.__lexer.token.type in relation_ops:
                 relation_op = self.__lexer.token.type
                 self.__lexer.get_next_token()
                 primary_cond2 = self.parse_primary_cond()
                 if primary_cond2 is not None:
-                    primary_conds = primary_cond1, primary_cond2
                     self.__lexer.get_next_token()
-                    return RelationalCond(primary_conds, relation_op)
+                    return RelationalCond(primary_cond1, relation_op, primary_cond2)
                 raise _SyntaxError(self.__lexer.line, self.__lexer.column)
-            return RelationalCond(primary_cond1, relation_op)
+            return RelationalCond(primary_cond1)
         return None
 
     # ONE TOKEN MORE
@@ -374,7 +368,6 @@ class Parser:
                 multipl_expr = self.parse_multipl_expr()
                 if multipl_expr is not None:
                     multipl_exprs.append(multipl_expr)
-                    self.__lexer.get_next_token()
                 else:
                     raise _SyntaxError(self.__lexer.line, self.__lexer.column)
             return Expression(multipl_exprs, additive_op)
@@ -447,7 +440,6 @@ class Parser:
                            parenth_expr=parenth_expr, function_call=function_call, currency2=currency2,
                            get_currency2=get_currency2)
 
-    # TODO test
     def parse_parenth_expr(self):  # “(”, expression, “)” ;
         if self.__lexer.token.type == TokenTypes.OP_BRACKET:
             self.__lexer.get_next_token()

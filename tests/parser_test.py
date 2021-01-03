@@ -176,17 +176,23 @@ def test_primary_expr7():  # def __init__(self, minus=False, currency1=None, get
     assert primary_expr.currency2 == 'usd'
     assert primary_expr.get_currency2 is None
 
+    # ------------------CONDITIONS------------------
 
-# def test_equality_cond():  # relationalCond, [ equalOp, relationalCond ] ;
-#
+
+def test_equality_cond():  # relationalCond, [ equalOp, relationalCond ] ;
+    parser = create_parser("a != b")
+    equality_cond = parser.parse_equality_cond()
+    assert equality_cond.relational_cond1.primary_cond1.expression.multipl_exprs[0].primary_exprs[0].id == 'a'
+    assert equality_cond.equal_op == TokenTypes.NOT_EQUAL
+    assert equality_cond.relational_cond2.primary_cond1.expression.multipl_exprs[0].primary_exprs[0].id == 'b'
 
 
 def test_relational_cond():  # primaryCond, [ relationOp, primaryCond ];
     parser = create_parser("a > b")
     relational_cond = parser.parse_relational_cond()
-    assert relational_cond.primary_conds[0].expression.multipl_exprs[0].primary_exprs[0].id == 'a'
+    assert relational_cond.primary_cond1.expression.multipl_exprs[0].primary_exprs[0].id == 'a'
     assert relational_cond.relation_op == TokenTypes.GREATER_THAN
-    assert relational_cond.primary_conds[1].expression.multipl_exprs[0].primary_exprs[0].id == 'b'
+    assert relational_cond.primary_cond2.expression.multipl_exprs[0].primary_exprs[0].id == 'b'
 
 
 def test_primary_cond():  # [ unaryOp ], ( parenthCond | expression ) ;
@@ -197,13 +203,7 @@ def test_primary_cond():  # [ unaryOp ], ( parenthCond | expression ) ;
     assert primary_cond.expression.additive_op == TokenTypes.PLUS
     assert primary_cond.expression.multipl_exprs[1].primary_exprs[0].id == 'b'
 
-
-def test_multipl_expr():  # primaryExpr, { multiplOp, primaryExpr } ;
-    parser = create_parser("a * 5")
-    multipl_expr = parser.parse_multipl_expr()
-    assert multipl_expr.primary_exprs[0].id == 'a'
-    assert multipl_expr.multipl_op == TokenTypes.MULTIPLY
-    assert multipl_expr.primary_exprs[1].number == 5
+    # ------------------EXPRESSIONS------------------
 
 
 def test_expression():  # multiplExpr, { additiveOp, multiplExpr } ;
@@ -216,3 +216,19 @@ def test_expression():  # multiplExpr, { additiveOp, multiplExpr } ;
     assert expression.multipl_exprs[1].primary_exprs[0].id == 'c'
 
 
+def test_multipl_expr():  # primaryExpr, { multiplOp, primaryExpr } ;
+    parser = create_parser("a * 5")
+    multipl_expr = parser.parse_multipl_expr()
+    assert multipl_expr.primary_exprs[0].id == 'a'
+    assert multipl_expr.multipl_op == TokenTypes.MULTIPLY
+    assert multipl_expr.primary_exprs[1].number == 5
+
+
+def test_parenth_expr():
+    parser = create_parser("(a * b + c)")
+    parenth_expr = parser.parse_parenth_expr()
+    assert parenth_expr.expression.multipl_exprs[0].primary_exprs[0].id == 'a'
+    assert parenth_expr.expression.multipl_exprs[0].multipl_op == TokenTypes.MULTIPLY
+    assert parenth_expr.expression.multipl_exprs[0].primary_exprs[1].id == 'b'
+    assert parenth_expr.expression.additive_op == TokenTypes.PLUS
+    assert parenth_expr.expression.multipl_exprs[1].primary_exprs[0].id == 'c'
