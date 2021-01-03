@@ -49,6 +49,111 @@ def test_incorrect_parameters():
     with pytest.raises(_SyntaxError):
         parser.parse_parameters()
 
+    # ------------------------------------CONDITIONS------------------------------------------------------
+
+
+def test_condition():  # andCond, { orOp, andCond } ;
+    parser = create_parser("a==b & c!=d | e<=f")
+    condition = parser.parse_condition()
+    assert condition is not None
+    assert condition.and_conds[0].equality_conds[0].relational_cond1.primary_cond1.expression.multipl_exprs[0].primary_exprs[0].id \
+           == 'a'
+    assert condition.and_conds[0].equality_conds[0].equal_op == TokenTypes.EQUAL
+    assert condition.and_conds[0].equality_conds[0].relational_cond2.primary_cond1.expression.multipl_exprs[0].primary_exprs[0].id \
+           == 'b'
+    assert condition.and_conds[0].equality_conds[1].relational_cond1.primary_cond1.expression.multipl_exprs[0].primary_exprs[0].id \
+           == 'c'
+    assert condition.and_conds[0].equality_conds[1].equal_op == TokenTypes.NOT_EQUAL
+    assert condition.and_conds[0].equality_conds[1].relational_cond2.primary_cond1.expression.multipl_exprs[0].primary_exprs[0].id \
+           == 'd'
+    assert condition.and_conds[1].equality_conds[0].relational_cond1.primary_cond1.expression.multipl_exprs[0].primary_exprs[0].id \
+           == 'e'
+    assert condition.and_conds[1].equality_conds[0].relational_cond1.relation_op == TokenTypes.LESS_OR_EQUAL
+    assert condition.and_conds[1].equality_conds[0].relational_cond1.primary_cond2.expression.multipl_exprs[0].primary_exprs[0].id \
+           == 'f'
+
+
+def test_and_cond():  # equalityCond, { andOp, equalityCond } ;
+    parser = create_parser("a==b & c!=d")
+    and_cond = parser.parse_and_cond()
+    assert and_cond is not None
+    assert and_cond.equality_conds[0].relational_cond1.primary_cond1.expression.multipl_exprs[0].primary_exprs[0].id \
+           == 'a'
+    assert and_cond.equality_conds[0].equal_op == TokenTypes.EQUAL
+    assert and_cond.equality_conds[0].relational_cond2.primary_cond1.expression.multipl_exprs[0].primary_exprs[0].id \
+           == 'b'
+    assert and_cond.equality_conds[1].relational_cond1.primary_cond1.expression.multipl_exprs[0].primary_exprs[0].id \
+           == 'c'
+    assert and_cond.equality_conds[1].equal_op == TokenTypes.NOT_EQUAL
+    assert and_cond.equality_conds[1].relational_cond2.primary_cond1.expression.multipl_exprs[0].primary_exprs[0].id \
+           == 'd'
+
+
+def test_equality_cond():  # relationalCond, [ equalOp, relationalCond ] ;
+    parser = create_parser("a != b")
+    equality_cond = parser.parse_equality_cond()
+    assert equality_cond.relational_cond1.primary_cond1.expression.multipl_exprs[0].primary_exprs[0].id == 'a'
+    assert equality_cond.equal_op == TokenTypes.NOT_EQUAL
+    assert equality_cond.relational_cond2.primary_cond1.expression.multipl_exprs[0].primary_exprs[0].id == 'b'
+
+
+def test_relational_cond():  # primaryCond, [ relationOp, primaryCond ];
+    parser = create_parser("a > b")
+    relational_cond = parser.parse_relational_cond()
+    assert relational_cond.primary_cond1.expression.multipl_exprs[0].primary_exprs[0].id == 'a'
+    assert relational_cond.relation_op == TokenTypes.GREATER_THAN
+    assert relational_cond.primary_cond2.expression.multipl_exprs[0].primary_exprs[0].id == 'b'
+
+
+def test_primary_cond():  # [ unaryOp ], ( parenthCond | expression ) ;
+    parser = create_parser("! a + b")
+    primary_cond = parser.parse_primary_cond()
+    assert primary_cond.unary_op is True
+    assert primary_cond.expression.multipl_exprs[0].primary_exprs[0].id == 'a'
+    assert primary_cond.expression.additive_op == TokenTypes.PLUS
+    assert primary_cond.expression.multipl_exprs[1].primary_exprs[0].id == 'b'
+
+
+def test_parenth_cond():
+    parser = create_parser("(a==b & c!=d | e<=f)")
+    parenth_cond = parser.parse_parenth_cond()
+    assert parenth_cond is not None
+    assert parenth_cond.condition.and_conds[0].equality_conds[0].relational_cond1.primary_cond1.expression.multipl_exprs[0].primary_exprs[
+        0].id == 'a'
+    assert parenth_cond.condition.and_conds[0].equality_conds[0].equal_op == TokenTypes.EQUAL
+    assert parenth_cond.condition.and_conds[0].equality_conds[0].relational_cond2.primary_cond1.expression.multipl_exprs[0].primary_exprs[0].id \
+        == 'b'
+    assert parenth_cond.condition.and_conds[0].equality_conds[1].relational_cond1.primary_cond1.expression.multipl_exprs[0].primary_exprs[0].id \
+           == 'c'
+    assert parenth_cond.condition.and_conds[0].equality_conds[1].equal_op == TokenTypes.NOT_EQUAL
+    assert parenth_cond.condition.and_conds[0].equality_conds[1].relational_cond2.primary_cond1.expression.multipl_exprs[0].primary_exprs[0].id \
+           == 'd'
+    assert parenth_cond.condition.and_conds[1].equality_conds[0].relational_cond1.primary_cond1.expression.multipl_exprs[0].primary_exprs[0].id \
+        == 'e'
+    assert parenth_cond.condition.and_conds[1].equality_conds[0].relational_cond1.relation_op == TokenTypes.LESS_OR_EQUAL
+    assert parenth_cond.condition.and_conds[1].equality_conds[0].relational_cond1.primary_cond2.expression.multipl_exprs[0].primary_exprs[0].id \
+           == 'f'
+
+    # ------------------------------------EXPRESSIONS------------------------------------------------------
+
+
+def test_expression():  # multiplExpr, { additiveOp, multiplExpr } ;
+    parser = create_parser("a * b + c")
+    expression = parser.parse_expression()
+    assert expression.multipl_exprs[0].primary_exprs[0].id == 'a'
+    assert expression.multipl_exprs[0].multipl_op == TokenTypes.MULTIPLY
+    assert expression.multipl_exprs[0].primary_exprs[1].id == 'b'
+    assert expression.additive_op == TokenTypes.PLUS
+    assert expression.multipl_exprs[1].primary_exprs[0].id == 'c'
+
+
+def test_multipl_expr():  # primaryExpr, { multiplOp, primaryExpr } ;
+    parser = create_parser("a * 5")
+    multipl_expr = parser.parse_multipl_expr()
+    assert multipl_expr.primary_exprs[0].id == 'a'
+    assert multipl_expr.multipl_op == TokenTypes.MULTIPLY
+    assert multipl_expr.primary_exprs[1].number == 5
+
 
 def test_primary_expr():  # def __init__(self, minus=False, currency1=None, get_currency1=None, number=None,
     # _id=None, parenth_expr=None, function_call=None, currency2=None, get_currency2=None):
@@ -160,90 +265,6 @@ def test_primary_expr7():  # def __init__(self, minus=False, currency1=None, get
     assert primary_expr.function_call is None
     assert primary_expr.currency2 == 'usd'
     assert primary_expr.get_currency2 is None
-
-    # ------------------------------------CONDITIONS------------------------------------------------------
-
-
-def test_condition():  # andCond, { orOp, andCond } ;
-    parser = create_parser("a==b & c!=d | e<=f")
-    condition = parser.parse_condition()
-    assert condition is not None
-    assert condition.and_conds[0].equality_conds[0].relational_cond1.primary_cond1.expression.multipl_exprs[0].primary_exprs[0].id \
-           == 'a'
-    assert condition.and_conds[0].equality_conds[0].equal_op == TokenTypes.EQUAL
-    assert condition.and_conds[0].equality_conds[0].relational_cond2.primary_cond1.expression.multipl_exprs[0].primary_exprs[0].id \
-           == 'b'
-    assert condition.and_conds[0].equality_conds[1].relational_cond1.primary_cond1.expression.multipl_exprs[0].primary_exprs[0].id \
-           == 'c'
-    assert condition.and_conds[0].equality_conds[1].equal_op == TokenTypes.NOT_EQUAL
-    assert condition.and_conds[0].equality_conds[1].relational_cond2.primary_cond1.expression.multipl_exprs[0].primary_exprs[0].id \
-           == 'd'
-    assert condition.and_conds[1].equality_conds[0].relational_cond1.primary_cond1.expression.multipl_exprs[0].primary_exprs[0].id \
-           == 'e'
-    assert condition.and_conds[1].equality_conds[0].relational_cond1.relation_op == TokenTypes.LESS_OR_EQUAL
-    assert condition.and_conds[1].equality_conds[0].relational_cond1.primary_cond2.expression.multipl_exprs[0].primary_exprs[0].id \
-           == 'f'
-
-
-def test_and_cond():  # equalityCond, { andOp, equalityCond } ;
-    parser = create_parser("a==b & c!=d")
-    and_cond = parser.parse_and_cond()
-    assert and_cond is not None
-    assert and_cond.equality_conds[0].relational_cond1.primary_cond1.expression.multipl_exprs[0].primary_exprs[0].id \
-           == 'a'
-    assert and_cond.equality_conds[0].equal_op == TokenTypes.EQUAL
-    assert and_cond.equality_conds[0].relational_cond2.primary_cond1.expression.multipl_exprs[0].primary_exprs[0].id \
-           == 'b'
-    assert and_cond.equality_conds[1].relational_cond1.primary_cond1.expression.multipl_exprs[0].primary_exprs[0].id \
-           == 'c'
-    assert and_cond.equality_conds[1].equal_op == TokenTypes.NOT_EQUAL
-    assert and_cond.equality_conds[1].relational_cond2.primary_cond1.expression.multipl_exprs[0].primary_exprs[0].id \
-           == 'd'
-
-
-def test_equality_cond():  # relationalCond, [ equalOp, relationalCond ] ;
-    parser = create_parser("a != b")
-    equality_cond = parser.parse_equality_cond()
-    assert equality_cond.relational_cond1.primary_cond1.expression.multipl_exprs[0].primary_exprs[0].id == 'a'
-    assert equality_cond.equal_op == TokenTypes.NOT_EQUAL
-    assert equality_cond.relational_cond2.primary_cond1.expression.multipl_exprs[0].primary_exprs[0].id == 'b'
-
-
-def test_relational_cond():  # primaryCond, [ relationOp, primaryCond ];
-    parser = create_parser("a > b")
-    relational_cond = parser.parse_relational_cond()
-    assert relational_cond.primary_cond1.expression.multipl_exprs[0].primary_exprs[0].id == 'a'
-    assert relational_cond.relation_op == TokenTypes.GREATER_THAN
-    assert relational_cond.primary_cond2.expression.multipl_exprs[0].primary_exprs[0].id == 'b'
-
-
-def test_primary_cond():  # [ unaryOp ], ( parenthCond | expression ) ;
-    parser = create_parser("! a + b")
-    primary_cond = parser.parse_primary_cond()
-    assert primary_cond.unary_op is True
-    assert primary_cond.expression.multipl_exprs[0].primary_exprs[0].id == 'a'
-    assert primary_cond.expression.additive_op == TokenTypes.PLUS
-    assert primary_cond.expression.multipl_exprs[1].primary_exprs[0].id == 'b'
-
-    # ------------------------------------EXPRESSIONS------------------------------------------------------
-
-
-def test_expression():  # multiplExpr, { additiveOp, multiplExpr } ;
-    parser = create_parser("a * b + c")
-    expression = parser.parse_expression()
-    assert expression.multipl_exprs[0].primary_exprs[0].id == 'a'
-    assert expression.multipl_exprs[0].multipl_op == TokenTypes.MULTIPLY
-    assert expression.multipl_exprs[0].primary_exprs[1].id == 'b'
-    assert expression.additive_op == TokenTypes.PLUS
-    assert expression.multipl_exprs[1].primary_exprs[0].id == 'c'
-
-
-def test_multipl_expr():  # primaryExpr, { multiplOp, primaryExpr } ;
-    parser = create_parser("a * 5")
-    multipl_expr = parser.parse_multipl_expr()
-    assert multipl_expr.primary_exprs[0].id == 'a'
-    assert multipl_expr.multipl_op == TokenTypes.MULTIPLY
-    assert multipl_expr.primary_exprs[1].number == 5
 
 
 def test_parenth_expr():
