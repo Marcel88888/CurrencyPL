@@ -581,3 +581,29 @@ def test_pln_with_expression():
     lexer.get_next_token()
     assert lexer.token.type == TokenTypes.IDENTIFIER
     assert lexer.token.value == "b"
+
+
+def test_function_call():
+    lexer = create_lexer("calculate(a, b)")
+
+    lexer.get_next_token()
+    assert lexer.token.type == TokenTypes.IDENTIFIER
+    assert lexer.token.value == "calculate"
+
+    lexer.get_next_token()
+    assert lexer.token.type == TokenTypes.OP_BRACKET
+
+    lexer.get_next_token()
+    assert lexer.token.type == TokenTypes.IDENTIFIER
+    assert lexer.token.value == "a"
+
+    lexer.get_next_token()
+    assert lexer.token.type == TokenTypes.COMMA
+
+    lexer.get_next_token()
+    assert lexer.token.type == TokenTypes.IDENTIFIER
+    assert lexer.token.value == "b"
+
+    lexer.get_next_token()
+    assert lexer.token.type == TokenTypes.CL_BRACKET
+

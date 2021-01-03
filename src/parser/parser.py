@@ -73,20 +73,17 @@ class Parser:
             return Parameters(signatures)
         return None
 
-    # TODO test
     # ONE TOKEN MORE (WHILE)
     def parse_arguments(self):  # [ expression { “,”, expression } ] ;
         expressions = []
         expression = self.parse_expression()
         if expression is not None:
             expressions.append(expression)
-            self.__lexer.get_next_token()
             while self.__lexer.token.type == TokenTypes.COMMA:
                 self.__lexer.get_next_token()
                 expression = self.parse_expression()
                 if expression is not None:
                     expressions.append(expression)
-                    self.__lexer.get_next_token()
                 else:
                     raise _SyntaxError(self.__lexer.line, self.__lexer.column)
             return Arguments(expressions)
@@ -105,7 +102,7 @@ class Parser:
 
     # TODO test
     def parse_statement(self):  # ifStatement | whileStatement | returnStatement | initStatement | assignStatement |
-        # printStatement | functionCall ;
+        # printStatement | (functionCall, ";") ;
         statement = self.parse_if_statement()
         if statement is not None:
             return statement
@@ -232,18 +229,20 @@ class Parser:
             if expression is not None:
                 if self.__lexer.token.type == TokenTypes.SEMICOLON:
                     return AssignStatement(_id, expression)
-        raise _SyntaxError(self.__lexer.line, self.__lexer.column)
+        return None
 
     # TODO test
-    def parse_function_call(self, _id):  # id, “(“, arguments, “)”, “;” ;
+    def parse_function_call(self, _id):  # id, “(“, arguments, “)”;
+        print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+        print(self.__lexer.token.type)
+        print(self.__lexer.token.value)
         if self.__lexer.token.type == TokenTypes.OP_BRACKET:
             self.__lexer.get_next_token()
             arguments = self.parse_arguments()
             if arguments is not None:
                 if self.__lexer.token.type == TokenTypes.CL_BRACKET:
                     self.__lexer.get_next_token()
-                    if self.__lexer.token.type == TokenTypes.SEMICOLON:
-                        return FunctionCall(_id, arguments)
+                    return FunctionCall(_id, arguments)
         raise _SyntaxError(self.__lexer.line, self.__lexer.column)
 
     # TODO test
@@ -387,6 +386,8 @@ class Parser:
         get_currency1 = None
         _id = None
         number = None
+        function_call = None
+        parenth_expr = None
         if self.__lexer.token.type == TokenTypes.MINUS:
             minus = True
             self.__lexer.get_next_token()
@@ -402,20 +403,16 @@ class Parser:
         if self.__lexer.token.type == TokenTypes.NUMBER:
             number = self.__lexer.token.numerical_value
             self.__lexer.get_next_token()
-        elif self.__lexer.token.type == TokenTypes.IDENTIFIER:
-            _id = self.__lexer.token.value
-            self.__lexer.get_next_token()
-        parenth_expr = None
-        function_call = None
-        if number is None and _id is None:
+        # elif self.__lexer.token.type == TokenTypes.IDENTIFIER:
+        #     # _id = self.__lexer.token.value
+        #     function_call = self.parse_function_call(_id)
+        #     if function_call is not None:
+        #         _id = None
+        #     self.__lexer.get_next_token()
+        if number is None and _id is None and function_call is None:
             parenth_expr = self.parse_parenth_expr()
             if parenth_expr is None:
-                if self.__lexer.token.type == TokenTypes.IDENTIFIER:
-                    _id = self.__lexer.token.value
-                    self.__lexer.get_next_token()
-                    function_call = self.parse_function_call(_id)
-                else:
-                    raise _SyntaxError(self.__lexer.line, self.__lexer.column)
+                raise _SyntaxError(self.__lexer.line, self.__lexer.column)
         currency2 = None
         get_currency2 = None
         if self.__lexer.token.type == TokenTypes.CURRENCY_TYPE:

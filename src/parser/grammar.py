@@ -5,7 +5,7 @@ class FunctionDef:  # signature, “(”, parameters, “)”, “{“, block, �
         self.block = block
 
 
-class FunctionCall:  # id, “(“, arguments, “)”, “;” ;
+class FunctionCall:  # id, “(“, arguments, “)”;
     def __init__(self, _id, arguments):
         self.id = _id
         self.arguments = arguments

@@ -41,8 +41,30 @@ def test_parameters():
     assert parameters.signatures[2].id == 'var'
 
 
-# def test_arguments():  # [ expression { “,”, expression } ] ;
-#     parser = create_parser("a+b, c/d, e")
+def test_arguments():  # [ expression { “,”, expression } ] ;
+    parser = create_parser("a-b, c/d, e")
+    arguments = parser.parse_arguments()
+    assert arguments is not None
+    assert arguments.expressions[0].multipl_exprs[0].primary_exprs[0].id == 'a'
+    assert arguments.expressions[0].additive_op == TokenTypes.MINUS
+    assert arguments.expressions[0].multipl_exprs[1].primary_exprs[0].id == 'b'
+    assert arguments.expressions[1].multipl_exprs[0].primary_exprs[0].id == 'c'
+    assert arguments.expressions[1].multipl_exprs[0].multipl_op == TokenTypes.DIVIDE
+    assert arguments.expressions[1].multipl_exprs[0].primary_exprs[1].id == 'd'
+    assert arguments.expressions[2].multipl_exprs[0].primary_exprs[0].id == 'e'
+
+
+def test_arguments2():  # [ expression { “,”, expression } ] ;
+    parser = create_parser("a-b, c/d, calculate(e, f)")
+    arguments = parser.parse_arguments()
+    assert arguments is not None
+    assert arguments.expressions[0].multipl_exprs[0].primary_exprs[0].id == 'a'
+    assert arguments.expressions[0].additive_op == TokenTypes.MINUS
+    assert arguments.expressions[0].multipl_exprs[1].primary_exprs[0].id == 'b'
+    assert arguments.expressions[1].multipl_exprs[0].primary_exprs[0].id == 'c'
+    assert arguments.expressions[1].multipl_exprs[0].multipl_op == TokenTypes.DIVIDE
+    assert arguments.expressions[1].multipl_exprs[0].primary_exprs[1].id == 'd'
+    # TODO assert arguments.expressions[2].multipl_exprs[0].primary_exprs[0].function_call is not None
 
 
 def test_incorrect_parameters():
@@ -55,6 +77,20 @@ def test_assign_statement():  # id, assignmentOp, expression, “;” ;
     parser = create_parser("a = b + c;")
     assign_statement = parser.parse_assign_statement_or_function_call()
     assert assign_statement is not None
+
+
+def test_function_call():  # id, “(“, arguments, “)”, “;” ;
+    parser = create_parser("calculate(a-b, c/d, e)")
+    function_call = parser.parse_assign_statement_or_function_call()
+    assert function_call is not None
+    assert function_call.id == 'calculate'
+    assert function_call.arguments.expressions[0].multipl_exprs[0].primary_exprs[0].id == 'a'
+    assert function_call.arguments.expressions[0].additive_op == TokenTypes.MINUS
+    assert function_call.arguments.expressions[0].multipl_exprs[1].primary_exprs[0].id == 'b'
+    assert function_call.arguments.expressions[1].multipl_exprs[0].primary_exprs[0].id == 'c'
+    assert function_call.arguments.expressions[1].multipl_exprs[0].multipl_op == TokenTypes.DIVIDE
+    assert function_call.arguments.expressions[1].multipl_exprs[0].primary_exprs[1].id == 'd'
+    assert function_call.arguments.expressions[2].multipl_exprs[0].primary_exprs[0].id == 'e'
 
     # ------------------------------------CONDITIONS------------------------------------------------------
 
@@ -271,6 +307,23 @@ def test_primary_expr7():  # def __init__(self, minus=False, currency1=None, get
     assert primary_expr.parenth_expr is None
     assert primary_expr.function_call is None
     assert primary_expr.currency2 == 'usd'
+    assert primary_expr.get_currency2 is None
+
+
+def test_primary_expr8():  # def __init__(self, minus=False, currency1=None, get_currency1=None, number=None,
+    # _id=None, parenth_expr=None, function_call=None, currency2=None, get_currency2=None):
+    parser = create_parser("usd calculate(a, b)")
+    primary_expr = parser.parse_primary_expr()
+    assert primary_expr is not None
+    assert primary_expr.minus is False
+    assert primary_expr.currency1 == 'usd'
+    assert primary_expr.get_currency1 is None
+    assert primary_expr.number is None
+    assert primary_expr.id is None
+    assert primary_expr.parenth_expr is None
+    assert primary_expr.function_call.id == 'calculate'
+
+    assert primary_expr.currency2 is None
     assert primary_expr.get_currency2 is None
 
 
