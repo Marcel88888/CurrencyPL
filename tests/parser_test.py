@@ -64,7 +64,9 @@ def test_arguments2():  # [ expression { “,”, expression } ] ;
     assert arguments.expressions[1].multipl_exprs[0].primary_exprs[0].id == 'c'
     assert arguments.expressions[1].multipl_exprs[0].multipl_op == TokenTypes.DIVIDE
     assert arguments.expressions[1].multipl_exprs[0].primary_exprs[1].id == 'd'
-    # TODO assert arguments.expressions[2].multipl_exprs[0].primary_exprs[0].function_call is not None
+    assert arguments.expressions[2].multipl_exprs[0].primary_exprs[0].function_call is not None
+    assert arguments.expressions[2].multipl_exprs[0].primary_exprs[0].function_call.arguments.expressions[0].multipl_exprs[0].primary_exprs[0].id == 'e'
+    assert arguments.expressions[2].multipl_exprs[0].primary_exprs[0].function_call.arguments.expressions[1].multipl_exprs[0].primary_exprs[0].id == 'f'
 
 
 def test_incorrect_parameters():
@@ -322,7 +324,6 @@ def test_primary_expr8():  # def __init__(self, minus=False, currency1=None, get
     assert primary_expr.id is None
     assert primary_expr.parenth_expr is None
     assert primary_expr.function_call.id == 'calculate'
-
     assert primary_expr.currency2 is None
     assert primary_expr.get_currency2 is None
 
@@ -339,9 +340,27 @@ def test_primary_expr9():  # def __init__(self, minus=False, currency1=None, get
     assert primary_expr.id is None
     assert primary_expr.parenth_expr is None
     assert primary_expr.function_call.id == 'calculate'
-
     assert primary_expr.currency2 is None
     assert primary_expr.get_currency2.id == 'b'
+
+
+def test_primary_expr10():  # def __init__(self, minus=False, currency1=None, get_currency1=None, number=None,
+    # _id=None, parenth_expr=None, function_call=None, currency2=None, get_currency2=None):
+    parser = create_parser("calculate(a, b)")
+    primary_expr = parser.parse_primary_expr()
+    assert primary_expr is not None
+    assert primary_expr.minus is False
+    assert primary_expr.currency1 is None
+    assert primary_expr.get_currency1 is None
+    assert primary_expr.number is None
+    assert primary_expr.id is None
+    assert primary_expr.parenth_expr is None
+    assert primary_expr.function_call is not None
+    assert primary_expr.function_call.id == 'calculate'
+    assert primary_expr.function_call.arguments.expressions[0].multipl_exprs[0].primary_exprs[0].id == 'a'
+    assert primary_expr.function_call.arguments.expressions[1].multipl_exprs[0].primary_exprs[0].id == 'b'
+    assert primary_expr.currency2 is None
+    assert primary_expr.get_currency2 is None
 
 
 def test_parenth_expr():

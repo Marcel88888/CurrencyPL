@@ -374,108 +374,6 @@ class Parser:
     # TODO test
     # ONE TOKEN MORE
     def parse_primary_expr(self):  # [ “-” ], [currency | getCurrency], ( number | id | parenthExpr | functionCall ),
-        # [currency | getCurrency] ;
-        # minus = False
-        # currency1 = None
-        # get_currency1 = None
-        # number = None
-        # _id = None
-        # parenth_expr = None
-        # function_call = None
-        # currency2 = None
-        # get_currency2 = None
-        # if self.__lexer.token.type == TokenTypes.MINUS:
-        #     minus = True
-        #     self.__lexer.get_next_token()
-        # if self.__lexer.token.type == TokenTypes.CURRENCY_TYPE:
-        #     currency1 = self.__lexer.token.value
-        #     self.__lexer.get_next_token()
-        # elif self.__lexer.token.type == TokenTypes.IDENTIFIER:
-        #     _id = self.__lexer.token.value
-        #     get_currency1 = self.parse_get_currency()
-        #     if get_currency1:
-        #         _id = None
-        #         self.__lexer.get_next_token()
-        #         if self.__lexer.token.type == TokenTypes.IDENTIFIER:
-        #             fc_id = self.__lexer.token.value
-        #             function_call = self.parse_function_call(fc_id)
-        #             if not function_call:
-        #                 _id = fc_id
-        #         elif self.__lexer.token.type == TokenTypes.NUMBER:
-        #             number = self.__lexer.token.numerical_value
-        #             self.__lexer.get_next_token()
-        #         else:
-        #             parenth_expr = self.parse_parenth_expr()
-        #             if not parenth_expr:
-        #                 raise _SyntaxError(self.__lexer.line, self.__lexer.column)
-        #     else:
-        #         function_call = self.parse_function_call(_id)
-        #         if function_call:
-        #             _id = None
-        # elif self.__lexer.token.type == TokenTypes.NUMBER:
-        #     number = self.__lexer.token.numerical_value
-        #     self.__lexer.get_next_token()
-        # else:
-        #     parenth_expr = self.parse_parenth_expr()
-        #     self.__lexer.get_next_token()
-        #     if not parenth_expr:
-        #         raise _SyntaxError(self.__lexer.line, self.__lexer.column)
-        # if self.__lexer.token.type == TokenTypes.CURRENCY_TYPE:
-        #     currency2 = self.__lexer.token.value
-        #     self.__lexer.get_next_token()
-        # elif self.__lexer.token.type == TokenTypes.IDENTIFIER:
-        #     get_currency2 = self.parse_get_currency()
-        #     self.__lexer.get_next_token()
-        # return PrimaryExpr(minus=minus, currency1=currency1, get_currency1=get_currency1, number=number, _id=_id,
-        #                    parenth_expr=parenth_expr, function_call=function_call, currency2=currency2,
-        #                    get_currency2=get_currency2)
-
-        # minus = False
-        # currency1 = None
-        # get_currency1 = None
-        # _id = None
-        # number = None
-        # if self.__lexer.token.type == TokenTypes.MINUS:
-        #     minus = True
-        #     self.__lexer.get_next_token()
-        # if self.__lexer.token.type == TokenTypes.CURRENCY_TYPE:
-        #     currency1 = self.__lexer.token.value
-        #     self.__lexer.get_next_token()
-        # elif self.__lexer.token.type == TokenTypes.IDENTIFIER:
-        #     _id = self.__lexer.token.value
-        #     get_currency1 = self.parse_get_currency()
-        #     if get_currency1:
-        #         _id = None
-        #         self.__lexer.get_next_token()
-        # if self.__lexer.token.type == TokenTypes.NUMBER:
-        #     number = self.__lexer.token.numerical_value
-        #     self.__lexer.get_next_token()
-        # elif self.__lexer.token.type == TokenTypes.IDENTIFIER:
-        #     _id = self.__lexer.token.value
-        #     self.__lexer.get_next_token()
-        # parenth_expr = None
-        # function_call = None
-        # if number is None and _id is None:
-        #     parenth_expr = self.parse_parenth_expr()
-        #     if not parenth_expr:
-        #         if self.__lexer.token.type == TokenTypes.IDENTIFIER:
-        #             _id = self.__lexer.token.value
-        #             self.__lexer.get_next_token()
-        #             function_call = self.parse_function_call(_id)
-        #         else:
-        #             raise _SyntaxError(self.__lexer.line, self.__lexer.column)
-        # currency2 = None
-        # get_currency2 = None
-        # if self.__lexer.token.type == TokenTypes.CURRENCY_TYPE:
-        #     currency2 = self.__lexer.token.value
-        #     self.__lexer.get_next_token()
-        # elif self.__lexer.token.type == TokenTypes.IDENTIFIER:
-        #     get_currency2 = self.parse_get_currency()
-        #     self.__lexer.get_next_token()
-        # return PrimaryExpr(minus=minus, currency1=currency1, get_currency1=get_currency1, number=number, _id=_id,
-        #                    parenth_expr=parenth_expr, function_call=function_call, currency2=currency2,
-        #                    get_currency2=get_currency2)
-
         minus = False
         currency1 = None
         get_currency1 = None
@@ -495,6 +393,9 @@ class Parser:
             if get_currency1:
                 _id = None
                 self.__lexer.get_next_token()
+            function_call = self.parse_function_call(_id)
+            if function_call:
+                _id = None
         if self.__lexer.token.type == TokenTypes.NUMBER:
             number = self.__lexer.token.numerical_value
             self.__lexer.get_next_token()
