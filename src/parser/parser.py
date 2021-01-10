@@ -22,7 +22,6 @@ class Parser:
             function_def = self.parse_function_def()
         self.program = Program(function_defs)
 
-    # TODO test
     def parse_function_def(self):  # signature, “(”, parameters, “)”, “{“, block, “}” ;
         signature = self.parse_signature()
         if signature:
@@ -37,7 +36,6 @@ class Parser:
                             self.__lexer.get_next_token()
                             block = self.parse_block()
                             if block:
-                                self.__lexer.get_next_token()
                                 if self.__lexer.token.type == TokenTypes.CL_CURLY_BRACKET:
                                     return FunctionDef(signature, parameters, block)
             raise _SyntaxError(self.__lexer.line, self.__lexer.column)
@@ -307,6 +305,7 @@ class Parser:
             return RelationalCond(primary_cond1)
         return None
 
+    # TODO test with parenth_expr
     # ONE TOKEN MORE
     def parse_primary_cond(self):  # [ unaryOp ], ( parenthCond | expression ) ;
         unary_op = False
@@ -316,10 +315,10 @@ class Parser:
         parenth_cond = self.parse_parenth_cond()
         if parenth_cond:
             self.__lexer.get_next_token()
-            return PrimaryCond(unary_op=unary_op, parenth_cond=parenth_cond)
+            return PrimaryCond(unary_op, parenth_cond=parenth_cond)
         expression = self.parse_expression()
         if expression:
-            return PrimaryCond(unary_op=unary_op, expression=expression)
+            return PrimaryCond(unary_op, expression=expression)
         raise _SyntaxError(self.__lexer.line, self.__lexer.column)
 
     def parse_parenth_cond(self):  # “(“, condition, “)” ;
@@ -401,7 +400,8 @@ class Parser:
             function_call = self.parse_function_call(_id)
             if function_call:
                 _id = None
-        if not number and not _id and not function_call:
+        if number is None and not _id and not function_call:  # "is None" because number can be 0 and then "if not
+            # number" is True
             parenth_expr = self.parse_parenth_expr()
             if not parenth_expr:
                 return None
