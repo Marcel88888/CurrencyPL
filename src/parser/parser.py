@@ -165,7 +165,6 @@ class Parser:
             raise _SyntaxError(self.__lexer.line, self.__lexer.column)
         return None
 
-    # TODO test
     def parse_init_statement(self):  # signature, [ assignmentOp, expression ], “;” ;
         signature = self.parse_signature()
         if signature:

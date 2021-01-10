@@ -132,6 +132,59 @@ def test_return_statement2():
     assert return_statement.expression.multipl_exprs[1].primary_exprs[0].id == 'b'
 
 
+def test_init_statement():  # signature, [ assignmentOp, expression ], “;” ;
+    parser = create_parser("dec a;")
+    init_statement = parser.parse_init_statement()
+    assert init_statement is not None
+    assert init_statement.signature.type == TokenTypes.DECIMAL
+    assert init_statement.signature.id == 'a'
+
+
+def test_init_statement2():  # signature, [ assignmentOp, expression ], “;” ;
+    parser = create_parser("dec a = b * c;")
+    init_statement = parser.parse_init_statement()
+    assert init_statement is not None
+    assert init_statement.signature.type == TokenTypes.DECIMAL
+    assert init_statement.signature.id == 'a'
+    assert init_statement.expression.multipl_exprs[0].primary_exprs[0].id == 'b'
+    assert init_statement.expression.multipl_exprs[0].multipl_op == TokenTypes.MULTIPLY
+    assert init_statement.expression.multipl_exprs[0].primary_exprs[1].id == 'c'
+
+
+def test_init_statement3():  # signature, [ assignmentOp, expression ], “;” ;
+    parser = create_parser("cur a = 5 eur;")
+    init_statement = parser.parse_init_statement()
+    assert init_statement is not None
+    assert init_statement.signature.type == TokenTypes.CURRENCY
+    assert init_statement.signature.id == 'a'
+    assert init_statement.expression.multipl_exprs[0].primary_exprs[0].number == 5
+    assert init_statement.expression.multipl_exprs[0].primary_exprs[0].currency2 == 'eur'
+    assert init_statement.expression.multipl_exprs[0].primary_exprs[0].minus is False
+    assert init_statement.expression.multipl_exprs[0].primary_exprs[0].currency1 is None
+    assert init_statement.expression.multipl_exprs[0].primary_exprs[0].get_currency1 is None
+    assert init_statement.expression.multipl_exprs[0].primary_exprs[0].id is None
+    assert init_statement.expression.multipl_exprs[0].primary_exprs[0].parenth_expr is None
+    assert init_statement.expression.multipl_exprs[0].primary_exprs[0].function_call is None
+    assert init_statement.expression.multipl_exprs[0].primary_exprs[0].get_currency2 is None
+
+
+def test_init_statement4():  # signature, [ assignmentOp, expression ], “;” ;
+    parser = create_parser("cur a = b eur;")
+    init_statement = parser.parse_init_statement()
+    assert init_statement is not None
+    assert init_statement.signature.type == TokenTypes.CURRENCY
+    assert init_statement.signature.id == 'a'
+    assert init_statement.expression.multipl_exprs[0].primary_exprs[0].id == 'b'
+    assert init_statement.expression.multipl_exprs[0].primary_exprs[0].currency2 == 'eur'
+    assert init_statement.expression.multipl_exprs[0].primary_exprs[0].minus is False
+    assert init_statement.expression.multipl_exprs[0].primary_exprs[0].currency1 is None
+    assert init_statement.expression.multipl_exprs[0].primary_exprs[0].get_currency1 is None
+    assert init_statement.expression.multipl_exprs[0].primary_exprs[0].number is None
+    assert init_statement.expression.multipl_exprs[0].primary_exprs[0].parenth_expr is None
+    assert init_statement.expression.multipl_exprs[0].primary_exprs[0].function_call is None
+    assert init_statement.expression.multipl_exprs[0].primary_exprs[0].get_currency2 is None
+
+
 def test_assign_statement():  # id, assignmentOp, expression, “;” ;
     parser = create_parser("a = b + c;")
     assign_statement = parser.parse_assign_statement_or_function_call()
