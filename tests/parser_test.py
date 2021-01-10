@@ -41,6 +41,12 @@ def test_parameters():
     assert parameters.signatures[2].id == 'var'
 
 
+def test_incorrect_parameters():
+    parser = create_parser("dec a, b")
+    with pytest.raises(_SyntaxError):
+        parser.parse_parameters()
+
+
 def test_arguments():  # [ expression { “,”, expression } ] ;
     parser = create_parser("a-b, c/d, e")
     arguments = parser.parse_arguments()
@@ -69,16 +75,35 @@ def test_arguments2():  # [ expression { “,”, expression } ] ;
     assert arguments.expressions[2].multipl_exprs[0].primary_exprs[0].function_call.arguments.expressions[1].multipl_exprs[0].primary_exprs[0].id == 'f'
 
 
-def test_incorrect_parameters():
-    parser = create_parser("dec a, b")
-    with pytest.raises(_SyntaxError):
-        parser.parse_parameters()
+def test_block():  # { statement };
+    parser = create_parser("a = b;"
+                           "c = d + e;")
+    block = parser.parse_block()
+    assert block is not None
+    assert block.statements[0].id == 'a'
+    assert block.statements[0].expression.multipl_exprs[0].primary_exprs[0].id == 'b'
+    assert block.statements[1].id == 'c'
+    assert block.statements[1].expression.multipl_exprs[0].primary_exprs[0].id == 'd'
+    assert block.statements[1].expression.additive_op == TokenTypes.PLUS
+    assert block.statements[1].expression.multipl_exprs[1].primary_exprs[0].id == 'e'
+
+
+def test_if_statement():  # “if”, “(”, condition, “)”, “{“, block, “}“ ;
+    parser = create_parser("if (a > b) {"
+                           "a = b;"
+                           "}")
+    if_statement = parser.parse_if_statement()
+    assert if_statement is not None
 
 
 def test_assign_statement():  # id, assignmentOp, expression, “;” ;
     parser = create_parser("a = b + c;")
     assign_statement = parser.parse_assign_statement_or_function_call()
     assert assign_statement is not None
+    assert assign_statement.id == 'a'
+    assert assign_statement.expression.multipl_exprs[0].primary_exprs[0].id == 'b'
+    assert assign_statement.expression.additive_op == TokenTypes.PLUS
+    assert assign_statement.expression.multipl_exprs[1].primary_exprs[0].id == 'c'
 
 
 def test_function_call():  # id, “(“, arguments, “)”, “;” ;

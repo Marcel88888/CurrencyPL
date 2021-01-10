@@ -86,7 +86,6 @@ class Parser:
                     raise _SyntaxError(self.__lexer.line, self.__lexer.column)
         return Arguments(expressions)
 
-    # TODO test
     # ONE TOKEN MORE (WHILE)
     def parse_block(self):  # { statement };
         statements = []
@@ -120,7 +119,6 @@ class Parser:
             return statement
         return None
 
-    # TODO test
     def parse_if_statement(self):  # “if”, “(”, condition, “)”, “{“, block, “}“ ;
         if self.__lexer.token.type == TokenTypes.IF:
             self.__lexer.get_next_token()
@@ -131,9 +129,9 @@ class Parser:
                     if self.__lexer.token.type == TokenTypes.CL_BRACKET:
                         self.__lexer.get_next_token()
                         if self.__lexer.token.type == TokenTypes.OP_CURLY_BRACKET:
+                            self.__lexer.get_next_token()
                             block = self.parse_block()
                             if block:
-                                self.__lexer.get_next_token()
                                 if self.__lexer.token.type == TokenTypes.CL_CURLY_BRACKET:
                                     return IfStatement(condition, block)
             raise _SyntaxError(self.__lexer.line, self.__lexer.column)
