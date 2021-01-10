@@ -96,7 +96,6 @@ class Parser:
             statement = self.parse_statement()
         return Block(statements)
 
-    # TODO test
     def parse_statement(self):  # ifStatement | whileStatement | returnStatement | initStatement | assignStatement |
         # printStatement | (functionCall, ";") ;
         statement = self.parse_if_statement()
@@ -113,6 +112,11 @@ class Parser:
             return statement
         statement = self.parse_assign_statement_or_function_call()
         if statement:
+            if isinstance(statement, FunctionCall):
+                if self.__lexer.token.type == TokenTypes.SEMICOLON:
+                    return statement
+                else:
+                    raise _SyntaxError(self.__lexer.line, self.__lexer.column)
             return statement
         statement = self.parse_print_statement()
         if statement:
@@ -182,7 +186,7 @@ class Parser:
             raise _SyntaxError(self.__lexer.line, self.__lexer.column)
         return None
 
-    def parse_print_statement(self):  # “print”, “(“, printable { “,”, printable }, “)” ;
+    def parse_print_statement(self):  # “print”, “(“, printable { “,”, printable }, “)”, ";" ;
         if self.__lexer.token.type == TokenTypes.PRINT:
             self.__lexer.get_next_token()
             if self.__lexer.token.type == TokenTypes.OP_BRACKET:
@@ -222,7 +226,6 @@ class Parser:
                     return AssignStatement(_id, expression)
         return None
 
-    # TODO test
     def parse_function_call(self, _id):  # id, “(“, arguments, “)”;
         if self.__lexer.token.type == TokenTypes.OP_BRACKET:
             self.__lexer.get_next_token()
@@ -233,7 +236,6 @@ class Parser:
                     return FunctionCall(_id, arguments)
         return None
 
-    # TODO test
     def parse_assign_statement_or_function_call(self):
         if self.__lexer.token.type == TokenTypes.IDENTIFIER:
             _id = self.__lexer.token.value

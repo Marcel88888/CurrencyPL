@@ -61,7 +61,7 @@ class AssignStatement:  # id, assignmentOp, expression, “;” ;
         self.expression = expression
 
 
-class PrintStatement:  # “print”, “(“, printable { “,”, printable }, “)” ;
+class PrintStatement:  # “print”, “(“, printable { “,”, printable }, “)”, ";" ;
     def __init__(self, printables):
         self.printables = printables
 

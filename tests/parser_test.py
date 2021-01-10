@@ -6,6 +6,7 @@ from ..src.lexer.tokens import Tokens
 from ..src.source.currencies_reader import CurrenciesReader
 from ..src.source.source import FileSource
 from ..src.parser.parser import Parser
+from ..src.parser.grammar import *
 from ..src.exceptions.exceptions import _SyntaxError
 
 
@@ -98,6 +99,42 @@ def test_block():  # { statement };
     assert block.statements[1].expression.multipl_exprs[0].primary_exprs[0].id == 'd'
     assert block.statements[1].expression.additive_op == TokenTypes.PLUS
     assert block.statements[1].expression.multipl_exprs[1].primary_exprs[0].id == 'e'
+
+
+def test_statement():  # ifStatement | whileStatement | returnStatement | initStatement | assignStatement |
+# printStatement | (functionCall, ";") ;
+    parser = create_parser("if (a > b) {"
+                           "a = b;"
+                           "}")
+    statement = parser.parse_statement()
+    assert isinstance(statement, IfStatement)
+    parser = create_parser("while (a >= b) {"
+                           "a = a + 1;"
+                           "}")
+    statement = parser.parse_statement()
+    assert isinstance(statement, WhileStatement)
+    parser = create_parser("return a+b;")
+    statement = parser.parse_statement()
+    assert isinstance(statement, ReturnStatement)
+    parser = create_parser("dec a = b * c;")
+    statement = parser.parse_statement()
+    assert isinstance(statement, InitStatement)
+    parser = create_parser("dec a;")
+    statement = parser.parse_statement()
+    assert isinstance(statement, InitStatement)
+    parser = create_parser("a = b + c;")
+    statement = parser.parse_statement()
+    assert isinstance(statement, AssignStatement)
+    parser = create_parser(' print ("result: ", a + b, ","); ')
+    statement = parser.parse_statement()
+    assert isinstance(statement, PrintStatement)
+    parser = create_parser('calculate(a, b);')
+    statement = parser.parse_statement()
+    assert isinstance(statement, FunctionCall)
+    parser = create_parser('calculate(a, b)')
+    with pytest.raises(_SyntaxError):
+        parser.parse_statement()
+
 
 
 def test_if_statement():  # “if”, “(”, condition, “)”, “{“, block, “}“ ;
@@ -197,7 +234,7 @@ def test_init_statement4():  # signature, [ assignmentOp, expression ], “;” 
     assert init_statement.expression.multipl_exprs[0].primary_exprs[0].get_currency2 is None
 
 
-def test_print_statement():  # “print”, “(“, printable { “,”, printable }, “)” ;
+def test_print_statement():  # “print”, “(“, printable { “,”, printable }, “)”, ";" ;
     parser = create_parser(' print ("result: ", a + b, ","); ')
     print_statement = parser.parse_print_statement()
     assert print_statement is not None
@@ -208,7 +245,7 @@ def test_print_statement():  # “print”, “(“, printable { “,”, printa
     assert print_statement.printables[2] == '","'
 
 
-def test_print_statement2():  # “print”, “(“, printable { “,”, printable }, “)” ;
+def test_print_statement2():
     parser = create_parser(' print (a + b, " is result."); ')
     print_statement = parser.parse_print_statement()
     assert print_statement is not None
@@ -219,7 +256,7 @@ def test_print_statement2():  # “print”, “(“, printable { “,”, print
     assert print_statement.printables[1] == '" is result."'
 
 
-def test_print_statement3():  # “print”, “(“, printable { “,”, printable }, “)” ;
+def test_print_statement3():
     parser = create_parser(' print (a + b, " is", " result.", c); ')
     print_statement = parser.parse_print_statement()
     assert print_statement is not None
@@ -232,7 +269,7 @@ def test_print_statement3():  # “print”, “(“, printable { “,”, print
     assert print_statement.printables[3].multipl_exprs[0].primary_exprs[0].id == 'c'
 
 
-def test_print_statement4():  # “print”, “(“, printable { “,”, printable }, “)”, ";" ;
+def test_print_statement4():
     parser = create_parser(' print (a + b, " is", c, " result."); ')
     print_statement = parser.parse_print_statement()
     assert print_statement is not None
