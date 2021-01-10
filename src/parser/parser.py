@@ -89,7 +89,6 @@ class Parser:
         statement = self.parse_statement()
         while statement:
             statements.append(statement)
-            self.__lexer.get_next_token()
             statement = self.parse_statement()
         return Block(statements)
 
@@ -120,7 +119,7 @@ class Parser:
             return statement
         return None
 
-    def parse_if_statement(self):  # “if”, “(”, condition, “)”, “{“, block, “}“ ;
+    def parse_if_statement(self):  # “if”, “(”, condition, “)”, “{“, block, “}“, [“else”, “{”, block, “}” ];
         if self.__lexer.token.type == TokenTypes.IF:
             self.__lexer.get_next_token()
             if self.__lexer.token.type == TokenTypes.OP_BRACKET:
@@ -131,10 +130,21 @@ class Parser:
                         self.__lexer.get_next_token()
                         if self.__lexer.token.type == TokenTypes.OP_CURLY_BRACKET:
                             self.__lexer.get_next_token()
-                            block = self.parse_block()
-                            if block:
+                            block1 = self.parse_block()
+                            if block1:
                                 if self.__lexer.token.type == TokenTypes.CL_CURLY_BRACKET:
-                                    return IfStatement(condition, block)
+                                    self.__lexer.get_next_token()
+                                    if self.__lexer.token.type == TokenTypes.ELSE:
+                                        self.__lexer.get_next_token()
+                                        if self.__lexer.token.type == TokenTypes.OP_CURLY_BRACKET:
+                                            self.__lexer.get_next_token()
+                                            block2 = self.parse_block()
+                                            if block2:
+                                                if self.__lexer.token.type == TokenTypes.CL_CURLY_BRACKET:
+                                                    self.__lexer.get_next_token()
+                                                    return IfStatement(condition, block1, block2)
+                                        raise _SyntaxError(self.__lexer.line, self.__lexer.column)
+                                    return IfStatement(condition, block1)
             raise _SyntaxError(self.__lexer.line, self.__lexer.column)
         return None
 
@@ -152,6 +162,7 @@ class Parser:
                             block = self.parse_block()
                             if block:
                                 if self.__lexer.token.type == TokenTypes.CL_CURLY_BRACKET:
+                                    self.__lexer.get_next_token()
                                     return WhileStatement(condition, block)
             raise _SyntaxError(self.__lexer.line, self.__lexer.column)
         return None
@@ -162,6 +173,7 @@ class Parser:
             expression = self.parse_expression()
             if expression:
                 if self.__lexer.token.type == TokenTypes.SEMICOLON:
+                    self.__lexer.get_next_token()
                     return ReturnStatement(expression)
             raise _SyntaxError(self.__lexer.line, self.__lexer.column)
         return None
@@ -175,10 +187,12 @@ class Parser:
                 expression = self.parse_expression()
                 if expression:
                     if self.__lexer.token.type == TokenTypes.SEMICOLON:
+                        self.__lexer.get_next_token()
                         return InitStatement(signature, expression)
                 raise _SyntaxError(self.__lexer.line, self.__lexer.column)
             else:
                 if self.__lexer.token.type == TokenTypes.SEMICOLON:
+                    self.__lexer.get_next_token()
                     return InitStatement(signature)
             raise _SyntaxError(self.__lexer.line, self.__lexer.column)
         return None
@@ -210,6 +224,7 @@ class Parser:
                     if self.__lexer.token.type == TokenTypes.CL_BRACKET:
                         self.__lexer.get_next_token()
                         if self.__lexer.token.type == TokenTypes.SEMICOLON:
+                            self.__lexer.get_next_token()
                             return PrintStatement(printables)
             raise _SyntaxError(self.__lexer.line, self.__lexer.column)
         return None
@@ -220,6 +235,7 @@ class Parser:
             expression = self.parse_expression()
             if expression:
                 if self.__lexer.token.type == TokenTypes.SEMICOLON:
+                    self.__lexer.get_next_token()
                     return AssignStatement(_id, expression)
         return None
 
@@ -412,9 +428,8 @@ class Parser:
         elif self.__lexer.token.type == TokenTypes.IDENTIFIER:
             get_currency2 = self.parse_get_currency()
             self.__lexer.get_next_token()
-        return PrimaryExpr(minus=minus, currency1=currency1, get_currency1=get_currency1, number=number, _id=_id,
-                           parenth_expr=parenth_expr, function_call=function_call, currency2=currency2,
-                           get_currency2=get_currency2)
+        return PrimaryExpr(minus, currency1, get_currency1, number, _id, parenth_expr, function_call, currency2,
+                           get_currency2)
 
     # ONE TOKEN MORE
     def parse_parenth_expr(self):  # “(”, expression, “)” ;
@@ -441,3 +456,4 @@ class Parser:
                         if self.__lexer.token.type == TokenTypes.CL_BRACKET:
                             return GetCurrency(_id)
         return None
+

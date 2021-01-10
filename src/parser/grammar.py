@@ -37,10 +37,11 @@ class Block:  # { statement };
         self.statements = statements
 
 
-class IfStatement:  # “if”, “(”, condition, “)”, “{“, block, “}“ ;
-    def __init__(self, condition, block):
+class IfStatement:  # “if”, “(”, condition, “)”, “{“, block, “}“, [“else”, “{”, block, “}” ];
+    def __init__(self, condition, block1, block2=None):
         self.condition = condition
-        self.block = block
+        self.block1 = block1
+        self.block2 = block2
 
 
 class WhileStatement:  # “while”, “(“, condition, “)”, “{“, block, “}“ ;

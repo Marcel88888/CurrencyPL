@@ -66,8 +66,8 @@ def test_function_def():  # signature, “(”, parameters, “)”, “{“, bl
            TokenTypes.GREATER_THAN
     assert function_def.block.statements[1].condition.and_conds[0].equality_conds[
                0].relational_cond1.primary_cond2.expression.multipl_exprs[0].primary_exprs[0].number == 0
-    assert isinstance(function_def.block.statements[1].block.statements[0], PrintStatement)
-    assert function_def.block.statements[1].block.statements[0].printables == ['"greater than 0"']
+    assert isinstance(function_def.block.statements[1].block1.statements[0], PrintStatement)
+    assert function_def.block.statements[1].block1.statements[0].printables == ['"greater than 0"']
     assert isinstance(function_def.block.statements[2], ReturnStatement)
     assert function_def.block.statements[2].expression.multipl_exprs[0].primary_exprs[0].id == 'c'
 
@@ -194,7 +194,7 @@ def test_statement():  # ifStatement | whileStatement | returnStatement | initSt
         parser.parse_statement()
 
 
-def test_if_statement():  # “if”, “(”, condition, “)”, “{“, block, “}“ ;
+def test_if_statement():  # “if”, “(”, condition, “)”, “{“, block, “}“, [“else”, “{”, block, “}” ];
     parser = create_parser("if (a > b) {"
                            "a = b;"
                            "}")
@@ -205,8 +205,40 @@ def test_if_statement():  # “if”, “(”, condition, “)”, “{“, bloc
     assert if_statement.condition.and_conds[0].equality_conds[0].relational_cond1.relation_op == TokenTypes.GREATER_THAN
     assert if_statement.condition.and_conds[0].equality_conds[
                0].relational_cond1.primary_cond2.expression.multipl_exprs[0].primary_exprs[0].id == 'b'
-    assert if_statement.block.statements[0].id == 'a'
-    assert if_statement.block.statements[0].expression.multipl_exprs[0].primary_exprs[0].id == 'b'
+    assert if_statement.block1.statements[0].id == 'a'
+    assert if_statement.block1.statements[0].expression.multipl_exprs[0].primary_exprs[0].id == 'b'
+    assert if_statement.block2 is None
+
+
+def test_if_statement_with_else():  # “if”, “(”, condition, “)”, “{“, block, “}“, [“else”, “{”, block, “}” ];
+    parser = create_parser("if (a > b) {"
+                           "a = b;"
+                           "}"
+                           "else {"
+                           "b = a;"
+                           "}")
+    if_statement = parser.parse_if_statement()
+    assert if_statement is not None
+    assert if_statement.condition.and_conds[0].equality_conds[
+               0].relational_cond1.primary_cond1.expression.multipl_exprs[0].primary_exprs[0].id == 'a'
+    assert if_statement.condition.and_conds[0].equality_conds[0].relational_cond1.relation_op == TokenTypes.GREATER_THAN
+    assert if_statement.condition.and_conds[0].equality_conds[
+               0].relational_cond1.primary_cond2.expression.multipl_exprs[0].primary_exprs[0].id == 'b'
+    assert if_statement.block1.statements[0].id == 'a'
+    assert if_statement.block1.statements[0].expression.multipl_exprs[0].primary_exprs[0].id == 'b'
+    assert if_statement.block2 is not None
+    assert if_statement.block2.statements[0].id == 'b'
+    assert if_statement.block2.statements[0].expression.multipl_exprs[0].primary_exprs[0].id == 'a'
+
+
+def test_if_statement_with_else_and_no_block():  # “if”, “(”, condition, “)”, “{“, block, “}“,
+    # [“else”, “{”, block, “}” ];
+    parser = create_parser("if (a > b) {"
+                           "a = b;"
+                           "}"
+                           "else;")
+    with pytest.raises(_SyntaxError):
+        parser.parse_if_statement()
 
 
 def test_while_statement():  # “if”, “(”, condition, “)”, “{“, block, “}“ ;
