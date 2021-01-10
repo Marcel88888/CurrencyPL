@@ -17,7 +17,6 @@ class Parser:
         function_def = self.parse_function_def()
         while function_def:
             function_defs.append(function_def)
-            self.__lexer.get_next_token()
             function_def = self.parse_function_def()
         self.program = Program(function_defs)
 
@@ -36,6 +35,7 @@ class Parser:
                             block = self.parse_block()
                             if block:
                                 if self.__lexer.token.type == TokenTypes.CL_CURLY_BRACKET:
+                                    self.__lexer.get_next_token()
                                     return FunctionDef(signature, parameters, block)
             raise _SyntaxError(self.__lexer.line, self.__lexer.column)
         return None
@@ -51,7 +51,6 @@ class Parser:
             raise _SyntaxError(self.__lexer.line, self.__lexer.column)
         return None
 
-    # ONE TOKEN MORE (WHILE)
     def parse_parameters(self):  # [ signature, { “,”, signature } ];
         signatures = []
         signature = self.parse_signature()
@@ -68,7 +67,6 @@ class Parser:
                     raise _SyntaxError(self.__lexer.line, self.__lexer.column)
         return Parameters(signatures)
 
-    # ONE TOKEN MORE (WHILE)
     def parse_arguments(self):  # [ expression { “,”, expression } ] ;
         expressions = []
         expression = self.parse_expression()
@@ -83,7 +81,6 @@ class Parser:
                     raise _SyntaxError(self.__lexer.line, self.__lexer.column)
         return Arguments(expressions)
 
-    # ONE TOKEN MORE (WHILE)
     def parse_block(self):  # { statement };
         statements = []
         statement = self.parse_statement()
@@ -260,7 +257,6 @@ class Parser:
             if statement:
                 return statement
 
-    # ONE TOKEN MORE (WHILE)
     def parse_condition(self):  # andCond, { orOp, andCond } ;
         and_conds = []
         and_cond = self.parse_and_cond()
@@ -276,7 +272,6 @@ class Parser:
             return Condition(and_conds)
         return None
 
-    # ONE TOKEN MORE (WHILE)
     def parse_and_cond(self):  # equalityCond, { andOp, equalityCond } ;
         equality_conds = []
         equality_cond = self.parse_equality_cond()
@@ -292,7 +287,6 @@ class Parser:
             return AndCond(equality_conds)
         return None
 
-    # ONE TOKEN MORE
     def parse_equality_cond(self):  # relationalCond, [ equalOp, relationalCond ] ;
         relational_cond1 = self.parse_relational_cond()
         if relational_cond1:
@@ -306,7 +300,6 @@ class Parser:
             return EqualityCond(relational_cond1)
         return None
 
-    # ONE TOKEN MORE
     def parse_relational_cond(self):  # primaryCond, [ relationOp, primaryCond ];
         primary_cond1 = self.parse_primary_cond()
         if primary_cond1:
@@ -320,8 +313,6 @@ class Parser:
             return RelationalCond(primary_cond1)
         return None
 
-    # TODO test with parenth_expr
-    # ONE TOKEN MORE
     def parse_primary_cond(self):  # [ unaryOp ], ( parenthCond | expression ) ;
         unary_op = False
         if self.__lexer.token.type == TokenTypes.NOT:
@@ -346,7 +337,6 @@ class Parser:
             raise _SyntaxError(self.__lexer.line, self.__lexer.column)
         return None
 
-    # ONE TOKEN MORE (WHILE)
     def parse_expression(self):  # multiplExpr, { additiveOp, multiplExpr } ;
         multipl_exprs = []
         multipl_expr = self.parse_multipl_expr()
@@ -381,7 +371,6 @@ class Parser:
             return MultiplExpr(primary_exprs, multipl_op)
         return None
 
-    # ONE TOKEN MORE
     def parse_primary_expr(self):  # [ “-” ], [currency | getCurrency], ( number | id | parenthExpr | functionCall ),
         minus = False
         currency1 = None
@@ -390,6 +379,7 @@ class Parser:
         number = None
         parenth_expr = None
         function_call = None
+        counter = 0
         if self.__lexer.token.type == TokenTypes.MINUS:
             minus = True
             self.__lexer.get_next_token()
@@ -410,16 +400,25 @@ class Parser:
             number = self.__lexer.token.numerical_value
             self.__lexer.get_next_token()
         elif self.__lexer.token.type == TokenTypes.IDENTIFIER:
-            _id = self.__lexer.token.value
+            _id2 = self.__lexer.token.value
             self.__lexer.get_next_token()
-            function_call = self.parse_function_call(_id)
-            if function_call:
-                _id = None
-        if number is None and not _id and not function_call:  # "is None" because number can be 0 and then "if not
-            # number" is True
+            function_call2 = self.parse_function_call(_id2)
+            if function_call2:
+                _id2 = None
+                function_call = function_call2
+            else:
+                _id = _id2
+        if number is None and not _id and not function_call:  # "is None" with number because number can be 0 and then
+            # "if not number" is True
             parenth_expr = self.parse_parenth_expr()
             if not parenth_expr:
                 return None
+        alternatives = [number, _id, parenth_expr, function_call]
+        for alternative in alternatives:
+            if alternative is not None:
+                counter += 1
+        if counter > 1:
+            raise _SyntaxError(self.__lexer.line, self.__lexer.column)
         currency2 = None
         get_currency2 = None
         if self.__lexer.token.type == TokenTypes.CURRENCY_TYPE:
@@ -431,7 +430,6 @@ class Parser:
         return PrimaryExpr(minus, currency1, get_currency1, number, _id, parenth_expr, function_call, currency2,
                            get_currency2)
 
-    # ONE TOKEN MORE
     def parse_parenth_expr(self):  # “(”, expression, “)” ;
         if self.__lexer.token.type == TokenTypes.OP_BRACKET:
             self.__lexer.get_next_token()

@@ -495,6 +495,7 @@ def test_primary_cond():  # [ unaryOp ], ( parenthCond | expression ) ;
     primary_cond = parser.parse_primary_cond()
     assert primary_cond.unary_op is True
     assert primary_cond.expression.multipl_exprs[0].primary_exprs[0].id == 'a'
+    assert primary_cond.parenth_cond is None
 
 
 def test_primary_cond2():  # [ unaryOp ], ( parenthCond | expression ) ;
@@ -788,6 +789,25 @@ def test_primary_expr13():  # def __init__(self, minus=False, currency1=None, ge
     assert primary_expr.function_call is None
     assert primary_expr.currency2 is None
     assert primary_expr.get_currency2 is None
+
+
+def test_primary_expr_with_error():  # def __init__(self, minus=False, currency1=None, get_currency1=None, number=None,
+    # _id=None, parenth_expr=None, function_call=None, currency2=None, get_currency2=None):
+    parser = create_parser("a 5 eur")
+    with pytest.raises(_SyntaxError):
+        parser.parse_primary_expr()
+
+
+def test_primary_expr_with_error2():
+    parser = create_parser("a calculate(a, b)")
+    with pytest.raises(_SyntaxError):
+        parser.parse_primary_expr()
+
+
+def test_primary_expr_with_error3():
+    parser = create_parser("calculate(x, y) var ")
+    with pytest.raises(_SyntaxError):
+        parser.parse_primary_expr()
 
 
 def test_parenth_expr():
