@@ -19,6 +19,26 @@ def create_parser(source_string):
     return Parser(lexer)
 
 
+def test_program():
+    parser = create_parser('void main() {'
+                           'dec a = 2;'
+                           'dec b = 3;'
+                           'dec result = add(a, b);'
+                           'print(result);'
+                           '}'
+                           ''
+                           'dec add(dec x, dec y) {'
+                           'return x + y;'
+                           '}')
+    parser.parse_program()
+    assert parser.program is not None
+    assert len(parser.program.function_defs) == 2
+    assert parser.program.function_defs[0].signature.type == TokenTypes.VOID
+    assert parser.program.function_defs[0].signature.id == 'main'
+    assert parser.program.function_defs[1].signature.type == TokenTypes.DECIMAL
+    assert parser.program.function_defs[1].signature.id == 'add'
+
+
 def test_function_def():  # signature, “(”, parameters, “)”, “{“, block, “}” ;
     parser = create_parser('dec check(dec a, dec b) {'
                            'dec c = a + b;'
@@ -127,7 +147,8 @@ def test_empty_arguments():
 
 def test_block():  # { statement };
     parser = create_parser("a = b;"
-                           "c = d + e;")
+                           "c = d + e;"
+                           "print(c);")
     block = parser.parse_block()
     assert block is not None
     assert block.statements[0].id == 'a'
@@ -136,6 +157,8 @@ def test_block():  # { statement };
     assert block.statements[1].expression.multipl_exprs[0].primary_exprs[0].id == 'd'
     assert block.statements[1].expression.additive_op == TokenTypes.PLUS
     assert block.statements[1].expression.multipl_exprs[1].primary_exprs[0].id == 'e'
+    assert isinstance(block.statements[2], PrintStatement)
+    assert block.statements[2].printables[0].multipl_exprs[0].primary_exprs[0].id == 'c'
 
 
 def test_statement():  # ifStatement | whileStatement | returnStatement | initStatement | assignStatement |

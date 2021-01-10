@@ -1,7 +1,6 @@
 from ..exceptions.exceptions import _SyntaxError
 from ..lexer.token_types import TokenTypes
 from .grammar import *
-from .program import Program
 
 
 class Parser:
@@ -13,12 +12,12 @@ class Parser:
         self.__relation_ops = [TokenTypes.GREATER_THAN, TokenTypes.LESS_THAN, TokenTypes.GREATER_OR_EQUAL,
                                TokenTypes.LESS_OR_EQUAL]
 
-    # TODO test
     def parse_program(self):
         function_defs = []
         function_def = self.parse_function_def()
         while function_def:
             function_defs.append(function_def)
+            self.__lexer.get_next_token()
             function_def = self.parse_function_def()
         self.program = Program(function_defs)
 

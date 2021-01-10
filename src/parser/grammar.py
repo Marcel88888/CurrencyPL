@@ -1,3 +1,8 @@
+class Program:
+    def __init__(self, function_defs):
+        self.function_defs = function_defs
+
+
 class FunctionDef:  # signature, “(”, parameters, “)”, “{“, block, “}” ;
     def __init__(self, signature, parameters, block):
         self.signature = signature
