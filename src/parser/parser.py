@@ -371,7 +371,6 @@ class Parser:
             return MultiplExpr(primary_exprs, multipl_op)
         return None
 
-    # TODO test
     # ONE TOKEN MORE
     def parse_primary_expr(self):  # [ “-” ], [currency | getCurrency], ( number | id | parenthExpr | functionCall ),
         minus = False
@@ -393,9 +392,10 @@ class Parser:
             if get_currency1:
                 _id = None
                 self.__lexer.get_next_token()
-            function_call = self.parse_function_call(_id)
-            if function_call:
-                _id = None
+            else:
+                function_call = self.parse_function_call(_id)
+                if function_call:
+                    _id = None
         if self.__lexer.token.type == TokenTypes.NUMBER:
             number = self.__lexer.token.numerical_value
             self.__lexer.get_next_token()
@@ -421,12 +421,14 @@ class Parser:
                            parenth_expr=parenth_expr, function_call=function_call, currency2=currency2,
                            get_currency2=get_currency2)
 
+    # ONE TOKEN MORE
     def parse_parenth_expr(self):  # “(”, expression, “)” ;
         if self.__lexer.token.type == TokenTypes.OP_BRACKET:
             self.__lexer.get_next_token()
             expression = self.parse_expression()
             if expression:
                 if self.__lexer.token.type == TokenTypes.CL_BRACKET:
+                    self.__lexer.get_next_token()
                     return ParenthExpr(expression)
             raise _SyntaxError(self.__lexer.line, self.__lexer.column)
         return None
