@@ -54,6 +54,28 @@ def test_identifier3():
         lexer.get_next_token()
 
 
+def test_unary_op_with_identifier():
+    lexer = create_lexer("!a")
+
+    lexer.get_next_token()
+    assert lexer.token.type == TokenTypes.NOT
+
+    lexer.get_next_token()
+    assert lexer.token.type == TokenTypes.IDENTIFIER
+    assert lexer.token.value == 'a'
+
+
+def test_unary_op_with_identifier2():
+    lexer = create_lexer("! a")
+
+    lexer.get_next_token()
+    assert lexer.token.type == TokenTypes.NOT
+
+    lexer.get_next_token()
+    assert lexer.token.type == TokenTypes.IDENTIFIER
+    assert lexer.token.value == 'a'
+
+
 def test_too_long_token():
     file_text = 51 * 'a'
     lexer = create_lexer(file_text)

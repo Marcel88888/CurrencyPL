@@ -102,16 +102,14 @@ class Lexer:
 
     def read_string(self):
         chars = [self.__char]
-        self.__source.move_carr_one_pos()
-        self.__char = self.__source.character
+        self.get_next_char()
         while self.__char != '"':
             chars.append(self.__char)
             if len(chars) > self.__STRING_MAX_LENGTH:
                 raise StringTooLongError(self.__source.line, self.__source.column)
             self.get_next_char()
         chars.append(self.__char)
-        self.__source.move_carr_one_pos()
-        self.__char = self.__source.character
+        self.get_next_char()
         return ''.join(chars)
 
     def try_to_build_single_operator(self):
@@ -124,15 +122,17 @@ class Lexer:
     def try_to_build_double_operator(self):
         for double_operator in Tokens.double_operators.keys():
             if self.__char == double_operator[0]:
+                position = self.__source.source_stream.tell()
                 self.__source.move_carr_one_pos()
                 second_char = self.__source.character
                 if second_char == double_operator[1]:
                     operator = double_operator
                     self.__char = second_char
                     self.token = Token(Tokens.double_operators[operator], self.line, self.column)
-                    self.__source.move_carr_one_pos()
-                    self.__char = self.__source.character
+                    self.get_next_char()
                     return True
+                else:
+                    self.__source.source_stream.seek(position)
         return False
 
     def skip_spaces(self):

@@ -476,45 +476,43 @@ def test_relational_cond_with_number():  # primaryCond, [ relationOp, primaryCon
     assert relational_cond.primary_cond2.expression.multipl_exprs[0].primary_exprs[0].number == 0
 
 
-def test_primary_cond():  # [ unaryOp ], ( parenthCond | expression ) ;
-    parser = create_parser("! a")
-    primary_cond = parser.parse_primary_cond()
-    assert primary_cond.unary_op is True
-    assert primary_cond.expression.multipl_exprs[0].primary_exprs[0].id == 'a'
+# def test_primary_cond():  # [ unaryOp ], ( parenthCond | expression ) ;
+#     parser = create_parser("!a")
+#     primary_cond = parser.parse_primary_cond()
+#     assert primary_cond.unary_op is True
+#     assert primary_cond.expression.multipl_exprs[0].primary_exprs[0].id == 'a'
+#
+#
+# def test_primary_cond2():  # [ unaryOp ], ( parenthCond | expression ) ;
+#     parser = create_parser("!(a > b)")
+#     primary_cond = parser.parse_primary_cond()
+#     assert primary_cond is not None
+#     assert primary_cond.parenth_cond is not None
+#     assert primary_cond.expression is None
 
 
 def test_parenth_cond():
     parser = create_parser("(a==b & c!=d | e<=f)")
     parenth_cond = parser.parse_parenth_cond()
     assert parenth_cond is not None
-    assert \
-    parenth_cond.condition.and_conds[0].equality_conds[0].relational_cond1.primary_cond1.expression.multipl_exprs[
-        0].primary_exprs[
-        0].id == 'a'
-    assert parenth_cond.condition.and_conds[0].equality_conds[0].equal_op == TokenTypes.EQUAL
-    assert \
-    parenth_cond.condition.and_conds[0].equality_conds[0].relational_cond2.primary_cond1.expression.multipl_exprs[
-        0].primary_exprs[0].id \
-    == 'b'
-    assert \
-    parenth_cond.condition.and_conds[0].equality_conds[1].relational_cond1.primary_cond1.expression.multipl_exprs[
-        0].primary_exprs[0].id \
-    == 'c'
-    assert parenth_cond.condition.and_conds[0].equality_conds[1].equal_op == TokenTypes.NOT_EQUAL
-    assert \
-    parenth_cond.condition.and_conds[0].equality_conds[1].relational_cond2.primary_cond1.expression.multipl_exprs[
-        0].primary_exprs[0].id \
-    == 'd'
-    assert \
-    parenth_cond.condition.and_conds[1].equality_conds[0].relational_cond1.primary_cond1.expression.multipl_exprs[
-        0].primary_exprs[0].id \
-    == 'e'
+    assert parenth_cond.condition.and_conds[0].equality_conds[
+               0].relational_cond1.primary_cond1.expression.multipl_exprs[0].primary_exprs[0].id == 'a'
+    assert parenth_cond.condition.and_conds[0].equality_conds[
+               0].equal_op == TokenTypes.EQUAL
+    assert parenth_cond.condition.and_conds[0].equality_conds[
+               0].relational_cond2.primary_cond1.expression.multipl_exprs[0].primary_exprs[0].id == 'b'
+    assert parenth_cond.condition.and_conds[0].equality_conds[
+               1].relational_cond1.primary_cond1.expression.multipl_exprs[0].primary_exprs[0].id == 'c'
+    assert parenth_cond.condition.and_conds[0].equality_conds[
+               1].equal_op == TokenTypes.NOT_EQUAL
+    assert parenth_cond.condition.and_conds[0].equality_conds[
+               1].relational_cond2.primary_cond1.expression.multipl_exprs[0].primary_exprs[0].id == 'd'
+    assert parenth_cond.condition.and_conds[1].equality_conds[
+               0].relational_cond1.primary_cond1.expression.multipl_exprs[0].primary_exprs[0].id == 'e'
     assert parenth_cond.condition.and_conds[1].equality_conds[
                0].relational_cond1.relation_op == TokenTypes.LESS_OR_EQUAL
-    assert \
-    parenth_cond.condition.and_conds[1].equality_conds[0].relational_cond1.primary_cond2.expression.multipl_exprs[
-        0].primary_exprs[0].id \
-    == 'f'
+    assert parenth_cond.condition.and_conds[1].equality_conds[
+               0].relational_cond1.primary_cond2.expression.multipl_exprs[0].primary_exprs[0].id == 'f'
 
     # ------------------------------------EXPRESSIONS------------------------------------------------------
 
