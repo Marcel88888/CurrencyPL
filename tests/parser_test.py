@@ -116,6 +116,22 @@ def test_while_statement():  # “if”, “(”, condition, “)”, “{“, b
     assert while_statement.block.statements[0].expression.multipl_exprs[1].primary_exprs[0].number == 1
 
 
+def test_return_statement():
+    parser = create_parser("return result;")
+    return_statement = parser.parse_return_statement()
+    assert return_statement is not None
+    assert return_statement.expression.multipl_exprs[0].primary_exprs[0].id == 'result'
+
+
+def test_return_statement2():
+    parser = create_parser("return a+b;")
+    return_statement = parser.parse_return_statement()
+    assert return_statement is not None
+    assert return_statement.expression.multipl_exprs[0].primary_exprs[0].id == 'a'
+    assert return_statement.expression.additive_op == TokenTypes.PLUS
+    assert return_statement.expression.multipl_exprs[1].primary_exprs[0].id == 'b'
+
+
 def test_assign_statement():  # id, assignmentOp, expression, “;” ;
     parser = create_parser("a = b + c;")
     assign_statement = parser.parse_assign_statement_or_function_call()

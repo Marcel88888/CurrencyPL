@@ -137,7 +137,6 @@ class Parser:
             raise _SyntaxError(self.__lexer.line, self.__lexer.column)
         return None
 
-    # TODO test
     def parse_while_statement(self):  # “while”, “(“, condition, “)”, “{“, block, “}“ ;
         if self.__lexer.token.type == TokenTypes.WHILE:
             self.__lexer.get_next_token()
@@ -156,13 +155,11 @@ class Parser:
             raise _SyntaxError(self.__lexer.line, self.__lexer.column)
         return None
 
-    # TODO test
     def parse_return_statement(self):  # “return”, expression, “;” ;
         if self.__lexer.token.type == TokenTypes.RETURN:
             self.__lexer.get_next_token()
             expression = self.parse_expression()
             if expression:
-                self.__lexer.get_next_token()
                 if self.__lexer.token.type == TokenTypes.SEMICOLON:
                     return ReturnStatement(expression)
             raise _SyntaxError(self.__lexer.line, self.__lexer.column)
