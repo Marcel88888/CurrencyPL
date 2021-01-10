@@ -182,7 +182,6 @@ class Parser:
             raise _SyntaxError(self.__lexer.line, self.__lexer.column)
         return None
 
-    # TODO test
     def parse_print_statement(self):  # “print”, “(“, printable { “,”, printable }, “)” ;
         if self.__lexer.token.type == TokenTypes.PRINT:
             self.__lexer.get_next_token()
@@ -191,24 +190,26 @@ class Parser:
                 printables = []
                 if self.__lexer.token.type == TokenTypes.STRING:
                     printable = self.__lexer.token.value
+                    self.__lexer.get_next_token()
                 else:
                     printable = self.parse_expression()
                 if printable:
                     printables.append(printable)
-                    self.__lexer.get_next_token()
                     while self.__lexer.token.type == TokenTypes.COMMA:
                         self.__lexer.get_next_token()
                         if self.__lexer.token.type == TokenTypes.STRING:
                             printable = self.__lexer.token.value
+                            self.__lexer.get_next_token()
                         else:
                             printable = self.parse_expression()
                         if printable:
                             printables.append(printable)
-                            self.__lexer.get_next_token()
                         else:
                             raise _SyntaxError(self.__lexer.line, self.__lexer.column)
                     if self.__lexer.token.type == TokenTypes.CL_BRACKET:
-                        return PrintStatement(printables)
+                        self.__lexer.get_next_token()
+                        if self.__lexer.token.type == TokenTypes.SEMICOLON:
+                            return PrintStatement(printables)
             raise _SyntaxError(self.__lexer.line, self.__lexer.column)
         return None
 
@@ -401,7 +402,7 @@ class Parser:
         if not number and not _id and not function_call:
             parenth_expr = self.parse_parenth_expr()
             if not parenth_expr:
-                raise _SyntaxError(self.__lexer.line, self.__lexer.column)
+                return None
         currency2 = None
         get_currency2 = None
         if self.__lexer.token.type == TokenTypes.CURRENCY_TYPE:

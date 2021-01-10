@@ -47,6 +47,12 @@ def test_incorrect_parameters():
         parser.parse_parameters()
 
 
+def test_empty_parameters():
+    parser = create_parser(" ")
+    parameters = parser.parse_parameters()
+    assert not parameters.signatures
+
+
 def test_arguments():  # [ expression { “,”, expression } ] ;
     parser = create_parser("a-b, c/d, e")
     arguments = parser.parse_arguments()
@@ -73,6 +79,12 @@ def test_arguments2():  # [ expression { “,”, expression } ] ;
     assert arguments.expressions[2].multipl_exprs[0].primary_exprs[0].function_call is not None
     assert arguments.expressions[2].multipl_exprs[0].primary_exprs[0].function_call.arguments.expressions[0].multipl_exprs[0].primary_exprs[0].id == 'e'
     assert arguments.expressions[2].multipl_exprs[0].primary_exprs[0].function_call.arguments.expressions[1].multipl_exprs[0].primary_exprs[0].id == 'f'
+
+
+def test_empty_arguments():
+    parser = create_parser(" ")
+    arguments = parser.parse_arguments()
+    assert not arguments.expressions
 
 
 def test_block():  # { statement };
@@ -185,6 +197,60 @@ def test_init_statement4():  # signature, [ assignmentOp, expression ], “;” 
     assert init_statement.expression.multipl_exprs[0].primary_exprs[0].get_currency2 is None
 
 
+def test_print_statement():  # “print”, “(“, printable { “,”, printable }, “)” ;
+    parser = create_parser(' print ("result: ", a + b, ","); ')
+    print_statement = parser.parse_print_statement()
+    assert print_statement is not None
+    assert print_statement.printables[0] == '"result: "'
+    assert print_statement.printables[1].multipl_exprs[0].primary_exprs[0].id == 'a'
+    assert print_statement.printables[1].additive_op == TokenTypes.PLUS
+    assert print_statement.printables[1].multipl_exprs[1].primary_exprs[0].id == 'b'
+    assert print_statement.printables[2] == '","'
+
+
+def test_print_statement2():  # “print”, “(“, printable { “,”, printable }, “)” ;
+    parser = create_parser(' print (a + b, " is result."); ')
+    print_statement = parser.parse_print_statement()
+    assert print_statement is not None
+    print(print_statement.printables)
+    assert print_statement.printables[0].multipl_exprs[0].primary_exprs[0].id == 'a'
+    assert print_statement.printables[0].additive_op == TokenTypes.PLUS
+    assert print_statement.printables[0].multipl_exprs[1].primary_exprs[0].id == 'b'
+    assert print_statement.printables[1] == '" is result."'
+
+
+def test_print_statement3():  # “print”, “(“, printable { “,”, printable }, “)” ;
+    parser = create_parser(' print (a + b, " is", " result.", c); ')
+    print_statement = parser.parse_print_statement()
+    assert print_statement is not None
+    print(print_statement.printables)
+    assert print_statement.printables[0].multipl_exprs[0].primary_exprs[0].id == 'a'
+    assert print_statement.printables[0].additive_op == TokenTypes.PLUS
+    assert print_statement.printables[0].multipl_exprs[1].primary_exprs[0].id == 'b'
+    assert print_statement.printables[1] == '" is"'
+    assert print_statement.printables[2] == '" result."'
+    assert print_statement.printables[3].multipl_exprs[0].primary_exprs[0].id == 'c'
+
+
+def test_print_statement4():  # “print”, “(“, printable { “,”, printable }, “)”, ";" ;
+    parser = create_parser(' print (a + b, " is", c, " result."); ')
+    print_statement = parser.parse_print_statement()
+    assert print_statement is not None
+    print(print_statement.printables)
+    assert print_statement.printables[0].multipl_exprs[0].primary_exprs[0].id == 'a'
+    assert print_statement.printables[0].additive_op == TokenTypes.PLUS
+    assert print_statement.printables[0].multipl_exprs[1].primary_exprs[0].id == 'b'
+    assert print_statement.printables[1] == '" is"'
+    assert print_statement.printables[2].multipl_exprs[0].primary_exprs[0].id == 'c'
+    assert print_statement.printables[3] == '" result."'
+
+
+def test_empty_print_statement():
+    parser = create_parser(' print(); ')
+    with pytest.raises(_SyntaxError):
+        parser.parse_print_statement()
+
+
 def test_assign_statement():  # id, assignmentOp, expression, “;” ;
     parser = create_parser("a = b + c;")
     assign_statement = parser.parse_assign_statement_or_function_call()
@@ -223,6 +289,14 @@ def test_function_call():  # id, “(“, arguments, “)”, “;” ;
     assert function_call.arguments.expressions[1].multipl_exprs[0].multipl_op == TokenTypes.DIVIDE
     assert function_call.arguments.expressions[1].multipl_exprs[0].primary_exprs[1].id == 'd'
     assert function_call.arguments.expressions[2].multipl_exprs[0].primary_exprs[0].id == 'e'
+
+
+def test_function_call_with_empty_arguments():  # id, “(“, arguments, “)”, “;” ;
+    parser = create_parser("add()")
+    function_call = parser.parse_assign_statement_or_function_call()
+    assert function_call is not None
+    assert function_call.id == 'add'
+    assert not function_call.arguments.expressions
 
     # ------------------------------------CONDITIONS------------------------------------------------------
 
