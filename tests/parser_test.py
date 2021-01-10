@@ -72,6 +72,17 @@ def test_function_def():  # signature, “(”, parameters, “)”, “{“, bl
     assert function_def.block.statements[2].expression.multipl_exprs[0].primary_exprs[0].id == 'c'
 
 
+def test_function_def_with_empty_parameters():  # signature, “(”, parameters, “)”, “{“, block, “}” ;
+    parser = create_parser('void print_hello() {'
+                           'print("Hello world!");'
+                           '}')
+    function_def = parser.parse_function_def()
+    assert function_def is not None
+    assert function_def.signature.type == TokenTypes.VOID
+    assert function_def.signature.id == 'print_hello'
+    assert not function_def.parameters.signatures
+
+
 def test_signature():
     parser = create_parser("dec var")
     signature = parser.parse_signature()
