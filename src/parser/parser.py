@@ -151,7 +151,6 @@ class Parser:
                             self.__lexer.get_next_token()
                             block = self.parse_block()
                             if block:
-                                self.__lexer.get_next_token()
                                 if self.__lexer.token.type == TokenTypes.CL_CURLY_BRACKET:
                                     return WhileStatement(condition, block)
             raise _SyntaxError(self.__lexer.line, self.__lexer.column)

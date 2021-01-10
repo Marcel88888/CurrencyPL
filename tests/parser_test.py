@@ -94,6 +94,26 @@ def test_if_statement():  # “if”, “(”, condition, “)”, “{“, bloc
                            "}")
     if_statement = parser.parse_if_statement()
     assert if_statement is not None
+    assert if_statement.condition.and_conds[0].equality_conds[0].relational_cond1.primary_cond1.expression.multipl_exprs[0].primary_exprs[0].id == 'a'
+    assert if_statement.condition.and_conds[0].equality_conds[0].relational_cond1.relation_op == TokenTypes.GREATER_THAN
+    assert if_statement.condition.and_conds[0].equality_conds[0].relational_cond1.primary_cond2.expression.multipl_exprs[0].primary_exprs[0].id == 'b'
+    assert if_statement.block.statements[0].id == 'a'
+    assert if_statement.block.statements[0].expression.multipl_exprs[0].primary_exprs[0].id == 'b'
+
+
+def test_while_statement():  # “if”, “(”, condition, “)”, “{“, block, “}“ ;
+    parser = create_parser("while (a >= b) {"
+                           "a = a + 1;"
+                           "}")
+    while_statement = parser.parse_while_statement()
+    assert while_statement is not None
+    assert while_statement.condition.and_conds[0].equality_conds[0].relational_cond1.primary_cond1.expression.multipl_exprs[0].primary_exprs[0].id == 'a'
+    assert while_statement.condition.and_conds[0].equality_conds[0].relational_cond1.relation_op == TokenTypes.GREATER_OR_EQUAL
+    assert while_statement.condition.and_conds[0].equality_conds[0].relational_cond1.primary_cond2.expression.multipl_exprs[0].primary_exprs[0].id == 'b'
+    assert while_statement.block.statements[0].id == 'a'
+    assert while_statement.block.statements[0].expression.multipl_exprs[0].primary_exprs[0].id == 'a'
+    assert while_statement.block.statements[0].expression.additive_op == TokenTypes.PLUS
+    assert while_statement.block.statements[0].expression.multipl_exprs[1].primary_exprs[0].number == 1
 
 
 def test_assign_statement():  # id, assignmentOp, expression, “;” ;
@@ -104,6 +124,22 @@ def test_assign_statement():  # id, assignmentOp, expression, “;” ;
     assert assign_statement.expression.multipl_exprs[0].primary_exprs[0].id == 'b'
     assert assign_statement.expression.additive_op == TokenTypes.PLUS
     assert assign_statement.expression.multipl_exprs[1].primary_exprs[0].id == 'c'
+
+
+def test_assign_statement_with_currency():  # id, assignmentOp, expression, “;” ;
+    parser = create_parser("a = 5 eur;")
+    assign_statement = parser.parse_assign_statement_or_function_call()
+    assert assign_statement is not None
+    assert assign_statement.id == 'a'
+    assert assign_statement.expression.multipl_exprs[0].primary_exprs[0].number == 5
+    assert assign_statement.expression.multipl_exprs[0].primary_exprs[0].currency2 == 'eur'
+    assert assign_statement.expression.multipl_exprs[0].primary_exprs[0].minus is False
+    assert assign_statement.expression.multipl_exprs[0].primary_exprs[0].currency1 is None
+    assert assign_statement.expression.multipl_exprs[0].primary_exprs[0].get_currency1 is None
+    assert assign_statement.expression.multipl_exprs[0].primary_exprs[0].id is None
+    assert assign_statement.expression.multipl_exprs[0].primary_exprs[0].parenth_expr is None
+    assert assign_statement.expression.multipl_exprs[0].primary_exprs[0].function_call is None
+    assert assign_statement.expression.multipl_exprs[0].primary_exprs[0].get_currency2 is None
 
 
 def test_function_call():  # id, “(“, arguments, “)”, “;” ;
@@ -427,6 +463,22 @@ def test_primary_expr12():  # def __init__(self, minus=False, currency1=None, ge
     assert primary_expr.parenth_expr.expression.multipl_exprs[1].primary_exprs[0].id == 'e'
     assert primary_expr.function_call is None
     assert primary_expr.currency2 == 'usd'
+    assert primary_expr.get_currency2 is None
+
+
+def test_primary_expr13():  # def __init__(self, minus=False, currency1=None, get_currency1=None, number=None,
+    # _id=None, parenth_expr=None, function_call=None, currency2=None, get_currency2=None):
+    parser = create_parser("5")
+    primary_expr = parser.parse_primary_expr()
+    assert primary_expr is not None
+    assert primary_expr.minus is False
+    assert primary_expr.currency1 is None
+    assert primary_expr.get_currency1 is None
+    assert primary_expr.number == 5
+    assert primary_expr.id is None
+    assert primary_expr.parenth_expr is None
+    assert primary_expr.function_call is None
+    assert primary_expr.currency2 is None
     assert primary_expr.get_currency2 is None
 
 
