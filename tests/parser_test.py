@@ -57,7 +57,7 @@ def test_function_def():  # signature, “(”, parameters, “)”, “{“, bl
     assert function_def.parameters.signatures[1].id == 'b'
     assert function_def.block.statements[0].signature.id == 'c'
     assert function_def.block.statements[0].expression.multipl_exprs[0].primary_exprs[0].id == 'a'
-    assert function_def.block.statements[0].expression.additive_op == TokenTypes.PLUS
+    assert function_def.block.statements[0].expression.additive_ops[0] == TokenTypes.PLUS
     assert function_def.block.statements[0].expression.multipl_exprs[1].primary_exprs[0].id == 'b'
     assert isinstance(function_def.block.statements[1], IfStatement)
     assert function_def.block.statements[1].condition.and_conds[0].equality_conds[
@@ -123,10 +123,10 @@ def test_arguments():  # [ expression { “,”, expression } ] ;
     arguments = parser.parse_arguments()
     assert arguments is not None
     assert arguments.expressions[0].multipl_exprs[0].primary_exprs[0].id == 'a'
-    assert arguments.expressions[0].additive_op == TokenTypes.MINUS
+    assert arguments.expressions[0].additive_ops[0] == TokenTypes.MINUS
     assert arguments.expressions[0].multipl_exprs[1].primary_exprs[0].id == 'b'
     assert arguments.expressions[1].multipl_exprs[0].primary_exprs[0].id == 'c'
-    assert arguments.expressions[1].multipl_exprs[0].multipl_op == TokenTypes.DIVIDE
+    assert arguments.expressions[1].multipl_exprs[0].multipl_ops[0] == TokenTypes.DIVIDE
     assert arguments.expressions[1].multipl_exprs[0].primary_exprs[1].id == 'd'
     assert arguments.expressions[2].multipl_exprs[0].primary_exprs[0].id == 'e'
 
@@ -136,10 +136,10 @@ def test_arguments2():  # [ expression { “,”, expression } ] ;
     arguments = parser.parse_arguments()
     assert arguments is not None
     assert arguments.expressions[0].multipl_exprs[0].primary_exprs[0].id == 'a'
-    assert arguments.expressions[0].additive_op == TokenTypes.MINUS
+    assert arguments.expressions[0].additive_ops[0] == TokenTypes.MINUS
     assert arguments.expressions[0].multipl_exprs[1].primary_exprs[0].id == 'b'
     assert arguments.expressions[1].multipl_exprs[0].primary_exprs[0].id == 'c'
-    assert arguments.expressions[1].multipl_exprs[0].multipl_op == TokenTypes.DIVIDE
+    assert arguments.expressions[1].multipl_exprs[0].multipl_ops[0] == TokenTypes.DIVIDE
     assert arguments.expressions[1].multipl_exprs[0].primary_exprs[1].id == 'd'
     assert arguments.expressions[2].multipl_exprs[0].primary_exprs[0].function_call is not None
     assert arguments.expressions[2].multipl_exprs[0].primary_exprs[0].function_call.arguments.expressions[
@@ -164,7 +164,7 @@ def test_block():  # { statement };
     assert block.statements[0].expression.multipl_exprs[0].primary_exprs[0].id == 'b'
     assert block.statements[1].id == 'c'
     assert block.statements[1].expression.multipl_exprs[0].primary_exprs[0].id == 'd'
-    assert block.statements[1].expression.additive_op == TokenTypes.PLUS
+    assert block.statements[1].expression.additive_ops[0] == TokenTypes.PLUS
     assert block.statements[1].expression.multipl_exprs[1].primary_exprs[0].id == 'e'
     assert isinstance(block.statements[2], PrintStatement)
     assert block.statements[2].printables[0].multipl_exprs[0].primary_exprs[0].id == 'c'
@@ -266,7 +266,7 @@ def test_while_statement():  # “if”, “(”, condition, “)”, “{“, b
                0].relational_cond1.primary_cond2.expression.multipl_exprs[0].primary_exprs[0].id == 'b'
     assert while_statement.block.statements[0].id == 'a'
     assert while_statement.block.statements[0].expression.multipl_exprs[0].primary_exprs[0].id == 'a'
-    assert while_statement.block.statements[0].expression.additive_op == TokenTypes.PLUS
+    assert while_statement.block.statements[0].expression.additive_ops[0] == TokenTypes.PLUS
     assert while_statement.block.statements[0].expression.multipl_exprs[1].primary_exprs[0].number == 1
 
 
@@ -282,7 +282,7 @@ def test_return_statement2():
     return_statement = parser.parse_return_statement()
     assert return_statement is not None
     assert return_statement.expression.multipl_exprs[0].primary_exprs[0].id == 'a'
-    assert return_statement.expression.additive_op == TokenTypes.PLUS
+    assert return_statement.expression.additive_ops[0] == TokenTypes.PLUS
     assert return_statement.expression.multipl_exprs[1].primary_exprs[0].id == 'b'
 
 
@@ -301,7 +301,7 @@ def test_init_statement2():  # signature, [ assignmentOp, expression ], “;” 
     assert init_statement.signature.type == TokenTypes.DECIMAL
     assert init_statement.signature.id == 'a'
     assert init_statement.expression.multipl_exprs[0].primary_exprs[0].id == 'b'
-    assert init_statement.expression.multipl_exprs[0].multipl_op == TokenTypes.MULTIPLY
+    assert init_statement.expression.multipl_exprs[0].multipl_ops[0] == TokenTypes.MULTIPLY
     assert init_statement.expression.multipl_exprs[0].primary_exprs[1].id == 'c'
 
 
@@ -345,7 +345,7 @@ def test_print_statement():  # “print”, “(“, printable { “,”, printa
     assert print_statement is not None
     assert print_statement.printables[0] == '"result: "'
     assert print_statement.printables[1].multipl_exprs[0].primary_exprs[0].id == 'a'
-    assert print_statement.printables[1].additive_op == TokenTypes.PLUS
+    assert print_statement.printables[1].additive_ops[0] == TokenTypes.PLUS
     assert print_statement.printables[1].multipl_exprs[1].primary_exprs[0].id == 'b'
     assert print_statement.printables[2] == '","'
 
@@ -355,7 +355,7 @@ def test_print_statement2():
     print_statement = parser.parse_print_statement()
     assert print_statement is not None
     assert print_statement.printables[0].multipl_exprs[0].primary_exprs[0].id == 'a'
-    assert print_statement.printables[0].additive_op == TokenTypes.PLUS
+    assert print_statement.printables[0].additive_ops[0] == TokenTypes.PLUS
     assert print_statement.printables[0].multipl_exprs[1].primary_exprs[0].id == 'b'
     assert print_statement.printables[1] == '" is result."'
 
@@ -365,7 +365,7 @@ def test_print_statement3():
     print_statement = parser.parse_print_statement()
     assert print_statement is not None
     assert print_statement.printables[0].multipl_exprs[0].primary_exprs[0].id == 'a'
-    assert print_statement.printables[0].additive_op == TokenTypes.PLUS
+    assert print_statement.printables[0].additive_ops[0] == TokenTypes.PLUS
     assert print_statement.printables[0].multipl_exprs[1].primary_exprs[0].id == 'b'
     assert print_statement.printables[1] == '" is"'
     assert print_statement.printables[2] == '" result."'
@@ -377,7 +377,7 @@ def test_print_statement4():
     print_statement = parser.parse_print_statement()
     assert print_statement is not None
     assert print_statement.printables[0].multipl_exprs[0].primary_exprs[0].id == 'a'
-    assert print_statement.printables[0].additive_op == TokenTypes.PLUS
+    assert print_statement.printables[0].additive_ops[0] == TokenTypes.PLUS
     assert print_statement.printables[0].multipl_exprs[1].primary_exprs[0].id == 'b'
     assert print_statement.printables[1] == '" is"'
     assert print_statement.printables[2].multipl_exprs[0].primary_exprs[0].id == 'c'
@@ -396,7 +396,7 @@ def test_assign_statement():  # id, assignmentOp, expression, “;” ;
     assert assign_statement is not None
     assert assign_statement.id == 'a'
     assert assign_statement.expression.multipl_exprs[0].primary_exprs[0].id == 'b'
-    assert assign_statement.expression.additive_op == TokenTypes.PLUS
+    assert assign_statement.expression.additive_ops[0] == TokenTypes.PLUS
     assert assign_statement.expression.multipl_exprs[1].primary_exprs[0].id == 'c'
 
 
@@ -422,10 +422,10 @@ def test_function_call():  # id, “(“, arguments, “)”, “;” ;
     assert function_call is not None
     assert function_call.id == 'calculate'
     assert function_call.arguments.expressions[0].multipl_exprs[0].primary_exprs[0].id == 'a'
-    assert function_call.arguments.expressions[0].additive_op == TokenTypes.MINUS
+    assert function_call.arguments.expressions[0].additive_ops[0] == TokenTypes.MINUS
     assert function_call.arguments.expressions[0].multipl_exprs[1].primary_exprs[0].id == 'b'
     assert function_call.arguments.expressions[1].multipl_exprs[0].primary_exprs[0].id == 'c'
-    assert function_call.arguments.expressions[1].multipl_exprs[0].multipl_op == TokenTypes.DIVIDE
+    assert function_call.arguments.expressions[1].multipl_exprs[0].multipl_ops[0] == TokenTypes.DIVIDE
     assert function_call.arguments.expressions[1].multipl_exprs[0].primary_exprs[1].id == 'd'
     assert function_call.arguments.expressions[2].multipl_exprs[0].primary_exprs[0].id == 'e'
 
@@ -553,9 +553,9 @@ def test_expression():  # multiplExpr, { additiveOp, multiplExpr } ;
     parser = create_parser("a * b + c")
     expression = parser.parse_expression()
     assert expression.multipl_exprs[0].primary_exprs[0].id == 'a'
-    assert expression.multipl_exprs[0].multipl_op == TokenTypes.MULTIPLY
+    assert expression.multipl_exprs[0].multipl_ops[0] == TokenTypes.MULTIPLY
     assert expression.multipl_exprs[0].primary_exprs[1].id == 'b'
-    assert expression.additive_op == TokenTypes.PLUS
+    assert expression.additive_ops[0] == TokenTypes.PLUS
     assert expression.multipl_exprs[1].primary_exprs[0].id == 'c'
 
 
@@ -573,12 +573,34 @@ def test_expression_with_zero_only():  # multiplExpr, { additiveOp, multiplExpr 
     assert expression.multipl_exprs[0].primary_exprs[0].number == 0
 
 
+def test_expression_with_several_additive_ops():
+    parser = create_parser("a + b - c")
+    expression = parser.parse_expression()
+    assert expression is not None
+    assert expression.multipl_exprs[0].primary_exprs[0].id == 'a'
+    assert expression.additive_ops[0] == TokenTypes.PLUS
+    assert expression.multipl_exprs[1].primary_exprs[0].id == 'b'
+    assert expression.additive_ops[1] == TokenTypes.MINUS
+    assert expression.multipl_exprs[2].primary_exprs[0].id == 'c'
+
+
 def test_multipl_expr():  # primaryExpr, { multiplOp, primaryExpr } ;
     parser = create_parser("a * 5")
     multipl_expr = parser.parse_multipl_expr()
     assert multipl_expr.primary_exprs[0].id == 'a'
-    assert multipl_expr.multipl_op == TokenTypes.MULTIPLY
+    assert multipl_expr.multipl_ops[0] == TokenTypes.MULTIPLY
     assert multipl_expr.primary_exprs[1].number == 5
+
+
+def test_multipl_expr_with_several_multipl_ops():
+    parser = create_parser("a * b / c")
+    multipl_expr = parser.parse_multipl_expr()
+    assert multipl_expr is not None
+    assert multipl_expr.primary_exprs[0].id == 'a'
+    assert multipl_expr.multipl_ops[0] == TokenTypes.MULTIPLY
+    assert multipl_expr.primary_exprs[1].id == 'b'
+    assert multipl_expr.multipl_ops[1] == TokenTypes.DIVIDE
+    assert multipl_expr.primary_exprs[2].id == 'c'
 
 
 def test_primary_expr():  # def __init__(self, minus=False, currency1=None, get_currency1=None, number=None,
@@ -756,9 +778,9 @@ def test_primary_expr11():  # def __init__(self, minus=False, currency1=None, ge
     assert primary_expr.id is None
     assert primary_expr.parenth_expr is not None
     assert primary_expr.parenth_expr.expression.multipl_exprs[0].primary_exprs[0].id == 'c'
-    assert primary_expr.parenth_expr.expression.multipl_exprs[0].multipl_op == TokenTypes.MULTIPLY
+    assert primary_expr.parenth_expr.expression.multipl_exprs[0].multipl_ops[0] == TokenTypes.MULTIPLY
     assert primary_expr.parenth_expr.expression.multipl_exprs[0].primary_exprs[1].id == 'd'
-    assert primary_expr.parenth_expr.expression.additive_op == TokenTypes.PLUS
+    assert primary_expr.parenth_expr.expression.additive_ops[0] == TokenTypes.PLUS
     assert primary_expr.parenth_expr.expression.multipl_exprs[1].primary_exprs[0].id == 'e'
     assert primary_expr.function_call is None
     assert primary_expr.currency2 is None
@@ -777,9 +799,9 @@ def test_primary_expr12():  # def __init__(self, minus=False, currency1=None, ge
     assert primary_expr.id is None
     assert primary_expr.parenth_expr is not None
     assert primary_expr.parenth_expr.expression.multipl_exprs[0].primary_exprs[0].id == 'c'
-    assert primary_expr.parenth_expr.expression.multipl_exprs[0].multipl_op == TokenTypes.MULTIPLY
+    assert primary_expr.parenth_expr.expression.multipl_exprs[0].multipl_ops[0] == TokenTypes.MULTIPLY
     assert primary_expr.parenth_expr.expression.multipl_exprs[0].primary_exprs[1].id == 'd'
-    assert primary_expr.parenth_expr.expression.additive_op == TokenTypes.PLUS
+    assert primary_expr.parenth_expr.expression.additive_ops[0] == TokenTypes.PLUS
     assert primary_expr.parenth_expr.expression.multipl_exprs[1].primary_exprs[0].id == 'e'
     assert primary_expr.function_call is None
     assert primary_expr.currency2 == 'usd'
@@ -825,9 +847,9 @@ def test_parenth_expr():
     parser = create_parser("(a * b + c)")
     parenth_expr = parser.parse_parenth_expr()
     assert parenth_expr.expression.multipl_exprs[0].primary_exprs[0].id == 'a'
-    assert parenth_expr.expression.multipl_exprs[0].multipl_op == TokenTypes.MULTIPLY
+    assert parenth_expr.expression.multipl_exprs[0].multipl_ops[0] == TokenTypes.MULTIPLY
     assert parenth_expr.expression.multipl_exprs[0].primary_exprs[1].id == 'b'
-    assert parenth_expr.expression.additive_op == TokenTypes.PLUS
+    assert parenth_expr.expression.additive_ops[0] == TokenTypes.PLUS
     assert parenth_expr.expression.multipl_exprs[1].primary_exprs[0].id == 'c'
 
     # ------------------------------------------------------------------------------------------------------------

@@ -339,36 +339,36 @@ class Parser:
 
     def parse_expression(self):  # multiplExpr, { additiveOp, multiplExpr } ;
         multipl_exprs = []
+        additive_ops = []
         multipl_expr = self.parse_multipl_expr()
         if multipl_expr:
-            additive_op = None
             multipl_exprs.append(multipl_expr)
             while self.__lexer.token.type == TokenTypes.PLUS or self.__lexer.token.type == TokenTypes.MINUS:
-                additive_op = self.__lexer.token.type
+                additive_ops.append(self.__lexer.token.type)
                 self.__lexer.get_next_token()
                 multipl_expr = self.parse_multipl_expr()
                 if multipl_expr:
                     multipl_exprs.append(multipl_expr)
                 else:
                     raise _SyntaxError(self.__lexer.line, self.__lexer.column)
-            return Expression(multipl_exprs, additive_op)
+            return Expression(multipl_exprs, additive_ops)
         return None
 
     def parse_multipl_expr(self):  # primaryExpr, { multiplOp, primaryExpr } ;
         primary_exprs = []
+        multipl_ops = []
         primary_expr = self.parse_primary_expr()
         if primary_expr:
-            multipl_op = None
             primary_exprs.append(primary_expr)
             while self.__lexer.token.type == TokenTypes.MULTIPLY or self.__lexer.token.type == TokenTypes.DIVIDE:
-                multipl_op = self.__lexer.token.type
+                multipl_ops.append(self.__lexer.token.type)
                 self.__lexer.get_next_token()
                 primary_expr = self.parse_primary_expr()
                 if primary_expr:
                     primary_exprs.append(primary_expr)
                 else:
                     raise _SyntaxError(self.__lexer.line, self.__lexer.column)
-            return MultiplExpr(primary_exprs, multipl_op)
+            return MultiplExpr(primary_exprs, multipl_ops)
         return None
 
     def parse_primary_expr(self):  # [ “-” ], [currency | getCurrency], ( number | id | parenthExpr | functionCall ),

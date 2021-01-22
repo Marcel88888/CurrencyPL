@@ -109,15 +109,15 @@ class ParenthCond:  # “(“, condition, “)” ;
 
 
 class Expression:  # multiplExpr, { additiveOp, multiplExpr } ;
-    def __init__(self, multipl_exprs, additive_op):
+    def __init__(self, multipl_exprs, additive_ops):
         self.multipl_exprs = multipl_exprs
-        self.additive_op = additive_op
+        self.additive_ops = additive_ops
 
 
 class MultiplExpr:  # primaryExpr, { multiplOp, primaryExpr } ;
-    def __init__(self, primary_exprs, multipl_op=None):
+    def __init__(self, primary_exprs, multipl_ops):
         self.primary_exprs = primary_exprs
-        self.multipl_op = multipl_op
+        self.multipl_ops = multipl_ops
 
 
 class PrimaryExpr:  # [ “-” ], [currency | getCurrency], ( number | id | parenthExpr | functionCall ),
