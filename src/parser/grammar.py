@@ -9,6 +9,9 @@ class FunctionDef:  # signature, “(”, parameters, “)”, “{“, block, �
         self.parameters = parameters
         self.block = block
 
+    def accept(self, visitor):
+        return visitor.visit_function_def(self)
+
 
 class FunctionCall:  # id, “(“, arguments, “)”;
     def __init__(self, _id, arguments):
