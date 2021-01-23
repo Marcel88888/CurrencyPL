@@ -1,6 +1,14 @@
-class Program:
+class Node:
+    def accept(self, visitor):
+        pass
+
+
+class Program(Node):
     def __init__(self, function_defs):
         self.function_defs = function_defs
+
+    def accept(self, visitor):
+        pass
 
 
 class FunctionDef:  # signature, “(”, parameters, “)”, “{“, block, “}” ;
