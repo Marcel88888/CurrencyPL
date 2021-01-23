@@ -18,6 +18,9 @@ class FunctionCall:  # id, “(“, arguments, “)”;
         self.id = _id
         self.arguments = arguments
 
+    def accept(self, visitor):
+        visitor.visit_function_call(self)
+
 
 class Signature:  # type, id ;
     def __init__(self, _type, _id):
@@ -39,6 +42,9 @@ class Block:  # { statement };
     def __init__(self, statements):
         self.statements = statements
 
+    def accept(self, visitor):
+        visitor.visit_block(self)
+
 
 class IfStatement:  # “if”, “(”, condition, “)”, “{“, block, “}“, [“else”, “{”, block, “}” ];
     def __init__(self, condition, block1, block2=None):
@@ -46,16 +52,25 @@ class IfStatement:  # “if”, “(”, condition, “)”, “{“, block, “
         self.block1 = block1
         self.block2 = block2
 
+    def accept(self, visitor):
+        visitor.visit_if_statement(self)
+
 
 class WhileStatement:  # “while”, “(“, condition, “)”, “{“, block, “}“ ;
     def __init__(self, condition, block):
         self.condition = condition
         self.block = block
 
+    def accept(self, visitor):
+        visitor.visit_while_statement(self)
+
 
 class ReturnStatement:  # “return”, expression, “;” ;
     def __init__(self, expression):
         self.expression = expression
+
+    def accept(self, visitor):
+        visitor.visit_return_statement(self)
 
 
 class InitStatement:  # signature, [ assignmentOp, expression ], “;” ;
@@ -63,16 +78,25 @@ class InitStatement:  # signature, [ assignmentOp, expression ], “;” ;
         self.signature = signature
         self.expression = expression
 
+    def accept(self, visitor):
+        visitor.visit_init_statement(self)
+
 
 class AssignStatement:  # id, assignmentOp, expression, “;” ;
     def __init__(self, _id, expression):
         self.id = _id
         self.expression = expression
 
+    def accept(self, visitor):
+        visitor.visit_assign_statement(self)
+
 
 class PrintStatement:  # “print”, “(“, printable { “,”, printable }, “)”, ";" ;
     def __init__(self, printables):
         self.printables = printables
+
+    def accept(self, visitor):
+        visitor.visit_print_statement(self)
 
 
 class Condition:  # andCond, { orOp, andCond } ;
@@ -115,6 +139,9 @@ class Expression:  # multiplExpr, { additiveOp, multiplExpr } ;
     def __init__(self, multipl_exprs, additive_ops):
         self.multipl_exprs = multipl_exprs
         self.additive_ops = additive_ops
+
+    def accept(self, visitor):
+        visitor.visit_expression(self)
 
 
 class MultiplExpr:  # primaryExpr, { multiplOp, primaryExpr } ;
