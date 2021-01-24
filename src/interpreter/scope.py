@@ -25,6 +25,7 @@ class ScopeManager:
     def __init__(self):
         self.global_scope = Scope("global")
         self.current_scope = Scope('main')
+        self.last_result = None
 
     def add_variable(self, name, variable):
         if name in self.current_scope.symbols.keys():
