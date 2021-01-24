@@ -1,11 +1,11 @@
-from ..exceptions.exceptions import UndeclaredError
+from ..exceptions.exceptions import UndeclaredError, OverwriteError, VariableNotDeclared
 
 
 class Scope:
     def __init__(self):
         self.symbols = {}
 
-    def add_or_update_symbol(self, name, value):
+    def add_symbol(self, name, value):
         self.symbols[name] = value
 
     def get_symbol(self, name):
@@ -23,8 +23,15 @@ class ScopeManager:
         self.global_scope = Scope()
         self.current_scope = Scope()
 
-    def add_or_update_variable(self, name, value):
-        self.current_scope.add_or_update_symbol(name, value)
+    def add_variable(self, name, variable):
+        if name in self.current_scope.symbols.keys():
+            raise OverwriteError(name)
+        self.current_scope.add_symbol(name, variable)
+
+    def update_variable(self, name, value):
+        if name not in self.current_scope.symbols.keys():
+            raise VariableNotDeclared(name)
+        self.current_scope.symbols[name].value = value
 
     def get_variable(self, name):
         return self.current_scope.get_symbol(name)

@@ -51,19 +51,47 @@ class UndeclaredError(InterpretationError):
         self.__name = name
         self.__message = f'"{self.__name}" undeclared.'
         super().__init__(self.__message)
-
-
-class OverwriteError(InterpretationError):
-    def __init__(self, _type, name):
-        self.__type = _type
-        self.__name = name
-        self.__message = f"Attempt to overwrite {self.__type} named {self.__name}"
-        super().__init__(self.__message)
+#
+#
+# class OverwriteError(InterpretationError):
+#     def __init__(self, _type, name):
+#         self.__type = _type
+#         self.__name = name
+#         self.__message = f"Attempt to overwrite {self.__type} named {self.__name}"
+#         super().__init__(self.__message)
 
 
 class MainNotDeclaredError(Exception):
     def __init__(self):
         self.__message = "There is no 'main' function in the program."
+        super().__init__(self.__message)
+
+
+class OverwriteError(Exception):
+    def __init__(self, name):
+        self.__name = name
+        self.__message = f"Variable ({self.__name}) was already declared."
+        super().__init__(self.__message)
+
+
+class VariableNotDeclared(Exception):
+    def __init__(self, name):
+        self.__name = name
+        self.__message = f"Variable ({self.__name}) was not declared yet."
+        super().__init__(self.__message)
+
+
+class CurrencyNotDefined(Exception):
+    def __init__(self, name):
+        self.__name = name
+        self.__message = f"Currency not declared for currency type variable named {self.__name}"
+        super().__init__(self.__message)
+
+
+class InvalidVariableType(Exception):
+    def __init__(self, name):
+        self.__name = name
+        self.__message = f"Invalid variable type for: {self.__name}"
         super().__init__(self.__message)
 
 

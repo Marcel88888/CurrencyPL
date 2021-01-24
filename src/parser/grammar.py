@@ -1,33 +1,10 @@
+from typing import List, Union
+from ..lexer.token_types import TokenTypes
+
+
 class Node:
     def accept(self, visitor):
         pass
-
-
-class Program(Node):
-    def __init__(self, function_defs):
-        self.function_defs = function_defs
-
-    def accept(self, visitor):
-        visitor.visit_program(self)
-
-
-class FunctionDef:  # signature, “(”, parameters, “)”, “{“, block, “}” ;
-    def __init__(self, signature, parameters, block):
-        self.signature = signature
-        self.parameters = parameters
-        self.block = block
-
-    def accept(self, visitor):
-        visitor.visit_function_def(self)
-
-
-class FunctionCall:  # id, “(“, arguments, “)”;
-    def __init__(self, _id, arguments):
-        self.id = _id
-        self.arguments = arguments
-
-    def accept(self, visitor):
-        visitor.visit_function_call(self)
 
 
 class Signature:  # type, id ;
@@ -54,8 +31,52 @@ class Block:  # { statement };
         visitor.visit_block(self)
 
 
+class FunctionDef(Node):  # signature, “(”, parameters, “)”, “{“, block, “}” ;
+    def __init__(self, signature: Signature, parameters: Parameters, block: Block):
+        self.signature = signature
+        self.parameters = parameters
+        self.block = block
+
+    def accept(self, visitor):
+        visitor.visit_function_def(self)
+
+
+class Program(Node):
+    def __init__(self, function_defs: List[FunctionDef]):
+        self.function_defs = function_defs
+
+    def accept(self, visitor):
+        visitor.visit_program(self)
+
+
+class FunctionCall(Node):  # id, “(“, arguments, “)”;
+    def __init__(self, _id: str, arguments: Arguments):
+        self.id = _id
+        self.arguments = arguments
+
+    def accept(self, visitor):
+        visitor.visit_function_call(self)
+
+
+class Condition(Node):  # andCond, { orOp, andCond } ;
+    def __init__(self, and_conds):
+        self.and_conds = and_conds
+
+    def accept(self, visitor):
+        visitor.visit_condition(self)
+
+
+class Expression(Node):  # multiplExpr, { additiveOp, multiplExpr } ;
+    def __init__(self, multipl_exprs, additive_ops):
+        self.multipl_exprs = multipl_exprs
+        self.additive_ops = additive_ops
+
+    def accept(self, visitor):
+        visitor.visit_expression(self)
+
+
 class IfStatement:  # “if”, “(”, condition, “)”, “{“, block, “}“, [“else”, “{”, block, “}” ];
-    def __init__(self, condition, block1, block2=None):
+    def __init__(self, condition: Condition, block1: Block, block2: Block = None):
         self.condition = condition
         self.block1 = block1
         self.block2 = block2
@@ -65,7 +86,7 @@ class IfStatement:  # “if”, “(”, condition, “)”, “{“, block, “
 
 
 class WhileStatement:  # “while”, “(“, condition, “)”, “{“, block, “}“ ;
-    def __init__(self, condition, block):
+    def __init__(self, condition: Condition, block: Block):
         self.condition = condition
         self.block = block
 
@@ -74,7 +95,7 @@ class WhileStatement:  # “while”, “(“, condition, “)”, “{“, bloc
 
 
 class ReturnStatement:  # “return”, expression, “;” ;
-    def __init__(self, expression):
+    def __init__(self, expression: Expression):
         self.expression = expression
 
     def accept(self, visitor):
@@ -82,7 +103,7 @@ class ReturnStatement:  # “return”, expression, “;” ;
 
 
 class InitStatement:  # signature, [ assignmentOp, expression ], “;” ;
-    def __init__(self, signature, expression=None):
+    def __init__(self, signature: Signature, expression: Expression = None):
         self.signature = signature
         self.expression = expression
 
@@ -91,7 +112,7 @@ class InitStatement:  # signature, [ assignmentOp, expression ], “;” ;
 
 
 class AssignStatement:  # id, assignmentOp, expression, “;” ;
-    def __init__(self, _id, expression):
+    def __init__(self, _id: str, expression: Expression):
         self.id = _id
         self.expression = expression
 
@@ -100,65 +121,45 @@ class AssignStatement:  # id, assignmentOp, expression, “;” ;
 
 
 class PrintStatement:  # “print”, “(“, printable { “,”, printable }, “)”, ";" ;
-    def __init__(self, printables):
+    def __init__(self, printables: List[Union[str, Expression]]):
         self.printables = printables
 
     def accept(self, visitor):
         visitor.visit_print_statement(self)
 
 
-class Condition:  # andCond, { orOp, andCond } ;
-    def __init__(self, and_conds):
-        self.and_conds = and_conds
-
-
-class AndCond:  # equalityCond, { andOp, equalityCond } ;
-    def __init__(self, equality_conds):
-        self.equality_conds = equality_conds
-
-
-class EqualityCond:  # relationalCond, [ equalOp, relationalCond ] ;
+class EqualityCond(Node):  # relationalCond, [ equalOp, relationalCond ] ;
     def __init__(self, relational_cond1, equal_op=None, relational_cond2=None):
         self.relational_cond1 = relational_cond1
         self.equal_op = equal_op
         self.relational_cond2 = relational_cond2
 
 
-class RelationalCond:  # primaryCond, [ relationOp, primaryCond ];
-    def __init__(self, primary_cond1, relation_op=None, primary_cond2=None):
-        self.primary_cond1 = primary_cond1
-        self.relation_op = relation_op
-        self.primary_cond2 = primary_cond2
+class AndCond(Node):  # equalityCond, { andOp, equalityCond } ;
+    def __init__(self, equality_conds: List[EqualityCond]):
+        self.equality_conds = equality_conds
 
 
-class PrimaryCond:  # [ unaryOp ], ( parenthCond | expression ) ;
+class PrimaryCond(Node):  # [ unaryOp ], ( parenthCond | expression ) ;
     def __init__(self, unary_op=False, parenth_cond=None, expression=None):
         self.unary_op = unary_op
         self.parenth_cond = parenth_cond
         self.expression = expression
 
 
-class ParenthCond:  # “(“, condition, “)” ;
-    def __init__(self, condition):
+class RelationalCond(Node):  # primaryCond, [ relationOp, primaryCond ];
+    def __init__(self, primary_cond1: PrimaryCond, relation_op: TokenTypes = None, primary_cond2: PrimaryCond = None):
+        self.primary_cond1 = primary_cond1
+        self.relation_op = relation_op
+        self.primary_cond2 = primary_cond2
+
+
+class ParenthCond(Node):  # “(“, condition, “)” ;
+    def __init__(self, condition: Condition):
         self.condition = condition
 
 
-class Expression:  # multiplExpr, { additiveOp, multiplExpr } ;
-    def __init__(self, multipl_exprs, additive_ops):
-        self.multipl_exprs = multipl_exprs
-        self.additive_ops = additive_ops
-
-    def accept(self, visitor):
-        visitor.visit_expression(self)
-
-
-class MultiplExpr:  # primaryExpr, { multiplOp, primaryExpr } ;
-    def __init__(self, primary_exprs, multipl_ops):
-        self.primary_exprs = primary_exprs
-        self.multipl_ops = multipl_ops
-
-
-class PrimaryExpr:  # [ “-” ], [currency | getCurrency], ( number | id | parenthExpr | functionCall ),
+class PrimaryExpr(Node):  # [ “-” ], [currency | getCurrency], ( number | id | parenthExpr | functionCall ),
     # [currency | getCurrency] ;
     def __init__(self, minus=False, currency1=None, get_currency1=None, number=None, _id=None, parenth_expr=None,
                  function_call=None, currency2=None, get_currency2=None):
@@ -173,11 +174,17 @@ class PrimaryExpr:  # [ “-” ], [currency | getCurrency], ( number | id | par
         self.get_currency2 = get_currency2
 
 
-class ParenthExpr:  # “(”, expression, “)” ;
-    def __init__(self, expression):
+class MultiplExpr(Node):  # primaryExpr, { multiplOp, primaryExpr } ;
+    def __init__(self, primary_exprs: List[PrimaryExpr], multipl_ops: List[TokenTypes]):
+        self.primary_exprs = primary_exprs
+        self.multipl_ops = multipl_ops
+
+
+class ParenthExpr(Node):  # “(”, expression, “)” ;
+    def __init__(self, expression: Expression):
         self.expression = expression
 
 
 class GetCurrency:  # id, “.”, “getCurrency()” ;
-    def __init__(self, _id):
+    def __init__(self, _id: str):
         self.id = _id
