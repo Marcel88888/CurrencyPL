@@ -46,9 +46,8 @@ class ScopeManager:
     def get_function(self, name):
         self.global_scope.get_symbol(name)
 
-    def switch_context_to(self, function: FunctionDef):
+    def create_new_scope_and_switch(self, function: FunctionDef):
         function_scope = Scope(function.signature.id, self.current_scope)
-        function_scope.copy_symbols_from(self.global_scope)
         self.current_scope = function_scope
 
     def switch_to_parent_context(self):

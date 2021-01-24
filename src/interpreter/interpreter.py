@@ -1,6 +1,5 @@
 from .scope import ScopeManager
 from ..parser.grammar import *
-from .variables import *
 from .utils import *
 from ..lexer.token_types import TokenTypes
 from ..exceptions.exceptions import MainNotDeclaredError, CurrencyNotDefinedError, InvalidVariableTypeError, \
@@ -100,6 +99,15 @@ class Interpreter:
     def visit_expression(self, expression: Expression):
         pass
 
+    def visit_multipl_expr(self, multipl_expr: MultiplExpr):
+        pass
+
+    def visit_primary_expr(self, primary_expr: PrimaryExpr):
+        pass
+
+    def visit_parenth_expr(self, parenth_expr: ParenthExpr):
+        pass
+
     def visit_condition(self, condition: Condition):  # andCond, { orOp, andCond } ;
         for and_cond in condition.and_conds:
             and_cond.accept(self)
@@ -158,16 +166,24 @@ class Interpreter:
                     result = True
         self.scope_manager.last_result = result
 
-    # def visit_primary_cond(self, primary_cond: PrimaryCond):  # [ unaryOp ], ( parenthCond | expression ) ;
-    #     result = False
-    #     if primary_cond.parenth_cond is not None:
-    #         parenth_cond = primary_cond.parenth_cond.accept(self)
-    #         if parenth_cond:
-    #             result = True
-    #     elif primary_cond.expression
+    def visit_primary_cond(self, primary_cond: PrimaryCond):  # [ unaryOp ], ( parenthCond | expression ) ;
+        result = False
+        if primary_cond.parenth_cond is not None:
+            primary_cond.parenth_cond.accept(self)
+            condition_result = self.scope_manager.last_result
+            if condition_result:
+                result = True
+            if primary_cond.unary_op:
+                result = not result
+            self.scope_manager.last_result = result
+        elif primary_cond.expression is not None:
+            primary_cond.expression.accept(self)
+            result = self.scope_manager.last_result
+            if primary_cond.unary_op:
+                self.scope_manager.last_result = primary_cond.unary_op, result
 
     def visit_parenth_cond(self, parenth_cond: ParenthCond):
-        pass
+        parenth_cond.condition.accept(self)
 
     def visit_get_currency(self, get_currency: GetCurrency):
         variable = self.scope_manager.get_variable(get_currency.id)
@@ -177,7 +193,7 @@ class Interpreter:
 
     def execute_function(self, function: FunctionDef, arguments):
         check_arguments(function, arguments)
-        self.scope_manager.switch_context_to(function)
+        self.scope_manager.create_new_scope_and_switch(function)
         self.add_arguments_to_function_scope(function, arguments)
         function.block.accept(self)
         function_result = self.scope_manager.last_result

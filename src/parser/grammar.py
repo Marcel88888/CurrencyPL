@@ -59,19 +59,27 @@ class FunctionCall(Node):  # id, “(“, arguments, “)”;
         visitor.visit_function_call(self)
 
 
-class Expression(Node):  # multiplExpr, { additiveOp, multiplExpr } ;
-    def __init__(self, multipl_exprs, additive_ops):
-        self.multipl_exprs = multipl_exprs
-        self.additive_ops = additive_ops
+class GetCurrency(Node):  # id, “.”, “getCurrency()” ;
+    def __init__(self, _id: str):
+        self.id = _id
 
     def accept(self, visitor: Interpreter):
-        visitor.visit_expression(self)
+        visitor.visit_get_currency(self)
+
+
+class ParenthExpr(Node):  # “(”, expression, “)” ;
+    def __init__(self, expression):
+        self.expression = expression
+
+    def accept(self, visitor: Interpreter):
+        visitor.visit_parenth_expr(self)
 
 
 class PrimaryExpr(Node):  # [ “-” ], [currency | getCurrency], ( number | id | parenthExpr | functionCall ),
     # [currency | getCurrency] ;
-    def __init__(self, minus=False, currency1=None, get_currency1=None, number=None, _id=None, parenth_expr=None,
-                 function_call=None, currency2=None, get_currency2=None):
+    def __init__(self, minus: bool = False, currency1: str = None, get_currency1: GetCurrency = None,
+                 number: Union[int, float] = None, _id: str = None, parenth_expr: ParenthExpr = None,
+                 function_call: FunctionCall = None, currency2: str = None, get_currency2: GetCurrency = None):
         self.minus = minus
         self.currency1 = currency1
         self.get_currency1 = get_currency1
@@ -82,6 +90,9 @@ class PrimaryExpr(Node):  # [ “-” ], [currency | getCurrency], ( number | id
         self.currency2 = currency2
         self.get_currency2 = get_currency2
 
+    def accept(self, visitor: Interpreter):
+        visitor.visit_primary_expr(self)
+
 
 class MultiplExpr(Node):  # primaryExpr, { multiplOp, primaryExpr } ;
     def __init__(self, primary_exprs: List[PrimaryExpr], multipl_ops: List[Union[TokenTypes.MULTIPLY,
@@ -89,10 +100,17 @@ class MultiplExpr(Node):  # primaryExpr, { multiplOp, primaryExpr } ;
         self.primary_exprs = primary_exprs
         self.multipl_ops = multipl_ops
 
+    def accept(self, visitor: Interpreter):
+        visitor.visit_multipl_expr(self)
 
-class ParenthExpr(Node):  # “(”, expression, “)” ;
-    def __init__(self, expression: Expression):
-        self.expression = expression
+
+class Expression(Node):  # multiplExpr, { additiveOp, multiplExpr } ;
+    def __init__(self, multipl_exprs: List[MultiplExpr], additive_ops: Union[TokenTypes.PLUS, TokenTypes.MINUS]):
+        self.multipl_exprs = multipl_exprs
+        self.additive_ops = additive_ops
+
+    def accept(self, visitor: Interpreter):
+        visitor.visit_expression(self)
 
 
 class ParenthCond(Node):  # “(“, condition, “)” ;
@@ -205,11 +223,3 @@ class PrintStatement:  # “print”, “(“, printable { “,”, printable },
 
     def accept(self, visitor: Interpreter):
         visitor.visit_print_statement(self)
-
-
-class GetCurrency(Node):  # id, “.”, “getCurrency()” ;
-    def __init__(self, _id: str):
-        self.id = _id
-
-    def accept(self, visitor: Interpreter):
-        visitor.visit_get_currency(self)
