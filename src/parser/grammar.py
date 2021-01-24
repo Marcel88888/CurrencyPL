@@ -8,7 +8,7 @@ class Program(Node):
         self.function_defs = function_defs
 
     def accept(self, visitor):
-        pass
+        visitor.visit_program(self)
 
 
 class FunctionDef:  # signature, “(”, parameters, “)”, “{“, block, “}” ;
@@ -18,7 +18,7 @@ class FunctionDef:  # signature, “(”, parameters, “)”, “{“, block, �
         self.block = block
 
     def accept(self, visitor):
-        return visitor.visit_function_def(self)
+        visitor.visit_function_def(self)
 
 
 class FunctionCall:  # id, “(“, arguments, “)”;

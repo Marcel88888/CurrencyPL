@@ -1,43 +1,36 @@
+from ..exceptions.exceptions import UndeclaredError
+
+
 class Scope:
     def __init__(self):
-        self.stack = []
+        self.symbols = {}
 
-    def pop_function_scope(self):
-        self.stack.pop()
+    def add_or_update_symbol(self, name, value):
+        self.symbols[name] = value
 
-    def add_function_scope(self):
-        self.stack.append(FunctionScope())
+    def get_symbol(self, name):
+        symbol = self.symbols[name]
+        if symbol is None:
+            raise UndeclaredError(name)
+        return symbol
 
-    def add_or_update_variable(self, name, variable):
-        self.stack[-1].variables[name] = variable
+    def copy_symbols_from(self, source):
+        self.symbols.update(source)
+
+
+class ScopeManager:
+    def __init__(self):
+        self.global_scope = Scope()
+        self.current_scope = Scope()
+
+    def add_or_update_variable(self, name, value):
+        self.current_scope.add_or_update_symbol(name, value)
 
     def get_variable(self, name):
-        return self.stack[-1].variables[name]
+        return self.current_scope.get_symbol(name)
 
-    def variable_exists(self, name):
-        return name in self.stack[-1].variables.keys()
+    def add_function(self, name, function):
+        self.global_scope.add_or_update_symbol(name, function)
 
-    def add_argument(self, variable):
-        self.stack[-1].arguments.push(variable)
-
-    def get_argument(self, number):
-        return self.stack[-1].arguments[number]
-
-    def remove_all_arguments(self):
-        self.stack[-1].arguments = []
-
-    def get_arguments_number(self):
-        return len(self.stack[-1].arguments)
-
-    def set_returned_value(self, variable):
-        self.stack[-1].returned_value = variable
-
-    def get_returned_value(self):
-        return self.stack[-1].returned_value
-
-
-class FunctionScope:
-    def __init__(self):
-        self.variables = {}
-        self.arguments = []
-        self.returned_value = None
+    def get_function(self, name):
+        self.global_scope.get_symbol(name)

@@ -47,10 +47,9 @@ class InterpretationError(Exception):
 
 
 class UndeclaredError(InterpretationError):
-    def __init__(self, _type, name):
-        self.__type = _type
+    def __init__(self, name):
         self.__name = name
-        self.__message = f"Error: Undeclared {self.__type} named {self.__name}"
+        self.__message = f'"{self.__name}" undeclared.'
         super().__init__(self.__message)
 
 
@@ -58,6 +57,13 @@ class OverwriteError(InterpretationError):
     def __init__(self, _type, name):
         self.__type = _type
         self.__name = name
-        self.__message = f"Error: Attempt to overwrite {self.__type} named {self.__name}"
+        self.__message = f"Attempt to overwrite {self.__type} named {self.__name}"
         super().__init__(self.__message)
+
+
+class MainNotDeclaredError(Exception):
+    def __init__(self):
+        self.__message = "There is no 'main' function in the program."
+        super().__init__(self.__message)
+
 
