@@ -51,14 +51,6 @@ class UndeclaredError(InterpretationError):
         self.__name = name
         self.__message = f'"{self.__name}" undeclared.'
         super().__init__(self.__message)
-#
-#
-# class OverwriteError(InterpretationError):
-#     def __init__(self, _type, name):
-#         self.__type = _type
-#         self.__name = name
-#         self.__message = f"Attempt to overwrite {self.__type} named {self.__name}"
-#         super().__init__(self.__message)
 
 
 class MainNotDeclaredError(Exception):
@@ -74,24 +66,67 @@ class OverwriteError(Exception):
         super().__init__(self.__message)
 
 
-class VariableNotDeclared(Exception):
+class VariableNotDeclaredError(Exception):
     def __init__(self, name):
         self.__name = name
         self.__message = f"Variable ({self.__name}) was not declared yet."
         super().__init__(self.__message)
 
 
-class CurrencyNotDefined(Exception):
+class CurrencyNotDefinedError(Exception):
     def __init__(self, name):
         self.__name = name
         self.__message = f"Currency not declared for currency type variable named {self.__name}"
         super().__init__(self.__message)
 
 
-class InvalidVariableType(Exception):
+class InvalidVariableTypeError(Exception):
     def __init__(self, name):
         self.__name = name
         self.__message = f"Invalid variable type for: {self.__name}"
         super().__init__(self.__message)
+
+
+class InvalidReturnedTypeError(Exception):
+    def __init__(self, function_returned_type, result_type):
+        self.__function_returned_type = function_returned_type
+        self.__result_type = result_type
+        self.__message =  f"Expected return type: {self.__function_returned_type}, got: {self.__result_type}"
+        super().__init__(self.__message)
+
+
+class NoParentContextError(Exception):
+    def __init__(self, name):
+        self.__name = name
+        self.__message =  f"No parent context for context: {self.__name}"
+        super().__init__(self.__message)
+
+
+class IncorrectArgumentsNumberError(Exception):
+    def __init__(self, function_name: str, required_number: int, actual_number: int):
+        self.__function_name = function_name
+        self.__required_number = required_number
+        self.__actual_number = actual_number
+        self.__message = f"Incorrect arguments number for function: {self.__function_name}. Required: " \
+                         f"{self.__required_number}, got: {self.__actual_number}"
+        super().__init__(self.__message)
+
+
+class InvalidArgumentTypeError(Exception):
+    def __init__(self, function_name, parameter_name):
+        self.__function_name = function_name
+        self.__parameter_name = parameter_name
+        self.__message = f"Invalid argument ({self.__parameter_name}) type for function {self.__function_name}"
+        super().__init__(self.__message)
+
+
+class GetCurrencyError(Exception):
+    def __init__(self, variable_name):
+        self.__variable_name = variable_name
+        self.__message = f"Attempt to call 'get_variable()' on the variable of a type other than the currency type " \
+                         f"({self.__variable_name})"
+
+
+
 
 

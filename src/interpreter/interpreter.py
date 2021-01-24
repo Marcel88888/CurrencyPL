@@ -1,8 +1,10 @@
 from .scope import ScopeManager
 from ..parser.grammar import *
 from .variables import *
+from .utils import *
 from ..lexer.token_types import TokenTypes
-from ..exceptions.exceptions import MainNotDeclaredError, CurrencyNotDefined, InvalidVariableType
+from ..exceptions.exceptions import MainNotDeclaredError, CurrencyNotDefinedError, InvalidVariableTypeError, \
+    GetCurrencyError
 
 
 class Interpreter:
@@ -18,10 +20,9 @@ class Interpreter:
         for function_def in program.function_defs:
             if function_def.signature.id == "main":
                 main_declared = True
+                function_def.accept(self)
         if not main_declared:
             raise MainNotDeclaredError
-        for function_def in program.function_defs:
-            function_def.accept(self)
 
     def visit_function_def(self, function_def: FunctionDef):
         self.scope_manager.add_function(function_def.signature.id, function_def)
@@ -59,11 +60,11 @@ class Interpreter:
             value = init_statement.expression.accept(self)
             currency = self.check_expression_currency(init_statement.expression)
             if currency is None:
-                raise CurrencyNotDefined(name)
+                raise CurrencyNotDefinedError(name)
             variable = CurrencyVariable(name, value, currency)
             self.scope_manager.add_variable(name, variable)
         else:
-            raise InvalidVariableType(name)
+            raise InvalidVariableTypeError(name)
 
     def visit_assign_statement(self, assign_statement: AssignStatement):
         name = assign_statement.id
@@ -81,13 +82,36 @@ class Interpreter:
         print(print_string)
 
     def visit_function_call(self, function_call: FunctionCall):
-        pass
+        name = function_call.id
+        function = self.scope_manager.get_function(name)
+        arguments = [expression.accept(self) for expression in function_call.arguments.expressions]
+        function_result = self.execute_function(function, arguments)
+        return function_result
 
     def visit_expression(self, expression: Expression):
         pass
 
     def visit_condition(self, condition: Condition):
         pass
+
+    def visit_get_currency(self, get_currency: GetCurrency):
+        variable = self.scope_manager.get_variable(get_currency.id)
+        if isinstance(variable, CurrencyVariable):
+            return variable.currency
+        raise GetCurrencyError(get_currency.id)
+
+    def execute_function(self, function: FunctionDef, arguments):
+        check_arguments(function, arguments)
+        self.scope_manager.switch_context_to(function)
+        self.add_arguments_to_function_scope(function, arguments)
+        function_result = function.block.accept(self)
+        check_returned_type(function, function_result)
+        self.scope_manager.switch_to_parent_context()
+        return function_result
+
+    def add_arguments_to_function_scope(self, function: FunctionDef, arguments):
+        for argument, parameter_signature in zip(arguments, function.parameters.signatures):
+            self.scope_manager.current_scope.add_variable(parameter_signature.id, argument)
 
     def check_expression_currency(self, expression: Expression):
         currency = None

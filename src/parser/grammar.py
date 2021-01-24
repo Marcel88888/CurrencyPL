@@ -14,7 +14,7 @@ class Signature:  # type, id ;
 
 
 class Parameters:  # [ signature, { “,”, signature } ];
-    def __init__(self, signatures):
+    def __init__(self, signatures: List[Signature]):
         self.signatures = signatures
 
 
@@ -185,6 +185,9 @@ class ParenthExpr(Node):  # “(”, expression, “)” ;
         self.expression = expression
 
 
-class GetCurrency:  # id, “.”, “getCurrency()” ;
+class GetCurrency(Node):  # id, “.”, “getCurrency()” ;
     def __init__(self, _id: str):
         self.id = _id
+
+    def accept(self, visitor):
+        visitor.visit_get_currency(self)
