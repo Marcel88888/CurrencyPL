@@ -91,7 +91,29 @@ class Interpreter:
     def visit_expression(self, expression: Expression):
         pass
 
-    def visit_condition(self, condition: Condition):
+    def visit_condition(self, condition: Condition):  # andCond, { orOp, andCond } ;
+        for and_cond in condition.and_conds:
+            if and_cond.accept(self):
+                return True
+        return False
+
+    def visit_and_cond(self, and_condition: AndCond):  # equalityCond, { andOp, equalityCond } ;
+        result = True
+        for equality_cond in and_condition.equality_conds:
+            if not equality_cond.accept(self):
+                result = False
+        return result
+
+    def visit_equality_cond(self, equality_condition: EqualityCond):  # relationalCond, [ equalOp, relationalCond ] ;
+        pass
+
+    def visit_relational_cond(self, relational_cond: RelationalCond):
+        pass
+
+    def visit_primary_cond(self, primary_cond: PrimaryCond):
+        pass
+
+    def visit_parenth_cond(self, parenth_cond: ParenthCond):
         pass
 
     def visit_get_currency(self, get_currency: GetCurrency):

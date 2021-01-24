@@ -24,3 +24,15 @@ class DecimalVariable:
     def __init__(self, name, value):
         self.name = name
         self.value = value
+
+    def add(self, number):
+        self.value += number
+
+    def subtract(self, number):
+        self.value -= number
+
+    def multiply(self, number):
+        self.value *= number
+
+    def divide(self, number):
+        self.value /= number
