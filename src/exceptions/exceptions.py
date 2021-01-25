@@ -125,8 +125,10 @@ class GetCurrencyError(Exception):
         self.__variable_name = variable_name
         self.__message = f"Attempt to call 'get_variable()' on the variable of a type other than the currency type " \
                          f"({self.__variable_name})"
+        super().__init__(self.__message)
 
 
-
-
-
+class DivisionZeroError(Exception):
+    def __init__(self):
+        self.__message = f"Attempt to divide by zero)"
+        super().__init__(self.__message)
