@@ -130,5 +130,12 @@ class GetCurrencyError(Exception):
 
 class DivisionZeroError(Exception):
     def __init__(self):
-        self.__message = f"Attempt to divide by zero)"
+        self.__message = f"Attempt to divide by zero"
         super().__init__(self.__message)
+
+
+class CurrencyUsedForDecimalVariableError(Exception):
+    def __init__(self):
+        self.__message = f"Currency used for decimal variable"
+        super().__init__(self.__message)
+

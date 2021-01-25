@@ -156,11 +156,6 @@ def test_condition2():
 
 
 def test_condition3():
-
-
-
-
-
     interpreter = create_interpreter('a < b | c == 5')
     condition = interpreter.parser.parse_condition()
     interpreter.scope_manager.current_scope.add_symbol('a', DecimalVariable('a', 2))
@@ -317,3 +312,45 @@ def test_init_statement4():
     with pytest.raises(InvalidVariableTypeError):
         interpreter.visit_init_statement(init_statement)
 
+
+def test_init_statement5():
+    interpreter = create_interpreter('dec a;')
+    init_statement = interpreter.parser.parse_init_statement()
+    interpreter.visit_init_statement(init_statement)
+    assert len(interpreter.scope_manager.current_scope.symbols) == 1
+    variable = interpreter.scope_manager.current_scope.symbols['a']
+    assert isinstance(variable, DecimalVariable)
+    assert variable.name == 'a'
+    assert variable.value is None
+
+
+def test_init_statement6():
+    interpreter = create_interpreter('cur a;')
+    init_statement = interpreter.parser.parse_init_statement()
+    interpreter.visit_init_statement(init_statement)
+    assert len(interpreter.scope_manager.current_scope.symbols) == 1
+    variable = interpreter.scope_manager.current_scope.symbols['a']
+    assert isinstance(variable, CurrencyVariable)
+    assert variable.name == 'a'
+    assert variable.value is None
+    assert variable.currency is None
+
+
+def test_init_statement8():
+    interpreter = create_interpreter('dec a = 5 eur;')
+    init_statement = interpreter.parser.parse_init_statement()
+    with pytest.raises(CurrencyUsedForDecimalVariableError):
+        interpreter.visit_init_statement(init_statement)
+
+
+def test_init_statement9():  # overwrite
+    interpreter = create_interpreter('dec a = 5;')
+    interpreter.scope_manager.current_scope.add_symbol('a', DecimalVariable('a', 5))
+    init_statement = interpreter.parser.parse_init_statement()
+    with pytest.raises(OverwriteError):
+        interpreter.visit_init_statement(init_statement)
+
+
+# TODO test for init: ggg a = 5;
+# TODO  dec a = 5;
+#       a = 10 pln;

@@ -2,7 +2,7 @@ from .scope import ScopeManager
 from .utils import *
 from ..lexer.token_types import TokenTypes
 from ..exceptions.exceptions import MainNotDeclaredError, CurrencyNotDefinedError, InvalidVariableTypeError, \
-    GetCurrencyError, DivisionZeroError
+    GetCurrencyError, DivisionZeroError, CurrencyUsedForDecimalVariableError
 
 
 class Interpreter:
@@ -55,20 +55,28 @@ class Interpreter:
     def visit_return_statement(self, return_statement):
         return_statement.expression.accept(self)
 
-    # TODO test
     def visit_init_statement(self, init_statement):  # signature, [ assignmentOp, expression ], “;” ;
         name = init_statement.signature.id
         if init_statement.signature.type == TokenTypes.DECIMAL:
-            init_statement.expression.accept(self)
-            variable = DecimalVariable(name, self.scope_manager.last_result.value)
-            self.scope_manager.add_variable(name, variable)
+            if init_statement.expression is not None:
+                init_statement.expression.accept(self)
+                currency = self.check_expression_currency(init_statement.expression)
+                if currency is not None:
+                    raise CurrencyUsedForDecimalVariableError
+                variable = DecimalVariable(name, self.scope_manager.last_result.value)
+                self.scope_manager.add_variable(name, variable)
+            else:
+                self.scope_manager.add_variable(name, DecimalVariable(name))
         elif init_statement.signature.type == TokenTypes.CURRENCY:
-            init_statement.expression.accept(self)
-            currency = self.check_expression_currency(init_statement.expression)
-            if currency is None:
-                raise CurrencyNotDefinedError(name)
-            variable = CurrencyVariable(name, self.scope_manager.last_result.value, currency)
-            self.scope_manager.add_variable(name, variable)
+            if init_statement.expression is not None:
+                init_statement.expression.accept(self)
+                currency = self.check_expression_currency(init_statement.expression)
+                if currency is None:
+                    raise CurrencyNotDefinedError(name)
+                variable = CurrencyVariable(name, self.scope_manager.last_result.value, currency)
+                self.scope_manager.add_variable(name, variable)
+            else:
+                self.scope_manager.add_variable(name, CurrencyVariable(name))
         else:
             raise InvalidVariableTypeError(name)
 

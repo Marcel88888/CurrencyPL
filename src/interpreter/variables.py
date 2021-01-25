@@ -3,7 +3,7 @@ from ..source.currencies_reader import CurrenciesReader
 
 
 class CurrencyVariable:
-    def __init__(self, name: str, value: Union[int, float], currency: str):
+    def __init__(self, name: str, value: Union[int, float] = None, currency: str = None):
         self.name = name
         self.value = value  # amount without currency
         self.currency = currency
@@ -22,7 +22,7 @@ class CurrencyVariable:
 
 
 class DecimalVariable:
-    def __init__(self, name: str, value: Union[int, float]):
+    def __init__(self, name: str, value: Union[int, float] = None):
         self.name = name
         self.value = value
 
