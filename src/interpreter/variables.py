@@ -1,6 +1,3 @@
-from ..source.currencies_reader import CurrenciesReader
-
-
 class CurrencyVariable:
     def __init__(self, name, value, currency):
         self.name = name

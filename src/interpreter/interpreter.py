@@ -8,6 +8,7 @@ from ..exceptions.exceptions import MainNotDeclaredError, CurrencyNotDefinedErro
 
 class Interpreter:
     def __init__(self, program: Program):
+
         self.program = program
         self.scope_manager = ScopeManager()
 
@@ -32,8 +33,7 @@ class Interpreter:
 
     def visit_if_statement(self, if_statement: IfStatement):
         if_statement.condition.accept(self)
-        condition_result = self.scope_manager.last_result
-        if condition_result:
+        if self.scope_manager.last_result:
             for statement in if_statement.block1.statements:
                 statement.accept(self)
         else:
@@ -42,12 +42,10 @@ class Interpreter:
 
     def visit_while_statement(self, while_statement: WhileStatement):
         while_statement.condition.accept(self)
-        condition_result = self.scope_manager.last_result
-        while condition_result:
+        while self.scope_manager.last_result:
             for statement in while_statement.block.statements:
                 statement.accept(self)
             while_statement.condition.accept(self)
-            condition_result = self.scope_manager.last_result
 
     def visit_return_statement(self, return_statement: ReturnStatement):
         return_statement.expression.accept(self)
@@ -56,16 +54,14 @@ class Interpreter:
         name = init_statement.signature.id
         if init_statement.signature.type == TokenTypes.DECIMAL:
             init_statement.expression.accept(self)
-            value = self.scope_manager.last_result
-            variable = DecimalVariable(name, value)
+            variable = DecimalVariable(name, self.scope_manager.last_result)
             self.scope_manager.add_variable(name, variable)
         elif init_statement.signature.type == TokenTypes.CURRENCY:
             init_statement.expression.accept(self)
-            value = self.scope_manager.last_result
             currency = self.check_expression_currency(init_statement.expression)
             if currency is None:
                 raise CurrencyNotDefinedError(name)
-            variable = CurrencyVariable(name, value, currency)
+            variable = CurrencyVariable(name, self.scope_manager.last_result, currency)
             self.scope_manager.add_variable(name, variable)
         else:
             raise InvalidVariableTypeError(name)
@@ -73,8 +69,7 @@ class Interpreter:
     def visit_assign_statement(self, assign_statement: AssignStatement):
         name = assign_statement.id
         assign_statement.expression.accept(self)
-        value = self.scope_manager.last_result
-        self.scope_manager.update_variable(name, value)
+        self.scope_manager.update_variable(name, self.scope_manager.last_result)
 
     def visit_print_statement(self, print_statement: PrintStatement):
         print_string = ''
@@ -83,8 +78,7 @@ class Interpreter:
                 print_string += printable
             else:
                 printable.accept(self)
-                result = self.scope_manager.last_result
-                print_string += str(result)
+                print_string += str(self.scope_manager.last_result)
         print(print_string)
 
     def visit_function_call(self, function_call: FunctionCall):
@@ -96,17 +90,42 @@ class Interpreter:
             arguments.append(self.scope_manager.last_result)
         self.execute_function(function, arguments)
 
-    def visit_expression(self, expression: Expression):
-        pass
+    def visit_expression(self, expression: Expression):  # multiplExpr, { additiveOp, multiplExpr } ;
+        expression.multipl_exprs[0].accept(self)
+        result = self.scope_manager.last_result.value
+        for additive_op, multipl_expr in zip(expression.additive_ops, expression.multipl_exprs[1:]):
+            multipl_expr.accept(self)
+            if additive_op == TokenTypes.PLUS:
+                result += self.scope_manager.last_result.value
+            elif additive_op == TokenTypes.MINUS:
+                result -= self.scope_manager.last_result.value
+        self.scope_manager.last_result.value = result
 
-    def visit_multipl_expr(self, multipl_expr: MultiplExpr):
-        pass
+    def visit_multipl_expr(self, multipl_expr: MultiplExpr):  # primaryExpr, { multiplOp, primaryExpr } ;
+        multipl_expr.primary_exprs[0].accept(self)
+        result = self.scope_manager.last_result.value
+        for multipl_op, primary_expr in zip(multipl_expr.multipl_ops, multipl_expr.primary_exprs[1:]):
+            primary_expr.accept(self)
+            if multipl_op == TokenTypes.MULTIPLY:
+                result *= self.scope_manager.last_result.value
+            elif multipl_op == TokenTypes.DIVIDE:
+                result /= self.scope_manager.last_result.value
+        self.scope_manager.last_result.value = result
 
-    def visit_primary_expr(self, primary_expr: PrimaryExpr):
-        pass
+    def visit_primary_expr(self, primary_expr: PrimaryExpr):  # [ “-” ], [currency | getCurrency], ( number | id |
+        # parenthExpr | functionCall ), [currency | getCurrency] ;
+        if primary_expr.number is not None:
+            self.scope_manager.last_result = primary_expr.number
+        elif primary_expr.id is not None:
+            variable = self.scope_manager.get_variable(primary_expr.id)
+            self.scope_manager.last_result = variable.value
+        elif primary_expr.parenth_expr is not None:
+            primary_expr.parenth_expr.accept(self)
+        elif primary_expr.function_call is not None:
+            primary_expr.function_call.accept(self)
 
-    def visit_parenth_expr(self, parenth_expr: ParenthExpr):
-        pass
+    def visit_parenth_expr(self, parenth_expr: ParenthExpr):  # “(”, expression, “)” ;
+        parenth_expr.expression.accept(self)
 
     def visit_condition(self, condition: Condition):  # andCond, { orOp, andCond } ;
         for and_cond in condition.and_conds:
@@ -170,17 +189,15 @@ class Interpreter:
         result = False
         if primary_cond.parenth_cond is not None:
             primary_cond.parenth_cond.accept(self)
-            condition_result = self.scope_manager.last_result
-            if condition_result:
+            if self.scope_manager.last_result:
                 result = True
             if primary_cond.unary_op:
                 result = not result
             self.scope_manager.last_result = result
         elif primary_cond.expression is not None:
             primary_cond.expression.accept(self)
-            result = self.scope_manager.last_result
             if primary_cond.unary_op:
-                self.scope_manager.last_result = primary_cond.unary_op, result
+                self.scope_manager.last_result = primary_cond.unary_op, self.scope_manager.last_result
 
     def visit_parenth_cond(self, parenth_cond: ParenthCond):
         parenth_cond.condition.accept(self)
@@ -196,8 +213,7 @@ class Interpreter:
         self.scope_manager.create_new_scope_and_switch(function)
         self.add_arguments_to_function_scope(function, arguments)
         function.block.accept(self)
-        function_result = self.scope_manager.last_result
-        check_returned_type(function, function_result)
+        check_returned_type(function, self.scope_manager.last_result)
         self.scope_manager.switch_to_parent_context()
 
     def add_arguments_to_function_scope(self, function: FunctionDef, arguments):

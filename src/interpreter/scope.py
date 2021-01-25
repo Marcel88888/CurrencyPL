@@ -1,5 +1,7 @@
 from ..exceptions.exceptions import UndeclaredError, OverwriteError, VariableNotDeclaredError, NoParentContextError
 from ..parser.grammar import FunctionDef
+from .variables import *
+from typing import Optional, Tuple
 
 
 class Scope:
@@ -25,7 +27,7 @@ class ScopeManager:
     def __init__(self):
         self.global_scope = Scope("global")
         self.current_scope = Scope('main')
-        self.last_result = None
+        self.last_result: Optional[CurrencyVariable, DecimalVariable, bool, str, Tuple, int, float] = None
 
     def add_variable(self, name, variable):
         if name in self.current_scope.symbols.keys():
