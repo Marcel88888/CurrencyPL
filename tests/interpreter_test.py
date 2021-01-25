@@ -1,4 +1,3 @@
-from ..src.source.currencies_reader import CurrenciesReader
 from ..src.lexer.tokens import Tokens
 from ..src.source.source import FileSource
 from ..src.lexer.lexer import Lexer
@@ -350,6 +349,58 @@ def test_init_statement9():  # overwrite
     with pytest.raises(OverwriteError):
         interpreter.visit_init_statement(init_statement)
 
+
+def test_assign_statement():  # with a declared already
+    interpreter = create_interpreter('a = 5;')
+    interpreter.scope_manager.current_scope.add_symbol('a', DecimalVariable('a', 10))
+    assert len(interpreter.scope_manager.current_scope.symbols) == 1
+    variable = interpreter.scope_manager.current_scope.symbols['a']
+    assert isinstance(variable, DecimalVariable)
+    assert variable.name == 'a'
+    assert variable.value == 10
+    assign_statement = interpreter.parser.parse_assign_statement_or_function_call()
+    interpreter.visit_assign_statement(assign_statement)
+    variable = interpreter.scope_manager.current_scope.symbols['a']
+    assert variable.value == 5
+
+
+def test_assign_statement2():  # with a not declared before
+    interpreter = create_interpreter('a = 5;')
+    assign_statement = interpreter.parser.parse_assign_statement_or_function_call()
+    with pytest.raises(VariableNotDeclaredError):
+        interpreter.visit_assign_statement(assign_statement)
+
+
+def test_assign_statement3():  # with a declared already
+    interpreter = create_interpreter('a = 5 pln;')
+    interpreter.scope_manager.current_scope.add_symbol('a', CurrencyVariable('a', 10, 'eur'))
+    assert len(interpreter.scope_manager.current_scope.symbols) == 1
+    variable = interpreter.scope_manager.current_scope.symbols['a']
+    assert isinstance(variable, CurrencyVariable)
+    assert variable.name == 'a'
+    assert variable.value == 10
+    assert variable.currency == 'eur'
+    assign_statement = interpreter.parser.parse_assign_statement_or_function_call()
+    interpreter.visit_assign_statement(assign_statement)
+    variable = interpreter.scope_manager.current_scope.symbols['a']
+    assert variable.value == 5
+    assert variable.currency == 'pln'
+
+
+def test_assign_statement4():  # with a not declared before
+    interpreter = create_interpreter('a = 5 eur;')
+    assign_statement = interpreter.parser.parse_assign_statement_or_function_call()
+    with pytest.raises(VariableNotDeclaredError):
+        interpreter.visit_assign_statement(assign_statement)
+
+
+# TODO bez deklaracji i z deklaracja
+# TODO cur a; a = 5 eur;
+# TODO cur a; a = 5;
+# TODO dec a = 5; a = 10 eur;
+# TODO a = 5 without type declared before
+# TODO cur a = 5 eur; a = 10;
+# TODO cur; a = 10;
 
 # TODO test for init: ggg a = 5;
 # TODO  dec a = 5;

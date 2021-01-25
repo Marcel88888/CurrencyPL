@@ -35,10 +35,10 @@ class ScopeManager:
             raise OverwriteError(name)
         self.current_scope.add_symbol(name, variable)
 
-    def update_variable(self, name, value):
+    def update_variable(self, name, variable):
         if name not in self.current_scope.symbols.keys():
             raise VariableNotDeclaredError(name)
-        self.current_scope.symbols[name].value = value
+        self.current_scope.symbols[name] = variable
 
     def get_variable(self, name):
         return self.current_scope.get_symbol(name)
