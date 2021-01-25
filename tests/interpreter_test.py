@@ -11,10 +11,6 @@ import pytest
 
 
 def create_interpreter(source_string):
-    currencies_reader = CurrenciesReader("resources/currencies.json")
-    currencies = currencies_reader.currencies
-    for currency in currencies:
-        Tokens.keywords[currency.name] = TokenTypes.CURRENCY_TYPE
     parser = create_parser(source_string)
     return Interpreter(parser)
 
@@ -23,7 +19,7 @@ def create_parser(source_string):
     currencies_reader = CurrenciesReader("resources/currencies.json")
     currencies = currencies_reader.currencies
     for currency in currencies:
-        Tokens.keywords[currency.name] = TokenTypes.CURRENCY_TYPE
+        Tokens.keywords[currency] = TokenTypes.CURRENCY_TYPE
     lexer = Lexer(FileSource(io.StringIO(source_string)))
     return Parser(lexer)
 
@@ -31,12 +27,10 @@ def create_parser(source_string):
 def test_get_currency():
     interpreter = create_interpreter('var.get_currency()')
     get_currency = interpreter.parser.parse_get_currency()
-    interpreter.scope_manager.current_scope.add_symbol('var', CurrencyVariable('var', 10, Currency('eur', 1.45)))
+    interpreter.scope_manager.current_scope.add_symbol('var', CurrencyVariable('var', 10, 'eur'))
     interpreter.visit_get_currency(get_currency)
     assert interpreter.scope_manager.last_result is not None
-    assert isinstance(interpreter.scope_manager.last_result, Currency)
-    assert interpreter.scope_manager.last_result.name == 'eur'
-    assert interpreter.scope_manager.last_result.rate == 1.45
+    assert interpreter.scope_manager.last_result == 'eur'
 
 
 def test_get_currency2():
@@ -261,3 +255,65 @@ def test_expression3():
     interpreter.visit_expression(expression)
     assert isinstance(interpreter.scope_manager.last_result, DecimalVariable)
     assert interpreter.scope_manager.last_result.value == 48
+
+
+def test_expression4():
+    interpreter = create_interpreter('2 + 5')
+    expression = interpreter.parser.parse_expression()
+    interpreter.visit_expression(expression)
+    assert isinstance(interpreter.scope_manager.last_result, DecimalVariable)
+    assert interpreter.scope_manager.last_result.value == 7
+
+
+def test_print_statement():
+    interpreter = create_interpreter('print("result: ", 2 + 2);')
+    print_statement = interpreter.parser.parse_print_statement()
+    interpreter.visit_print_statement(print_statement)
+    assert interpreter.scope_manager.last_result == 'result: 4.0'
+
+
+def test_print_statement2():
+    interpreter = create_interpreter('print("result: ", 2 + 2, " is correct. ", a - b);')
+    print_statement = interpreter.parser.parse_print_statement()
+    interpreter.scope_manager.current_scope.add_symbol('a', DecimalVariable('a', 5))
+    interpreter.scope_manager.current_scope.add_symbol('b', DecimalVariable('b', 3))
+    interpreter.visit_print_statement(print_statement)
+    assert interpreter.scope_manager.last_result == 'result: 4.0 is correct. 2'
+
+
+def test_init_statement():
+    interpreter = create_interpreter('dec a = 5;')
+    init_statement = interpreter.parser.parse_init_statement()
+    interpreter.visit_init_statement(init_statement)
+    assert len(interpreter.scope_manager.current_scope.symbols) == 1
+    variable = interpreter.scope_manager.current_scope.symbols['a']
+    assert isinstance(variable, DecimalVariable)
+    assert variable.name == 'a'
+    assert variable.value == 5
+
+
+def test_init_statement2():
+    interpreter = create_interpreter('cur a = 5 eur;')
+    init_statement = interpreter.parser.parse_init_statement()
+    interpreter.visit_init_statement(init_statement)
+    assert len(interpreter.scope_manager.current_scope.symbols) == 1
+    variable = interpreter.scope_manager.current_scope.symbols['a']
+    assert isinstance(variable, CurrencyVariable)
+    assert variable.name == 'a'
+    assert variable.value == 5
+    assert variable.currency == 'eur'
+
+
+def test_init_statement3():
+    interpreter = create_interpreter('cur a = 5;')
+    init_statement = interpreter.parser.parse_init_statement()
+    with pytest.raises(CurrencyNotDefinedError):
+        interpreter.visit_init_statement(init_statement)
+
+
+def test_init_statement4():
+    interpreter = create_interpreter('void a = 5;')
+    init_statement = interpreter.parser.parse_init_statement()
+    with pytest.raises(InvalidVariableTypeError):
+        interpreter.visit_init_statement(init_statement)
+

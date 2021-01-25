@@ -13,7 +13,7 @@ def create_parser(source_string):
     currencies_reader = CurrenciesReader("resources/currencies.json")
     currencies = currencies_reader.currencies
     for currency in currencies:
-        Tokens.keywords[currency.name] = TokenTypes.CURRENCY_TYPE
+        Tokens.keywords[currency] = TokenTypes.CURRENCY_TYPE
     lexer = Lexer(FileSource(io.StringIO(source_string)))
     return Parser(lexer)
 

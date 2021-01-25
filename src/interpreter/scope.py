@@ -1,7 +1,8 @@
 from ..exceptions.exceptions import UndeclaredError, OverwriteError, VariableNotDeclaredError, NoParentContextError
 from .variables import *
-# from ..parser.grammar import FunctionDef
 from typing import Optional, Tuple
+
+# TODO tests for errors
 
 
 class Scope:

@@ -60,14 +60,14 @@ class Interpreter:
         name = init_statement.signature.id
         if init_statement.signature.type == TokenTypes.DECIMAL:
             init_statement.expression.accept(self)
-            variable = DecimalVariable(name, self.scope_manager.last_result)
+            variable = DecimalVariable(name, self.scope_manager.last_result.value)
             self.scope_manager.add_variable(name, variable)
         elif init_statement.signature.type == TokenTypes.CURRENCY:
             init_statement.expression.accept(self)
             currency = self.check_expression_currency(init_statement.expression)
             if currency is None:
                 raise CurrencyNotDefinedError(name)
-            variable = CurrencyVariable(name, self.scope_manager.last_result, currency)
+            variable = CurrencyVariable(name, self.scope_manager.last_result.value, currency)
             self.scope_manager.add_variable(name, variable)
         else:
             raise InvalidVariableTypeError(name)
@@ -78,15 +78,16 @@ class Interpreter:
         assign_statement.expression.accept(self)
         self.scope_manager.update_variable(name, self.scope_manager.last_result)
 
-    # TODO test
     def visit_print_statement(self, print_statement):
         print_string = ''
         for printable in print_statement.printables:
             if isinstance(printable, str):
+                printable = printable.replace('"', '')
                 print_string += printable
             else:
                 printable.accept(self)
-                print_string += str(self.scope_manager.last_result)
+                print_string += str(self.scope_manager.last_result.value)
+        self.scope_manager.last_result = print_string  # only for testing
         print(print_string)
 
     # TODO test

@@ -1,15 +1,15 @@
 from typing import Union
-from ..source.currency import Currency
+from ..source.currencies_reader import CurrenciesReader
 
 
 class CurrencyVariable:
-    def __init__(self, name: str, value: Union[int, float], currency: Currency):
+    def __init__(self, name: str, value: Union[int, float], currency: str):
         self.name = name
         self.value = value  # amount without currency
         self.currency = currency
-        self.currency_value = self.value * self.currency.rate
+        # self.currency_value = self.value * self.currency.rate
 
-    def calc_cur_val(self, currency: Currency = None, value: Union[int, float] = None):
+    def calc_cur_val(self, currency=None, value: Union[int, float] = None):
         if currency is None and value is None:
             return
         if currency is not None:
