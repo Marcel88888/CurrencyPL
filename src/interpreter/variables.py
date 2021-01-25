@@ -1,11 +1,15 @@
+from typing import Union
+from ..source.currency import Currency
+
+
 class CurrencyVariable:
-    def __init__(self, name, value, currency):
+    def __init__(self, name: str, value: Union[int, float], currency: Currency):
         self.name = name
         self.value = value  # amount without currency
         self.currency = currency
         self.currency_value = self.value * self.currency.rate
 
-    def calc_cur_val(self, currency=None, value=None):
+    def calc_cur_val(self, currency: Currency = None, value: Union[int, float] = None):
         if currency is None and value is None:
             return
         if currency is not None:
@@ -18,18 +22,18 @@ class CurrencyVariable:
 
 
 class DecimalVariable:
-    def __init__(self, name, value):
+    def __init__(self, name: str, value: Union[int, float]):
         self.name = name
         self.value = value
 
     def add(self, number):
-        self.value += number
+        self.value += number.value
 
     def subtract(self, number):
-        self.value -= number
+        self.value -= number.value
 
     def multiply(self, number):
-        self.value *= number
+        self.value *= number.value
 
     def divide(self, number):
-        self.value /= number
+        self.value /= number.value

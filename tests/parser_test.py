@@ -1,11 +1,10 @@
 import io
 import pytest
 from ..src.lexer.lexer import Lexer
-from ..src.lexer.token import TokenTypes
 from ..src.lexer.tokens import Tokens
 from ..src.source.currencies_reader import CurrenciesReader
 from ..src.source.source import FileSource
-from ..src.parser.parser import Parser
+from ..src.parser import parser as p
 from ..src.parser.grammar import *
 from ..src.exceptions.exceptions import _SyntaxError
 
@@ -16,7 +15,7 @@ def create_parser(source_string):
     for currency in currencies:
         Tokens.keywords[currency.name] = TokenTypes.CURRENCY_TYPE
     lexer = Lexer(FileSource(io.StringIO(source_string)))
-    return Parser(lexer)
+    return p.Parser(lexer)
 
 
 def test_program():

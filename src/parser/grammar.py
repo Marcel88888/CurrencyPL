@@ -95,8 +95,7 @@ class PrimaryExpr(Node):  # [ “-” ], [currency | getCurrency], ( number | id
 
 
 class MultiplExpr(Node):  # primaryExpr, { multiplOp, primaryExpr } ;
-    def __init__(self, primary_exprs: List[PrimaryExpr], multipl_ops: List[Union[TokenTypes.MULTIPLY,
-                                                                                 TokenTypes.DIVIDE]]):
+    def __init__(self, primary_exprs: List[PrimaryExpr], multipl_ops: List):
         self.primary_exprs = primary_exprs
         self.multipl_ops = multipl_ops
 
@@ -105,7 +104,7 @@ class MultiplExpr(Node):  # primaryExpr, { multiplOp, primaryExpr } ;
 
 
 class Expression(Node):  # multiplExpr, { additiveOp, multiplExpr } ;
-    def __init__(self, multipl_exprs: List[MultiplExpr], additive_ops: Union[TokenTypes.PLUS, TokenTypes.MINUS]):
+    def __init__(self, multipl_exprs: List[MultiplExpr], additive_ops: List):
         self.multipl_exprs = multipl_exprs
         self.additive_ops = additive_ops
 
@@ -132,11 +131,7 @@ class PrimaryCond(Node):  # [ unaryOp ], ( parenthCond | expression ) ;
 
 
 class RelationalCond(Node):  # primaryCond, [ relationOp, primaryCond ];
-    def __init__(self, primary_cond1: PrimaryCond, relation_op: Union[TokenTypes.GREATER_THAN,
-                                                                      TokenTypes.LESS_THAN,
-                                                                      TokenTypes.GREATER_OR_EQUAL,
-                                                                      TokenTypes.LESS_OR_EQUAL] = None,
-                 primary_cond2: PrimaryCond = None):
+    def __init__(self, primary_cond1: PrimaryCond, relation_op=None, primary_cond2: PrimaryCond = None):
         self.primary_cond1 = primary_cond1
         self.relation_op = relation_op
         self.primary_cond2 = primary_cond2
@@ -146,8 +141,7 @@ class RelationalCond(Node):  # primaryCond, [ relationOp, primaryCond ];
 
 
 class EqualityCond(Node):  # relationalCond, [ equalOp, relationalCond ] ;
-    def __init__(self, relational_cond1: RelationalCond, equal_op: Union[TokenTypes.EQUAL, TokenTypes.NOT_EQUAL] = None,
-                 relational_cond2: RelationalCond = None):
+    def __init__(self, relational_cond1: RelationalCond, equal_op=None, relational_cond2: RelationalCond = None):
         self.relational_cond1 = relational_cond1
         self.equal_op = equal_op
         self.relational_cond2 = relational_cond2

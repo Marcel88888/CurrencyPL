@@ -1,6 +1,6 @@
 from ..exceptions.exceptions import UndeclaredError, OverwriteError, VariableNotDeclaredError, NoParentContextError
-from ..parser.grammar import FunctionDef
 from .variables import *
+# from ..parser.grammar import FunctionDef
 from typing import Optional, Tuple
 
 
@@ -48,7 +48,7 @@ class ScopeManager:
     def get_function(self, name):
         self.global_scope.get_symbol(name)
 
-    def create_new_scope_and_switch(self, function: FunctionDef):
+    def create_new_scope_and_switch(self, function):
         function_scope = Scope(function.signature.id, self.current_scope)
         self.current_scope = function_scope
 
@@ -56,4 +56,3 @@ class ScopeManager:
         if not self.current_scope.parent:
             raise NoParentContextError(self.current_scope.name)
         self.current_scope = self.current_scope.parent
-

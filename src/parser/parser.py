@@ -1,5 +1,4 @@
 from ..exceptions.exceptions import _SyntaxError
-from ..lexer.token_types import TokenTypes
 from .grammar import *
 
 
