@@ -8,6 +8,7 @@ from ..exceptions.exceptions import MainNotDeclaredError, CurrencyNotDefinedErro
 
 class Interpreter:
     def __init__(self, parser):
+
         self.parser = parser
         self.scope_manager = ScopeManager()
 
@@ -25,11 +26,9 @@ class Interpreter:
         if not main_declared:
             raise MainNotDeclaredError
 
-    # TODO test
     def visit_function_def(self, function_def):
         self.scope_manager.add_function(function_def.signature.id, function_def)
 
-    # TODO test
     def visit_block(self, block):
         for statement in block.statements:
             statement.accept(self)
@@ -50,7 +49,6 @@ class Interpreter:
                 statement.accept(self)
             while_statement.condition.accept(self)
 
-    # TODO test
     def visit_return_statement(self, return_statement):
         return_statement.expression.accept(self)
 

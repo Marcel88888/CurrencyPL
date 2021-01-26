@@ -677,4 +677,45 @@ def test_while_statement():
     assert interpreter.scope_manager.current_scope.symbols['a'].value == 3
 
 
+def test_function_def():  # signature, “(”, parameters, “)”, “{“, block, “}” ;
+    interpreter = create_interpreter('void calculate(dec a, dec b) {'
+                                     ' dec result = a + b;'
+                                     '}')
+    function_def = interpreter.parser.parse_function_def()
+    interpreter.visit_function_def(function_def)
+    assert len(interpreter.scope_manager.global_scope.symbols) == 1
+    assert len(interpreter.scope_manager.global_scope.symbols['calculate'].parameters.signatures) == 2
+    assert len(interpreter.scope_manager.global_scope.symbols['calculate'].block.statements) == 1
+
+
+def test_return_statement():  # signature, “(”, parameters, “)”, “{“, block, “}” ;
+    interpreter = create_interpreter('return a + b;')
+    interpreter.scope_manager.current_scope.add_symbol('a', DecimalVariable('a', 3))
+    interpreter.scope_manager.current_scope.add_symbol('b', DecimalVariable('b', 5))
+    return_statement = interpreter.parser.parse_return_statement()
+    interpreter.visit_return_statement(return_statement)
+    assert isinstance(interpreter.scope_manager.last_result, DecimalVariable)
+    assert interpreter.scope_manager.last_result.value == 8
+
+
+def test_return_statement2():  # signature, “(”, parameters, “)”, “{“, block, “}” ;
+    interpreter = create_interpreter('return result;')
+    interpreter.scope_manager.current_scope.add_symbol('result', DecimalVariable('result', 3))
+    return_statement = interpreter.parser.parse_return_statement()
+    interpreter.visit_return_statement(return_statement)
+    assert isinstance(interpreter.scope_manager.last_result, DecimalVariable)
+    assert interpreter.scope_manager.last_result.value == 3
+
+
+def test_return_statement3():  # signature, “(”, parameters, “)”, “{“, block, “}” ;
+    interpreter = create_interpreter('return -result;')
+    interpreter.scope_manager.current_scope.add_symbol('result', DecimalVariable('result', 3))
+    return_statement = interpreter.parser.parse_return_statement()
+    interpreter.visit_return_statement(return_statement)
+    assert interpreter.scope_manager.current_scope.symbols['result'].value == 3
+    assert isinstance(interpreter.scope_manager.last_result, DecimalVariable)
+    assert interpreter.scope_manager.last_result.value == -3
+
+
+
 # TODO test for init: ggg a = 5;

@@ -1,5 +1,4 @@
 from ..exceptions.exceptions import InvalidReturnedTypeError, IncorrectArgumentsNumberError, InvalidArgumentTypeError
-# from ..parser.grammar import FunctionDef
 from .variables import *
 from ..lexer.token_types import TokenTypes
 
