@@ -20,14 +20,16 @@ class Interpreter:
     def visit_program(self, program):
         main_declared = False
         for function_def in program.function_defs:
+            function_def.accept(self)
             if function_def.signature.id == "main":
                 main_declared = True
-                function_def.accept(self)
         if not main_declared:
             raise MainNotDeclaredError
 
     def visit_function_def(self, function_def):
         self.scope_manager.add_function(function_def.signature.id, function_def)
+        if function_def.signature.id == "main":
+            function_def.block.accept(self)
 
     def visit_block(self, block):
         for statement in block.statements:
@@ -287,7 +289,7 @@ class Interpreter:
     # TODO test
     def add_arguments_to_function_scope(self, function, arguments):
         for argument, parameter_signature in zip(arguments, function.parameters.signatures):
-            self.scope_manager.current_scope.add_variable(parameter_signature.id, argument)
+            self.scope_manager.add_variable(parameter_signature.id, argument)
 
     # TODO test
     def check_primary_expr_currency(self, primary_expr):

@@ -717,5 +717,49 @@ def test_return_statement3():  # signature, “(”, parameters, “)”, “{�
     assert interpreter.scope_manager.last_result.value == -3
 
 
+def test_visit_program():
+    interpreter = create_interpreter('dec add(dec a, dec b) {'
+                                     'return a + b;'
+                                     '}'
+                                     ''
+                                     'void main() {'
+                                     'dec result = add(1, 2);'
+                                     '}')
+    interpreter.parser.parse_program()
+    program = interpreter.parser.program
+    assert len(program.function_defs) == 2
+    interpreter.visit_program(program)
+    assert len(interpreter.scope_manager.global_scope.symbols) == 2
+    assert len(interpreter.scope_manager.current_scope.symbols) == 1
+    result = interpreter.scope_manager.current_scope.symbols['result']
+    assert isinstance(result, DecimalVariable)
+    assert result.name == 'result'
+    assert result.value == 3
 
+
+def test_visit_program2():
+    interpreter = create_interpreter('dec add(dec a, dec b) {'
+                                     'return a + b;'
+                                     '}'
+                                     ''
+                                     'void main() {'
+                                     'dec b = 1;'
+                                     'dec c = 2;'
+                                     'dec a = add(b, c);'
+                                     '}')
+    interpreter.parser.parse_program()
+    program = interpreter.parser.program
+    assert len(program.function_defs) == 2
+    interpreter.visit_program(program)
+    assert len(interpreter.scope_manager.global_scope.symbols) == 2
+    assert len(interpreter.scope_manager.current_scope.symbols) == 3
+    result = interpreter.scope_manager.current_scope.symbols['a']
+    assert isinstance(result, DecimalVariable)
+    assert result.name == 'a'
+    assert result.value == 3
+
+
+
+# TODO triple call
+# TODO with errors from utils
 # TODO test for init: ggg a = 5;

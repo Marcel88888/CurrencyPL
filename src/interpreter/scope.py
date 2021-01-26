@@ -55,7 +55,7 @@ class ScopeManager:
         self.global_scope.add_symbol(name, function)
 
     def get_function(self, name):
-        self.global_scope.get_symbol(name)
+        return self.global_scope.get_symbol(name)
 
     def create_new_scope_and_switch(self, function):
         function_scope = Scope(function.signature.id, self.current_scope)

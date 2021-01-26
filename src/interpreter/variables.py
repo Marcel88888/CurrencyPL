@@ -2,6 +2,8 @@ from typing import Union
 from ..source.currencies_reader import CurrenciesReader
 
 
+# TODO tests for exceptions
+
 class CurrencyVariable:
     def __init__(self, name: str, value: Union[int, float] = None, currency: str = None):
         self.name = name
