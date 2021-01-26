@@ -402,6 +402,63 @@ def test_init_statement9():  # overwrite
         interpreter.visit_init_statement(init_statement)
 
 
+def test_init_statement10():
+    interpreter = create_interpreter('dec a = -b;')
+    interpreter.scope_manager.current_scope.add_symbol('b', DecimalVariable('b', 5))
+    init_statement = interpreter.parser.parse_init_statement()
+    interpreter.visit_init_statement(init_statement)
+    assert len(interpreter.scope_manager.current_scope.symbols) == 2
+    variable = interpreter.scope_manager.current_scope.symbols['b']
+    assert isinstance(variable, DecimalVariable)
+    assert variable.name == 'b'
+    assert variable.value == 5
+    variable = interpreter.scope_manager.current_scope.symbols['a']
+    assert isinstance(variable, DecimalVariable)
+    assert variable.name == 'a'
+    assert variable.value == -5
+
+
+def test_init_statement11():
+    interpreter = create_interpreter('dec a = -5;')
+    interpreter.scope_manager.current_scope.add_symbol('b', DecimalVariable('b', 5))
+    init_statement = interpreter.parser.parse_init_statement()
+    interpreter.visit_init_statement(init_statement)
+    variable = interpreter.scope_manager.current_scope.symbols['a']
+    assert isinstance(variable, DecimalVariable)
+    assert variable.name == 'a'
+    assert variable.value == -5
+
+
+def test_init_statement12():
+    interpreter = create_interpreter('cur a = -b;')
+    interpreter.scope_manager.current_scope.add_symbol('b', CurrencyVariable('b', 5, 'eur'))
+    init_statement = interpreter.parser.parse_init_statement()
+    interpreter.visit_init_statement(init_statement)
+    assert len(interpreter.scope_manager.current_scope.symbols) == 2
+    variable = interpreter.scope_manager.current_scope.symbols['b']
+    assert isinstance(variable, CurrencyVariable)
+    assert variable.name == 'b'
+    assert variable.value == 5
+    assert variable.currency == 'eur'
+    variable = interpreter.scope_manager.current_scope.symbols['a']
+    assert isinstance(variable, CurrencyVariable)
+    assert variable.name == 'a'
+    assert variable.value == -5
+    assert variable.currency == 'eur'
+
+
+def test_init_statement13():
+    interpreter = create_interpreter('cur a = -5 eur;')
+    init_statement = interpreter.parser.parse_init_statement()
+    interpreter.visit_init_statement(init_statement)
+    assert len(interpreter.scope_manager.current_scope.symbols) == 1
+    variable = interpreter.scope_manager.current_scope.symbols['a']
+    assert isinstance(variable, CurrencyVariable)
+    assert variable.name == 'a'
+    assert variable.value == -5
+    assert variable.currency == 'eur'
+
+
 def test_assign_statement():  # with 'a' already declared
     interpreter = create_interpreter('a = 5;')
     interpreter.scope_manager.current_scope.add_symbol('a', DecimalVariable('a', 10))
@@ -530,5 +587,70 @@ def test_assign_statement10():  # dec a; a = b + c;
     assert isinstance(variable, DecimalVariable)
     assert variable.name == 'a'
     assert variable.value == 101
+
+
+def test_assign_statement11():
+    interpreter = create_interpreter('a = b;')
+    interpreter.scope_manager.current_scope.add_symbol('a', DecimalVariable('a', 5))
+    interpreter.scope_manager.current_scope.add_symbol('b', DecimalVariable('b', 10))
+    assert len(interpreter.scope_manager.current_scope.symbols) == 2
+    variable = interpreter.scope_manager.current_scope.symbols['a']
+    assert isinstance(variable, DecimalVariable)
+    assert variable.name == 'a'
+    assert variable.value == 5
+    variable = interpreter.scope_manager.current_scope.symbols['b']
+    assert isinstance(variable, DecimalVariable)
+    assert variable.name == 'b'
+    assert variable.value == 10
+    assign_statement = interpreter.parser.parse_assign_statement_or_function_call()
+    interpreter.visit_assign_statement(assign_statement)
+    variable = interpreter.scope_manager.current_scope.symbols['a']
+    assert isinstance(variable, DecimalVariable)
+    assert variable.name == 'a'
+    assert variable.value == 10
+
+
+def test_assign_statement12():
+    interpreter = create_interpreter('a = b;')
+    interpreter.scope_manager.current_scope.add_symbol('a', CurrencyVariable('a', 5, 'pln'))
+    interpreter.scope_manager.current_scope.add_symbol('b', CurrencyVariable('b', 10, 'eur'))
+    assert len(interpreter.scope_manager.current_scope.symbols) == 2
+    variable = interpreter.scope_manager.current_scope.symbols['a']
+    assert isinstance(variable, CurrencyVariable)
+    assert variable.name == 'a'
+    assert variable.value == 5
+    assert variable.currency == 'pln'
+    variable = interpreter.scope_manager.current_scope.symbols['b']
+    assert isinstance(variable, CurrencyVariable)
+    assert variable.name == 'b'
+    assert variable.value == 10
+    assert variable.currency == 'eur'
+    assign_statement = interpreter.parser.parse_assign_statement_or_function_call()
+    interpreter.visit_assign_statement(assign_statement)
+    variable = interpreter.scope_manager.current_scope.symbols['a']
+    assert isinstance(variable, CurrencyVariable)
+    assert variable.name == 'a'
+    assert variable.value == 10
+    assert variable.currency == 'eur'
+
+
+def test_assign_statement13():
+    interpreter = create_interpreter('a = b;')
+    interpreter.scope_manager.current_scope.add_symbol('a', DecimalVariable('a', 5))
+    interpreter.scope_manager.current_scope.add_symbol('b', CurrencyVariable('b', 10, 'eur'))
+    assert len(interpreter.scope_manager.current_scope.symbols) == 2
+    variable = interpreter.scope_manager.current_scope.symbols['a']
+    assert isinstance(variable, DecimalVariable)
+    assert variable.name == 'a'
+    assert variable.value == 5
+    variable = interpreter.scope_manager.current_scope.symbols['b']
+    assert isinstance(variable, CurrencyVariable)
+    assert variable.name == 'b'
+    assert variable.value == 10
+    assert variable.currency == 'eur'
+    assign_statement = interpreter.parser.parse_assign_statement_or_function_call()
+    with pytest.raises(ChangeVariableTypeError):
+        interpreter.visit_assign_statement(assign_statement)
+
 
 # TODO test for init: ggg a = 5;

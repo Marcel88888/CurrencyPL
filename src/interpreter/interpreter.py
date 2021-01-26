@@ -1,3 +1,4 @@
+import copy
 from .scope import ScopeManager
 from .utils import *
 from ..lexer.token_types import TokenTypes
@@ -59,12 +60,23 @@ class Interpreter:
         name = init_statement.signature.id
         if init_statement.signature.type == TokenTypes.DECIMAL:
             if init_statement.expression is not None:
+                for key in self.scope_manager.current_scope.symbols.keys():
+                    print(key, ': ', self.scope_manager.current_scope.symbols[key].value)
+                print('---------')
                 init_statement.expression.accept(self)
+                for key in self.scope_manager.current_scope.symbols.keys():
+                    print(key, ': ', self.scope_manager.current_scope.symbols[key].value)
+                print('---------')
                 if isinstance(self.scope_manager.last_result, CurrencyVariable):
                     raise CurrencyUsedForDecimalVariableError
                 else:
                     variable = DecimalVariable(name, self.scope_manager.last_result.value)
+                    # for key in self.scope_manager.current_scope.symbols.keys():
+                    #     print(key, ': ', self.scope_manager.current_scope.symbols[key].value)
                     self.scope_manager.add_variable(name, variable)
+                    # print('---------')
+                    # for key in self.scope_manager.current_scope.symbols.keys():
+                    #     print(key, ': ', self.scope_manager.current_scope.symbols[key].value)
             else:
                 self.scope_manager.add_variable(name, DecimalVariable(name))
         elif init_statement.signature.type == TokenTypes.CURRENCY:
@@ -156,7 +168,8 @@ class Interpreter:
                     self.scope_manager.last_result = DecimalVariable('', -primary_expr.number)
         elif primary_expr.id is not None:
             variable = self.scope_manager.get_variable(primary_expr.id)
-            self.scope_manager.last_result = variable
+            var = copy.copy(variable)
+            self.scope_manager.last_result = var
             if minus is True:
                 self.scope_manager.last_result.value *= -1
         elif primary_expr.parenth_expr is not None:  # TODO
