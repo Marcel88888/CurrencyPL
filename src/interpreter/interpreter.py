@@ -64,7 +64,7 @@ class Interpreter:
                     raise CurrencyUsedForDecimalVariableError
                 else:
                     variable = DecimalVariable(name, self.scope_manager.last_result.value)
-                self.scope_manager.add_variable(name, variable)
+                    self.scope_manager.add_variable(name, variable)
             else:
                 self.scope_manager.add_variable(name, DecimalVariable(name))
         elif init_statement.signature.type == TokenTypes.CURRENCY:
@@ -84,6 +84,7 @@ class Interpreter:
     def visit_assign_statement(self, assign_statement):
         name = assign_statement.id
         assign_statement.expression.accept(self)
+        self.scope_manager.last_result.name = name
         self.scope_manager.update_variable(name, self.scope_manager.last_result)
 
     def visit_print_statement(self, print_statement):

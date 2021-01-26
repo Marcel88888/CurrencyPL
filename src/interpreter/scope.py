@@ -1,6 +1,8 @@
-from ..exceptions.exceptions import UndeclaredError, OverwriteError, VariableNotDeclaredError, NoParentContextError
+from ..exceptions.exceptions import UndeclaredError, OverwriteError, VariableNotDeclaredError, NoParentContextError, \
+    ChangeVariableTypeError, CurrencyNotDefinedOrChangeVariableTypeError
 from .variables import *
 from typing import Optional, Tuple
+
 
 # TODO tests for errors
 
@@ -38,6 +40,12 @@ class ScopeManager:
     def update_variable(self, name, variable):
         if name not in self.current_scope.symbols.keys():
             raise VariableNotDeclaredError(name)
+        if isinstance(self.current_scope.symbols[name], CurrencyVariable) \
+                and self.current_scope.symbols[name].currency is None \
+                and isinstance(variable, DecimalVariable):
+            raise CurrencyNotDefinedOrChangeVariableTypeError(name)
+        if not isinstance(variable, type(self.current_scope.symbols[name])):
+            raise ChangeVariableTypeError(name)
         self.current_scope.symbols[name] = variable
 
     def get_variable(self, name):

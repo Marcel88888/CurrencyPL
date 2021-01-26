@@ -58,7 +58,7 @@ def test_relational_cond2():
     assert interpreter.scope_manager.last_result is True
 
 
-def test_relational_cond3():  # TODO sprawdzic wynik b * c
+def test_relational_cond3():
     interpreter = create_interpreter('a < b * c')
     relational_cond = interpreter.parser.parse_relational_cond()
     interpreter.scope_manager.current_scope.add_symbol('a', DecimalVariable('a', 3))
@@ -350,7 +350,7 @@ def test_init_statement9():  # overwrite
         interpreter.visit_init_statement(init_statement)
 
 
-def test_assign_statement():  # with a declared already
+def test_assign_statement():  # with 'a' already declared
     interpreter = create_interpreter('a = 5;')
     interpreter.scope_manager.current_scope.add_symbol('a', DecimalVariable('a', 10))
     assert len(interpreter.scope_manager.current_scope.symbols) == 1
@@ -361,17 +361,18 @@ def test_assign_statement():  # with a declared already
     assign_statement = interpreter.parser.parse_assign_statement_or_function_call()
     interpreter.visit_assign_statement(assign_statement)
     variable = interpreter.scope_manager.current_scope.symbols['a']
+    assert variable.name == 'a'
     assert variable.value == 5
 
 
-def test_assign_statement2():  # with a not declared before
+def test_assign_statement2():  # with 'a' not declared before
     interpreter = create_interpreter('a = 5;')
     assign_statement = interpreter.parser.parse_assign_statement_or_function_call()
     with pytest.raises(VariableNotDeclaredError):
         interpreter.visit_assign_statement(assign_statement)
 
 
-def test_assign_statement3():  # with a declared already
+def test_assign_statement3():  # with 'a' already declared
     interpreter = create_interpreter('a = 5 pln;')
     interpreter.scope_manager.current_scope.add_symbol('a', CurrencyVariable('a', 10, 'eur'))
     assert len(interpreter.scope_manager.current_scope.symbols) == 1
@@ -383,25 +384,99 @@ def test_assign_statement3():  # with a declared already
     assign_statement = interpreter.parser.parse_assign_statement_or_function_call()
     interpreter.visit_assign_statement(assign_statement)
     variable = interpreter.scope_manager.current_scope.symbols['a']
+    assert variable.name == 'a'
     assert variable.value == 5
     assert variable.currency == 'pln'
 
 
-def test_assign_statement4():  # with a not declared before
+def test_assign_statement4():  # with 'a' not declared before
     interpreter = create_interpreter('a = 5 eur;')
     assign_statement = interpreter.parser.parse_assign_statement_or_function_call()
     with pytest.raises(VariableNotDeclaredError):
         interpreter.visit_assign_statement(assign_statement)
 
 
-# TODO bez deklaracji i z deklaracja
-# TODO cur a; a = 5 eur;
-# TODO cur a; a = 5;
-# TODO dec a = 5; a = 10 eur;
-# TODO a = 5 without type declared before
-# TODO cur a = 5 eur; a = 10;
-# TODO cur; a = 10;
+def test_assign_statement5():  # cur a; a = 5 pln;
+    interpreter = create_interpreter('a = 5 pln;')
+    interpreter.scope_manager.current_scope.add_symbol('a', CurrencyVariable('a'))
+    assert len(interpreter.scope_manager.current_scope.symbols) == 1
+    variable = interpreter.scope_manager.current_scope.symbols['a']
+    assert isinstance(variable, CurrencyVariable)
+    assert variable.name == 'a'
+    assert variable.value is None
+    assert variable.currency is None
+    assign_statement = interpreter.parser.parse_assign_statement_or_function_call()
+    interpreter.visit_assign_statement(assign_statement)
+    variable = interpreter.scope_manager.current_scope.symbols['a']
+    assert isinstance(variable, CurrencyVariable)
+    assert variable.name == 'a'
+    assert variable.value == 5
+    assert variable.currency == 'pln'
+
+
+def test_assign_statement6():  # cur a; a = 5;
+    interpreter = create_interpreter('a = 5;')
+    interpreter.scope_manager.current_scope.add_symbol('a', CurrencyVariable('a'))
+    assert len(interpreter.scope_manager.current_scope.symbols) == 1
+    variable = interpreter.scope_manager.current_scope.symbols['a']
+    assert isinstance(variable, CurrencyVariable)
+    assert variable.name == 'a'
+    assert variable.value is None
+    assert variable.currency is None
+    assign_statement = interpreter.parser.parse_assign_statement_or_function_call()
+    with pytest.raises(CurrencyNotDefinedOrChangeVariableTypeError):
+        interpreter.visit_assign_statement(assign_statement)
+
+
+def test_assign_statement7():  # dec a = 5; a = 10 eur;
+    interpreter = create_interpreter('a = 10 eur;')
+    interpreter.scope_manager.current_scope.add_symbol('a', DecimalVariable('a', 5))
+    assert len(interpreter.scope_manager.current_scope.symbols) == 1
+    variable = interpreter.scope_manager.current_scope.symbols['a']
+    assert isinstance(variable, DecimalVariable)
+    assert variable.name == 'a'
+    assert variable.value == 5
+    assign_statement = interpreter.parser.parse_assign_statement_or_function_call()
+    with pytest.raises(ChangeVariableTypeError):
+        interpreter.visit_assign_statement(assign_statement)
+
+
+def test_assign_statement8():  # a = 5 without type declared before
+    interpreter = create_interpreter('a = 10 eur;')
+    assign_statement = interpreter.parser.parse_assign_statement_or_function_call()
+    with pytest.raises(VariableNotDeclaredError):
+        interpreter.visit_assign_statement(assign_statement)
+
+
+def test_assign_statement9():  # cur a = 5 eur; a = 10;
+    interpreter = create_interpreter('a = 10;')
+    interpreter.scope_manager.current_scope.add_symbol('a', CurrencyVariable('a', 5, 'eur'))
+    assert len(interpreter.scope_manager.current_scope.symbols) == 1
+    variable = interpreter.scope_manager.current_scope.symbols['a']
+    assert isinstance(variable, CurrencyVariable)
+    assert variable.name == 'a'
+    assert variable.value == 5
+    assert variable.currency == 'eur'
+    assign_statement = interpreter.parser.parse_assign_statement_or_function_call()
+    with pytest.raises(ChangeVariableTypeError):
+        interpreter.visit_assign_statement(assign_statement)
+
+
+def test_assign_statement10():  # dec a; a = b + c;
+    interpreter = create_interpreter('a = b + c;')
+    interpreter.scope_manager.current_scope.add_symbol('a', DecimalVariable('a', 5))
+    interpreter.scope_manager.current_scope.add_symbol('b', DecimalVariable('a', 1))
+    interpreter.scope_manager.current_scope.add_symbol('c', DecimalVariable('a', 100))
+    assert len(interpreter.scope_manager.current_scope.symbols) == 3
+    variable = interpreter.scope_manager.current_scope.symbols['a']
+    assert isinstance(variable, DecimalVariable)
+    assert variable.name == 'a'
+    assert variable.value == 5
+    assign_statement = interpreter.parser.parse_assign_statement_or_function_call()
+    interpreter.visit_assign_statement(assign_statement)
+    variable = interpreter.scope_manager.current_scope.symbols['a']
+    assert isinstance(variable, DecimalVariable)
+    assert variable.name == 'a'
+    assert variable.value == 101
 
 # TODO test for init: ggg a = 5;
-# TODO  dec a = 5;
-#       a = 10 pln;

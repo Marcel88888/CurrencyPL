@@ -130,12 +130,26 @@ class GetCurrencyError(Exception):
 
 class DivisionZeroError(Exception):
     def __init__(self):
-        self.__message = f"Attempt to divide by zero"
+        self.__message = "Attempt to divide by zero"
         super().__init__(self.__message)
 
 
 class CurrencyUsedForDecimalVariableError(Exception):
     def __init__(self):
-        self.__message = f"Currency used for decimal variable"
+        self.__message = "Currency used for decimal variable"
         super().__init__(self.__message)
 
+
+class ChangeVariableTypeError(Exception):
+    def __init__(self, variable_name):
+        self.__variable_name = variable_name
+        self.__message = f"Attempt to change variable ({self.__variable_name}) type"
+        super().__init__(self.__message)
+
+
+class CurrencyNotDefinedOrChangeVariableTypeError(Exception):
+    def __init__(self, name):
+        self.__name = name
+        self.__message = f"Variable ({self.__name} is already CurrencyVariable type. Attempt to change its type or" \
+                         f"currency is not defined.)"
+        super().__init__(self.__message)
