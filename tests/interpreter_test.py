@@ -653,4 +653,28 @@ def test_assign_statement13():
         interpreter.visit_assign_statement(assign_statement)
 
 
+def test_if_statement():
+    interpreter = create_interpreter(' if (a > b) {'
+                                     'b = 100;'
+                                     '}')
+    interpreter.scope_manager.current_scope.add_symbol('a', DecimalVariable('a', 5))
+    interpreter.scope_manager.current_scope.add_symbol('b', DecimalVariable('b', 1))
+    if_statement = interpreter.parser.parse_if_statement()
+    interpreter.visit_if_statement(if_statement)
+    assert interpreter.scope_manager.current_scope.symbols['b'].value == 100
+
+
+def test_while_statement():
+    interpreter = create_interpreter(' while (a < 3) {'
+                                     'b = b + 5;'
+                                     'a = a + 1;'
+                                     '}')
+    interpreter.scope_manager.current_scope.add_symbol('a', DecimalVariable('a', 0))
+    interpreter.scope_manager.current_scope.add_symbol('b', DecimalVariable('b', 0))
+    while_statement = interpreter.parser.parse_while_statement()
+    interpreter.visit_while_statement(while_statement)
+    assert interpreter.scope_manager.current_scope.symbols['b'].value == 15
+    assert interpreter.scope_manager.current_scope.symbols['a'].value == 3
+
+
 # TODO test for init: ggg a = 5;

@@ -34,7 +34,6 @@ class Interpreter:
         for statement in block.statements:
             statement.accept(self)
 
-    # TODO test
     def visit_if_statement(self, if_statement):
         if_statement.condition.accept(self)
         if self.scope_manager.last_result:
@@ -44,7 +43,6 @@ class Interpreter:
             for statement in if_statement.block2.statements:
                 statement.accept(self)
 
-    # TODO test
     def visit_while_statement(self, while_statement):
         while_statement.condition.accept(self)
         while self.scope_manager.last_result:
@@ -60,23 +58,12 @@ class Interpreter:
         name = init_statement.signature.id
         if init_statement.signature.type == TokenTypes.DECIMAL:
             if init_statement.expression is not None:
-                for key in self.scope_manager.current_scope.symbols.keys():
-                    print(key, ': ', self.scope_manager.current_scope.symbols[key].value)
-                print('---------')
                 init_statement.expression.accept(self)
-                for key in self.scope_manager.current_scope.symbols.keys():
-                    print(key, ': ', self.scope_manager.current_scope.symbols[key].value)
-                print('---------')
                 if isinstance(self.scope_manager.last_result, CurrencyVariable):
                     raise CurrencyUsedForDecimalVariableError
                 else:
                     variable = DecimalVariable(name, self.scope_manager.last_result.value)
-                    # for key in self.scope_manager.current_scope.symbols.keys():
-                    #     print(key, ': ', self.scope_manager.current_scope.symbols[key].value)
                     self.scope_manager.add_variable(name, variable)
-                    # print('---------')
-                    # for key in self.scope_manager.current_scope.symbols.keys():
-                    #     print(key, ': ', self.scope_manager.current_scope.symbols[key].value)
             else:
                 self.scope_manager.add_variable(name, DecimalVariable(name))
         elif init_statement.signature.type == TokenTypes.CURRENCY:
@@ -177,7 +164,6 @@ class Interpreter:
         elif primary_expr.function_call is not None:  # TODO
             primary_expr.function_call.accept(self)
 
-    # TODO test
     def visit_parenth_expr(self, parenth_expr):  # “(”, expression, “)” ;
         parenth_expr.expression.accept(self)
 
@@ -215,7 +201,7 @@ class Interpreter:
             else:
                 result1 = self.scope_manager.last_result
             equality_condition.relational_cond2.accept(self)
-            result2 = self.scope_manager.last_result  # TODO currency types
+            result2 = self.scope_manager.last_result
             if isinstance(result1, DecimalVariable) and isinstance(result2, DecimalVariable):
                 if equality_condition.equal_op == TokenTypes.EQUAL:
                     if result1.value == result2.value and unary_op is False \
@@ -247,7 +233,7 @@ class Interpreter:
             else:
                 result1 = self.scope_manager.last_result
             relational_cond.primary_cond2.accept(self)
-            result2 = self.scope_manager.last_result  # TODO currency
+            result2 = self.scope_manager.last_result
             if isinstance(result1, DecimalVariable) and isinstance(result2, DecimalVariable):
                 if relational_cond.relation_op == TokenTypes.GREATER_THAN:
                     if result1.value > result2.value and unary_op is False \
@@ -267,7 +253,6 @@ class Interpreter:
                         result = True
         self.scope_manager.last_result = result
 
-    # TODO test
     def visit_primary_cond(self, primary_cond):  # [ unaryOp ], ( parenthCond | expression ) ;
         result = False
         if primary_cond.parenth_cond is not None:
