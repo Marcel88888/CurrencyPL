@@ -68,6 +68,42 @@ def test_relational_cond3():
     assert interpreter.scope_manager.last_result is True
 
 
+def test_relational_cond_with_not():
+    interpreter = create_interpreter('! a > b')
+    relational_cond = interpreter.parser.parse_relational_cond()
+    interpreter.scope_manager.current_scope.add_symbol('a', DecimalVariable('a', 3))
+    interpreter.scope_manager.current_scope.add_symbol('b', DecimalVariable('b', 5))
+    interpreter.visit_relational_cond(relational_cond)
+    assert interpreter.scope_manager.last_result is True
+
+
+def test_relational_cond_with_not2():
+    interpreter = create_interpreter('! a < b')
+    relational_cond = interpreter.parser.parse_relational_cond()
+    interpreter.scope_manager.current_scope.add_symbol('a', DecimalVariable('a', 8))
+    interpreter.scope_manager.current_scope.add_symbol('b', DecimalVariable('b', 5))
+    interpreter.visit_relational_cond(relational_cond)
+    assert interpreter.scope_manager.last_result is True
+
+
+def test_relational_cond_with_not3():
+    interpreter = create_interpreter('! a >= b')
+    relational_cond = interpreter.parser.parse_relational_cond()
+    interpreter.scope_manager.current_scope.add_symbol('a', DecimalVariable('a', 3))
+    interpreter.scope_manager.current_scope.add_symbol('b', DecimalVariable('b', 5))
+    interpreter.visit_relational_cond(relational_cond)
+    assert interpreter.scope_manager.last_result is True
+
+
+def test_relational_cond_with_not4():
+    interpreter = create_interpreter('! a <= b')
+    relational_cond = interpreter.parser.parse_relational_cond()
+    interpreter.scope_manager.current_scope.add_symbol('a', DecimalVariable('a', 8))
+    interpreter.scope_manager.current_scope.add_symbol('b', DecimalVariable('b', 5))
+    interpreter.visit_relational_cond(relational_cond)
+    assert interpreter.scope_manager.last_result is True
+
+
 def test_equality_cond():
     interpreter = create_interpreter('a == b')
     equality_cond = interpreter.parser.parse_equality_cond()
@@ -88,6 +124,22 @@ def test_equality_cond2():
 
 def test_equality_cond3():
     interpreter = create_interpreter('a == 5')
+    equality_cond = interpreter.parser.parse_equality_cond()
+    interpreter.scope_manager.current_scope.add_symbol('a', DecimalVariable('a', 5))
+    interpreter.visit_equality_cond(equality_cond)
+    assert interpreter.scope_manager.last_result is True
+
+
+def test_equality_cond_with_not():
+    interpreter = create_interpreter('! a == 5')
+    equality_cond = interpreter.parser.parse_equality_cond()
+    interpreter.scope_manager.current_scope.add_symbol('a', DecimalVariable('a', 6))
+    interpreter.visit_equality_cond(equality_cond)
+    assert interpreter.scope_manager.last_result is True
+
+
+def test_equality_cond_with_not2():
+    interpreter = create_interpreter('! a != 5')
     equality_cond = interpreter.parser.parse_equality_cond()
     interpreter.scope_manager.current_scope.add_symbol('a', DecimalVariable('a', 5))
     interpreter.visit_equality_cond(equality_cond)

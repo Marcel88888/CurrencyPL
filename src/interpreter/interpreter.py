@@ -80,7 +80,6 @@ class Interpreter:
         else:
             raise InvalidVariableTypeError(name)
 
-    # TODO test
     def visit_assign_statement(self, assign_statement):
         name = assign_statement.id
         assign_statement.expression.accept(self)
@@ -141,17 +140,28 @@ class Interpreter:
     def visit_primary_expr(self, primary_expr):  # [ “-” ], [currency | getCurrency], ( number | id |
         # parenthExpr | functionCall ), [currency | getCurrency] ;  TODO for currencies
         currency = self.check_primary_expr_currency(primary_expr)
+        minus = False
+        if primary_expr.minus:
+            minus = True
         if primary_expr.number is not None:
             if currency is not None:
-                self.scope_manager.last_result = CurrencyVariable('', primary_expr.number, currency)
+                if minus is False:
+                    self.scope_manager.last_result = CurrencyVariable('', primary_expr.number, currency)
+                else:
+                    self.scope_manager.last_result = CurrencyVariable('', -primary_expr.number, currency)
             else:
-                self.scope_manager.last_result = DecimalVariable('', primary_expr.number)
+                if minus is False:
+                    self.scope_manager.last_result = DecimalVariable('', primary_expr.number)
+                else:
+                    self.scope_manager.last_result = DecimalVariable('', -primary_expr.number)
         elif primary_expr.id is not None:
             variable = self.scope_manager.get_variable(primary_expr.id)
             self.scope_manager.last_result = variable
-        elif primary_expr.parenth_expr is not None:
+            if minus is True:
+                self.scope_manager.last_result.value *= -1
+        elif primary_expr.parenth_expr is not None:  # TODO
             primary_expr.parenth_expr.accept(self)
-        elif primary_expr.function_call is not None:
+        elif primary_expr.function_call is not None:  # TODO
             primary_expr.function_call.accept(self)
 
     # TODO test
@@ -174,53 +184,73 @@ class Interpreter:
 
     def visit_equality_cond(self, equality_condition):  # relationalCond, [ equalOp, relationalCond ] ;
         result = False
+        unary_op = False
         equality_condition.relational_cond1.accept(self)
         if isinstance(self.scope_manager.last_result, bool):
             if self.scope_manager.last_result:
                 result = True
+        elif isinstance(self.scope_manager.last_result, tuple):  # for 'not' operator
+            unary_op = True
+            result = self.scope_manager.last_result
         else:
             result = self.scope_manager.last_result
         if equality_condition.equal_op is not None:
             result = False
             equality_condition.relational_cond1.accept(self)
-            result1 = self.scope_manager.last_result
+            if isinstance(self.scope_manager.last_result, tuple):  # for 'not' operator
+                result1 = self.scope_manager.last_result[1]
+            else:
+                result1 = self.scope_manager.last_result
             equality_condition.relational_cond2.accept(self)
             result2 = self.scope_manager.last_result  # TODO currency types
             if isinstance(result1, DecimalVariable) and isinstance(result2, DecimalVariable):
                 if equality_condition.equal_op == TokenTypes.EQUAL:
-                    if result1.value == result2.value:
+                    if result1.value == result2.value and unary_op is False \
+                            or result1.value != result2.value and unary_op is True:
                         result = True
                 elif equality_condition.equal_op == TokenTypes.NOT_EQUAL:
-                    if result1.value != result2.value:
+                    if result1.value != result2.value and unary_op is False \
+                            or result1.value == result2.value and unary_op is True:
                         result = True
         self.scope_manager.last_result = result
 
     def visit_relational_cond(self, relational_cond):  # primaryCond, [ relationOp, primaryCond ];
         result = False
+        unary_op = False
         relational_cond.primary_cond1.accept(self)
         if isinstance(self.scope_manager.last_result, bool):
             if self.scope_manager.last_result:
                 result = True
+        elif isinstance(self.scope_manager.last_result, tuple):  # for 'not' operator
+            unary_op = True
+            result = self.scope_manager.last_result
         else:
             result = self.scope_manager.last_result
         if relational_cond.relation_op is not None:
             result = False
             relational_cond.primary_cond1.accept(self)
-            result1 = self.scope_manager.last_result
+            if isinstance(self.scope_manager.last_result, tuple):  # for 'not' operator
+                result1 = self.scope_manager.last_result[1]
+            else:
+                result1 = self.scope_manager.last_result
             relational_cond.primary_cond2.accept(self)
             result2 = self.scope_manager.last_result  # TODO currency
             if isinstance(result1, DecimalVariable) and isinstance(result2, DecimalVariable):
                 if relational_cond.relation_op == TokenTypes.GREATER_THAN:
-                    if result1.value > result2.value:
+                    if result1.value > result2.value and unary_op is False \
+                            or result1.value <= result2.value and unary_op is True:
                         result = True
                 elif relational_cond.relation_op == TokenTypes.LESS_THAN:
-                    if result1.value < result2.value:
+                    if result1.value < result2.value and unary_op is False \
+                            or result1.value >= result2.value and unary_op is True:
                         result = True
                 elif relational_cond.relation_op == TokenTypes.GREATER_OR_EQUAL:
-                    if result1.value >= result2.value:
+                    if result1.value >= result2.value and unary_op is False \
+                            or result1.value < result2.value and unary_op is True:
                         result = True
                 elif relational_cond.relation_op == TokenTypes.LESS_OR_EQUAL:
-                    if result1.value <= result2.value:
+                    if result1.value <= result2.value and unary_op is False \
+                            or result1.value > result2.value and unary_op is True:
                         result = True
         self.scope_manager.last_result = result
 
@@ -239,7 +269,6 @@ class Interpreter:
             if primary_cond.unary_op:
                 self.scope_manager.last_result = primary_cond.unary_op, self.scope_manager.last_result
 
-    # TODO test
     def visit_parenth_cond(self, parenth_cond):
         parenth_cond.condition.accept(self)
 
@@ -264,29 +293,7 @@ class Interpreter:
         for argument, parameter_signature in zip(arguments, function.parameters.signatures):
             self.scope_manager.current_scope.add_variable(parameter_signature.id, argument)
 
-    # # TODO test
-    # def check_expression_currency(self, expression):
-    #     currency = None
-    #     if expression is not None \
-    #             and expression.multipl_exprs[0] is not None \
-    #             and expression.multipl_exprs[0].primary_exprs[0] is not None \
-    #             and expression.multipl_exprs[0].primary_exprs[0].currency1 is not None:
-    #         currency = expression.multipl_exprs[0].primary_exprs[0].currency1
-    #     if expression is not None \
-    #             and expression.multipl_exprs[0] is not None \
-    #             and expression.multipl_exprs[0].primary_exprs[0] is not None \
-    #             and expression.multipl_exprs[0].primary_exprs[0].id is not None:
-    #         _id = expression.multipl_exprs[0].primary_exprs[0].id
-    #         variable = self.scope_manager.get_variable(_id)
-    #         if isinstance(variable, CurrencyVariable):
-    #             currency = variable.currency
-    #     if expression is not None \
-    #             and expression.multipl_exprs[0] is not None \
-    #             and expression.multipl_exprs[0].primary_exprs[0] is not None \
-    #             and expression.multipl_exprs[0].primary_exprs[0].currency2 is not None:
-    #         currency = expression.multipl_exprs[0].primary_exprs[0].currency2
-    #     return currency
-
+    # TODO test
     def check_primary_expr_currency(self, primary_expr):
         currency = None
         if primary_expr is not None and primary_expr.currency1 is not None:
