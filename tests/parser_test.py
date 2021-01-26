@@ -6,7 +6,7 @@ from ..src.source.currencies_reader import CurrenciesReader
 from ..src.source.source import FileSource
 from ..src.parser.parser import Parser
 from ..src.parser.grammar import *
-from ..src.exceptions.exceptions import _SyntaxError
+from ..src.exceptions.exceptions import SyntaxxError
 
 
 def create_parser(source_string):
@@ -107,7 +107,7 @@ def test_parameters():
 
 def test_incorrect_parameters():
     parser = create_parser("dec a, b")
-    with pytest.raises(_SyntaxError):
+    with pytest.raises(SyntaxxError):
         parser.parse_parameters()
 
 
@@ -200,7 +200,7 @@ def test_statement():  # ifStatement | whileStatement | returnStatement | initSt
     statement = parser.parse_statement()
     assert isinstance(statement, FunctionCall)
     parser = create_parser('calculate(a, b)')
-    with pytest.raises(_SyntaxError):
+    with pytest.raises(SyntaxxError):
         parser.parse_statement()
 
 
@@ -247,7 +247,7 @@ def test_if_statement_with_else_and_no_block():  # “if”, “(”, condition,
                            "a = b;"
                            "}"
                            "else;")
-    with pytest.raises(_SyntaxError):
+    with pytest.raises(SyntaxxError):
         parser.parse_if_statement()
 
 
@@ -385,7 +385,7 @@ def test_print_statement4():
 
 def test_empty_print_statement():
     parser = create_parser(' print(); ')
-    with pytest.raises(_SyntaxError):
+    with pytest.raises(SyntaxxError):
         parser.parse_print_statement()
 
 
@@ -826,19 +826,19 @@ def test_primary_expr13():  # def __init__(self, minus=False, currency1=None, ge
 def test_primary_expr_with_error():  # def __init__(self, minus=False, currency1=None, get_currency1=None, number=None,
     # _id=None, parenth_expr=None, function_call=None, currency2=None, get_currency2=None):
     parser = create_parser("a 5 eur")
-    with pytest.raises(_SyntaxError):
+    with pytest.raises(SyntaxxError):
         parser.parse_primary_expr()
 
 
 def test_primary_expr_with_error2():
     parser = create_parser("a calculate(a, b)")
-    with pytest.raises(_SyntaxError):
+    with pytest.raises(SyntaxxError):
         parser.parse_primary_expr()
 
 
 def test_primary_expr_with_error3():
     parser = create_parser("calculate(x, y) var ")
-    with pytest.raises(_SyntaxError):
+    with pytest.raises(SyntaxxError):
         parser.parse_primary_expr()
 
 

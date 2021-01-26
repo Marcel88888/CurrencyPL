@@ -3,6 +3,8 @@ from .variables import *
 from ..lexer.token_types import TokenTypes
 
 
+# TODO TESTS FOR ERRORS
+
 def check_returned_type(function, function_result):
     if function.signature.type == TokenTypes.VOID and function_result is not None \
             or function.signature.type == TokenTypes.DECIMAL and not isinstance(function_result, DecimalVariable) \

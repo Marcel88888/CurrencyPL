@@ -8,15 +8,13 @@ from ..exceptions.exceptions import MainNotDeclaredError, CurrencyNotDefinedErro
 
 class Interpreter:
     def __init__(self, parser):
-
         self.parser = parser
         self.scope_manager = ScopeManager()
 
-    # TODO test
     def interpret(self):
+        self.parser.parse_program()
         self.parser.program.accept(self)
 
-    # TODO test
     def visit_program(self, program):
         main_declared = False
         for function_def in program.function_defs:

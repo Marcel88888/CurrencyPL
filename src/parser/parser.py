@@ -1,4 +1,4 @@
-from ..exceptions.exceptions import _SyntaxError
+from ..exceptions.exceptions import SyntaxxError
 from .grammar import *
 
 
@@ -26,17 +26,24 @@ class Parser:
             if self.__lexer.token.type == TokenTypes.OP_BRACKET:
                 self.__lexer.get_next_token()
                 parameters = self.parse_parameters()
+                print(parameters)
                 if parameters:
+                    print('1')
                     if self.__lexer.token.type == TokenTypes.CL_BRACKET:
+                        print('2')
                         self.__lexer.get_next_token()
                         if self.__lexer.token.type == TokenTypes.OP_CURLY_BRACKET:
+                            print('3')
                             self.__lexer.get_next_token()
                             block = self.parse_block()
                             if block:
+                                print('4')
+                                print(self.__lexer.token.type)
                                 if self.__lexer.token.type == TokenTypes.CL_CURLY_BRACKET:
+                                    print('5')
                                     self.__lexer.get_next_token()
                                     return FunctionDef(signature, parameters, block)
-            raise _SyntaxError(self.__lexer.line, self.__lexer.column)
+            raise SyntaxxError(self.__lexer.line, self.__lexer.column)
         return None
 
     def parse_signature(self):  # type, id ;
@@ -47,7 +54,7 @@ class Parser:
             if self.__lexer.token.type == TokenTypes.IDENTIFIER:
                 _id = self.__lexer.token.value
                 return Signature(_type, _id)
-            raise _SyntaxError(self.__lexer.line, self.__lexer.column)
+            raise SyntaxxError(self.__lexer.line, self.__lexer.column)
         return None
 
     def parse_parameters(self):  # [ signature, { “,”, signature } ];
@@ -63,7 +70,7 @@ class Parser:
                     signatures.append(signature)
                     self.__lexer.get_next_token()
                 else:
-                    raise _SyntaxError(self.__lexer.line, self.__lexer.column)
+                    raise SyntaxxError(self.__lexer.line, self.__lexer.column)
         return Parameters(signatures)
 
     def parse_arguments(self):  # [ expression { “,”, expression } ] ;
@@ -77,7 +84,7 @@ class Parser:
                 if expression:
                     expressions.append(expression)
                 else:
-                    raise _SyntaxError(self.__lexer.line, self.__lexer.column)
+                    raise SyntaxxError(self.__lexer.line, self.__lexer.column)
         return Arguments(expressions)
 
     def parse_block(self):  # { statement };
@@ -106,9 +113,10 @@ class Parser:
         if statement:
             if isinstance(statement, FunctionCall):
                 if self.__lexer.token.type == TokenTypes.SEMICOLON:
+                    self.__lexer.get_next_token()
                     return statement
                 else:
-                    raise _SyntaxError(self.__lexer.line, self.__lexer.column)
+                    raise SyntaxxError(self.__lexer.line, self.__lexer.column)
             return statement
         statement = self.parse_print_statement()
         if statement:
@@ -139,9 +147,9 @@ class Parser:
                                                 if self.__lexer.token.type == TokenTypes.CL_CURLY_BRACKET:
                                                     self.__lexer.get_next_token()
                                                     return IfStatement(condition, block1, block2)
-                                        raise _SyntaxError(self.__lexer.line, self.__lexer.column)
+                                        raise SyntaxxError(self.__lexer.line, self.__lexer.column)
                                     return IfStatement(condition, block1)
-            raise _SyntaxError(self.__lexer.line, self.__lexer.column)
+            raise SyntaxxError(self.__lexer.line, self.__lexer.column)
         return None
 
     def parse_while_statement(self):  # “while”, “(“, condition, “)”, “{“, block, “}“ ;
@@ -160,7 +168,7 @@ class Parser:
                                 if self.__lexer.token.type == TokenTypes.CL_CURLY_BRACKET:
                                     self.__lexer.get_next_token()
                                     return WhileStatement(condition, block)
-            raise _SyntaxError(self.__lexer.line, self.__lexer.column)
+            raise SyntaxxError(self.__lexer.line, self.__lexer.column)
         return None
 
     def parse_return_statement(self):  # “return”, expression, “;” ;
@@ -171,7 +179,7 @@ class Parser:
                 if self.__lexer.token.type == TokenTypes.SEMICOLON:
                     self.__lexer.get_next_token()
                     return ReturnStatement(expression)
-            raise _SyntaxError(self.__lexer.line, self.__lexer.column)
+            raise SyntaxxError(self.__lexer.line, self.__lexer.column)
         return None
 
     def parse_init_statement(self):  # signature, [ assignmentOp, expression ], “;” ;
@@ -185,12 +193,12 @@ class Parser:
                     if self.__lexer.token.type == TokenTypes.SEMICOLON:
                         self.__lexer.get_next_token()
                         return InitStatement(signature, expression)
-                raise _SyntaxError(self.__lexer.line, self.__lexer.column)
+                raise SyntaxxError(self.__lexer.line, self.__lexer.column)
             else:
                 if self.__lexer.token.type == TokenTypes.SEMICOLON:
                     self.__lexer.get_next_token()
                     return InitStatement(signature)
-            raise _SyntaxError(self.__lexer.line, self.__lexer.column)
+            raise SyntaxxError(self.__lexer.line, self.__lexer.column)
         return None
 
     def parse_print_statement(self):  # “print”, “(“, printable { “,”, printable }, “)”, ";" ;
@@ -216,13 +224,13 @@ class Parser:
                         if printable:
                             printables.append(printable)
                         else:
-                            raise _SyntaxError(self.__lexer.line, self.__lexer.column)
+                            raise SyntaxxError(self.__lexer.line, self.__lexer.column)
                     if self.__lexer.token.type == TokenTypes.CL_BRACKET:
                         self.__lexer.get_next_token()
                         if self.__lexer.token.type == TokenTypes.SEMICOLON:
                             self.__lexer.get_next_token()
                             return PrintStatement(printables)
-            raise _SyntaxError(self.__lexer.line, self.__lexer.column)
+            raise SyntaxxError(self.__lexer.line, self.__lexer.column)
         return None
 
     def parse_assign_statement(self, _id):  # id, assignmentOp, expression, “;” ;
@@ -267,7 +275,7 @@ class Parser:
                 if and_cond:
                     and_conds.append(and_cond)
                 else:
-                    raise _SyntaxError(self.__lexer.line, self.__lexer.column)
+                    raise SyntaxxError(self.__lexer.line, self.__lexer.column)
             return Condition(and_conds)
         return None
 
@@ -282,7 +290,7 @@ class Parser:
                 if equality_cond:
                     equality_conds.append(equality_cond)
                 else:
-                    raise _SyntaxError(self.__lexer.line, self.__lexer.column)
+                    raise SyntaxxError(self.__lexer.line, self.__lexer.column)
             return AndCond(equality_conds)
         return None
 
@@ -295,7 +303,7 @@ class Parser:
                 relational_cond2 = self.parse_relational_cond()
                 if relational_cond2:
                     return EqualityCond(relational_cond1, equal_op, relational_cond2)
-                raise _SyntaxError(self.__lexer.line, self.__lexer.column)
+                raise SyntaxxError(self.__lexer.line, self.__lexer.column)
             return EqualityCond(relational_cond1)
         return None
 
@@ -308,7 +316,7 @@ class Parser:
                 primary_cond2 = self.parse_primary_cond()
                 if primary_cond2:
                     return RelationalCond(primary_cond1, relation_op, primary_cond2)
-                raise _SyntaxError(self.__lexer.line, self.__lexer.column)
+                raise SyntaxxError(self.__lexer.line, self.__lexer.column)
             return RelationalCond(primary_cond1)
         return None
 
@@ -324,7 +332,7 @@ class Parser:
         expression = self.parse_expression()
         if expression:
             return PrimaryCond(unary_op, expression=expression)
-        raise _SyntaxError(self.__lexer.line, self.__lexer.column)
+        raise SyntaxxError(self.__lexer.line, self.__lexer.column)
 
     def parse_parenth_cond(self):  # “(“, condition, “)” ;
         if self.__lexer.token.type == TokenTypes.OP_BRACKET:
@@ -333,7 +341,7 @@ class Parser:
             if condition:
                 if self.__lexer.token.type == TokenTypes.CL_BRACKET:
                     return ParenthCond(condition)
-            raise _SyntaxError(self.__lexer.line, self.__lexer.column)
+            raise SyntaxxError(self.__lexer.line, self.__lexer.column)
         return None
 
     def parse_expression(self):  # multiplExpr, { additiveOp, multiplExpr } ;
@@ -349,7 +357,7 @@ class Parser:
                 if multipl_expr:
                     multipl_exprs.append(multipl_expr)
                 else:
-                    raise _SyntaxError(self.__lexer.line, self.__lexer.column)
+                    raise SyntaxxError(self.__lexer.line, self.__lexer.column)
             return Expression(multipl_exprs, additive_ops)
         return None
 
@@ -366,7 +374,7 @@ class Parser:
                 if primary_expr:
                     primary_exprs.append(primary_expr)
                 else:
-                    raise _SyntaxError(self.__lexer.line, self.__lexer.column)
+                    raise SyntaxxError(self.__lexer.line, self.__lexer.column)
             return MultiplExpr(primary_exprs, multipl_ops)
         return None
 
@@ -417,7 +425,7 @@ class Parser:
             if alternative is not None:
                 counter += 1
         if counter > 1:
-            raise _SyntaxError(self.__lexer.line, self.__lexer.column)
+            raise SyntaxxError(self.__lexer.line, self.__lexer.column)
         currency2 = None
         get_currency2 = None
         if self.__lexer.token.type == TokenTypes.CURRENCY_TYPE:
@@ -437,7 +445,7 @@ class Parser:
                 if self.__lexer.token.type == TokenTypes.CL_BRACKET:
                     self.__lexer.get_next_token()
                     return ParenthExpr(expression)
-            raise _SyntaxError(self.__lexer.line, self.__lexer.column)
+            raise SyntaxxError(self.__lexer.line, self.__lexer.column)
         return None
 
     def parse_get_currency(self):  # id, “.”, “getCurrency()” ;

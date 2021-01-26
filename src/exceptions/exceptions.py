@@ -33,7 +33,7 @@ class StringTooLongError(Exception):
         super().__init__(self.__message)
 
 
-class _SyntaxError(Exception):
+class SyntaxxError(Exception):
     def __init__(self, line, column):
         self.__line = line
         self.__column = column
@@ -49,7 +49,7 @@ class InterpretationError(Exception):
 class UndeclaredError(InterpretationError):
     def __init__(self, name):
         self.__name = name
-        self.__message = f'"{self.__name}" undeclared.'
+        self.__message = f"'{self.__name}' undeclared."
         super().__init__(self.__message)
 
 
@@ -62,28 +62,28 @@ class MainNotDeclaredError(Exception):
 class OverwriteError(Exception):
     def __init__(self, name):
         self.__name = name
-        self.__message = f"Variable ({self.__name}) was already declared."
+        self.__message = f"Variable ('{self.__name}') was already declared."
         super().__init__(self.__message)
 
 
 class VariableNotDeclaredError(Exception):
     def __init__(self, name):
         self.__name = name
-        self.__message = f"Variable ({self.__name}) was not declared yet."
+        self.__message = f"Variable ('{self.__name}') was not declared yet."
         super().__init__(self.__message)
 
 
 class CurrencyNotDefinedError(Exception):
     def __init__(self, name):
         self.__name = name
-        self.__message = f"Currency not declared for currency type variable named {self.__name}"
+        self.__message = f"Currency not declared for currency type variable named '{self.__name}'"
         super().__init__(self.__message)
 
 
 class InvalidVariableTypeError(Exception):
     def __init__(self, name):
         self.__name = name
-        self.__message = f"Invalid variable type for: {self.__name}"
+        self.__message = f"Invalid variable type for: '{self.__name}'"
         super().__init__(self.__message)
 
 
@@ -98,7 +98,7 @@ class InvalidReturnedTypeError(Exception):
 class NoParentContextError(Exception):
     def __init__(self, name):
         self.__name = name
-        self.__message =  f"No parent context for context: {self.__name}"
+        self.__message =  f"No parent context for context: '{self.__name}'"
         super().__init__(self.__message)
 
 
@@ -107,7 +107,7 @@ class IncorrectArgumentsNumberError(Exception):
         self.__function_name = function_name
         self.__required_number = required_number
         self.__actual_number = actual_number
-        self.__message = f"Incorrect arguments number for function: {self.__function_name}. Required: " \
+        self.__message = f"Incorrect arguments number for function: '{self.__function_name}'. Required: " \
                          f"{self.__required_number}, got: {self.__actual_number}"
         super().__init__(self.__message)
 
@@ -116,7 +116,7 @@ class InvalidArgumentTypeError(Exception):
     def __init__(self, function_name, parameter_name):
         self.__function_name = function_name
         self.__parameter_name = parameter_name
-        self.__message = f"Invalid argument ({self.__parameter_name}) type for function {self.__function_name}"
+        self.__message = f"Invalid argument ('{self.__parameter_name}') type for function '{self.__function_name}'"
         super().__init__(self.__message)
 
 
@@ -124,7 +124,7 @@ class GetCurrencyError(Exception):
     def __init__(self, variable_name):
         self.__variable_name = variable_name
         self.__message = f"Attempt to call 'get_variable()' on the variable of a type other than the currency type " \
-                         f"({self.__variable_name})"
+                         f"('{self.__variable_name}')"
         super().__init__(self.__message)
 
 
@@ -143,13 +143,13 @@ class CurrencyUsedForDecimalVariableError(Exception):
 class ChangeVariableTypeError(Exception):
     def __init__(self, variable_name):
         self.__variable_name = variable_name
-        self.__message = f"Attempt to change variable ({self.__variable_name}) type"
+        self.__message = f"Attempt to change variable ('{self.__variable_name}') type"
         super().__init__(self.__message)
 
 
 class CurrencyNotDefinedOrChangeVariableTypeError(Exception):
     def __init__(self, name):
         self.__name = name
-        self.__message = f"Variable ({self.__name} is already CurrencyVariable type. Attempt to change its type or" \
+        self.__message = f"Variable ('{self.__name}') is already CurrencyVariable type. Attempt to change its type or" \
                          f"currency is not defined.)"
         super().__init__(self.__message)

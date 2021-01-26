@@ -717,7 +717,7 @@ def test_return_statement3():  # signature, “(”, parameters, “)”, “{�
     assert interpreter.scope_manager.last_result.value == -3
 
 
-def test_visit_program():
+def test_program():
     interpreter = create_interpreter('dec add(dec a, dec b) {'
                                      'return a + b;'
                                      '}'
@@ -725,10 +725,7 @@ def test_visit_program():
                                      'void main() {'
                                      'dec result = add(1, 2);'
                                      '}')
-    interpreter.parser.parse_program()
-    program = interpreter.parser.program
-    assert len(program.function_defs) == 2
-    interpreter.visit_program(program)
+    interpreter.interpret()
     assert len(interpreter.scope_manager.global_scope.symbols) == 2
     assert len(interpreter.scope_manager.current_scope.symbols) == 1
     result = interpreter.scope_manager.current_scope.symbols['result']
@@ -737,7 +734,7 @@ def test_visit_program():
     assert result.value == 3
 
 
-def test_visit_program2():
+def test_program2():
     interpreter = create_interpreter('dec add(dec a, dec b) {'
                                      'return a + b;'
                                      '}'
@@ -747,10 +744,7 @@ def test_visit_program2():
                                      'dec c = 2;'
                                      'dec a = add(b, c);'
                                      '}')
-    interpreter.parser.parse_program()
-    program = interpreter.parser.program
-    assert len(program.function_defs) == 2
-    interpreter.visit_program(program)
+    interpreter.interpret()
     assert len(interpreter.scope_manager.global_scope.symbols) == 2
     assert len(interpreter.scope_manager.current_scope.symbols) == 3
     result = interpreter.scope_manager.current_scope.symbols['a']
@@ -759,7 +753,80 @@ def test_visit_program2():
     assert result.value == 3
 
 
+def test_program3():
+    interpreter = create_interpreter('dec multiply(dec a, dec b) {'
+                                     'return a * b;'
+                                     '}'
+                                     ''
+                                     'dec add(dec a, dec b) {'
+                                     'dec result = multiply(5, 6);'
+                                     'return a + b + result;'
+                                     '}'
+                                     ''
+                                     'void main() {'
+                                     'dec b = 1;'
+                                     'dec c = 2;'
+                                     'dec a = add(b, c);'
+                                     '}')
+    interpreter.interpret()
+    assert len(interpreter.scope_manager.global_scope.symbols) == 3
+    assert len(interpreter.scope_manager.current_scope.symbols) == 3
+    result = interpreter.scope_manager.current_scope.symbols['a']
+    assert isinstance(result, DecimalVariable)
+    assert result.name == 'a'
+    assert result.value == 33
 
-# TODO triple call
-# TODO with errors from utils
-# TODO test for init: ggg a = 5;
+
+def test_program4():
+    interpreter = create_interpreter('dec add() {'
+                                     'cur a = 5 eur;'
+                                     'return a;'
+                                     '}'
+                                     ''
+                                     'void main() {'
+                                     'add();'
+                                     '}')
+    with pytest.raises(InvalidReturnedTypeError):
+        interpreter.interpret()
+
+
+def test_program5():
+    interpreter = create_interpreter('dec add(dec a, dec b) {'
+                                     'return a + b;'
+                                     '}'
+                                     ''
+                                     'void main() {'
+                                     'add(1);'
+                                     '}')
+    with pytest.raises(IncorrectArgumentsNumberError):
+        interpreter.interpret()
+
+
+def test_program6():
+    interpreter = create_interpreter('dec add(dec a, dec b) {'
+                                     'return a + b;'
+                                     '}'
+                                     ''
+                                     'void main() {'
+                                     'cur x = 5 eur;'
+                                     'dec y = 10;'
+                                     'add(x, y);'
+                                     '}')
+    with pytest.raises(InvalidArgumentTypeError):
+        interpreter.interpret()
+
+
+def test_program7():
+    interpreter = create_interpreter('dec add(dec a, dec b) {'
+                                     'return a + b;'
+                                     '}')
+    with pytest.raises(MainNotDeclaredError):
+        interpreter.interpret()
+
+
+def test_program8():
+    interpreter = create_interpreter('void main() {'
+                                     'ggg a = 5;'
+                                     '}')
+    with pytest.raises(SyntaxxError):
+        interpreter.interpret()
