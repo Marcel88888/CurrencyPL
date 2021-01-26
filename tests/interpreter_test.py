@@ -830,3 +830,64 @@ def test_program8():
                                      '}')
     with pytest.raises(SyntaxxError):
         interpreter.interpret()
+
+
+def test_currency():
+    interpreter = create_interpreter('cur sum = eur a + b;')
+    interpreter.scope_manager.current_scope.add_symbol('a', CurrencyVariable('a', 5, 'pln'))
+    interpreter.scope_manager.current_scope.add_symbol('b', CurrencyVariable('b', 10, 'usd'))
+    init_statement = interpreter.parser.parse_init_statement()
+    interpreter.visit_init_statement(init_statement)
+    variable = interpreter.scope_manager.current_scope.symbols['sum']
+    assert isinstance(variable, CurrencyVariable)
+    print(variable.value)
+    assert variable.currency == 'eur'
+
+
+def test_currency2():
+    interpreter = create_interpreter('cur sum = a + b;')
+    interpreter.scope_manager.current_scope.add_symbol('a', CurrencyVariable('a', 5, 'pln'))
+    interpreter.scope_manager.current_scope.add_symbol('b', CurrencyVariable('b', 10, 'usd'))
+    init_statement = interpreter.parser.parse_init_statement()
+    interpreter.visit_init_statement(init_statement)
+    variable = interpreter.scope_manager.current_scope.symbols['sum']
+    assert isinstance(variable, CurrencyVariable)
+    print(variable.value)
+    assert variable.currency == 'pln'
+
+
+def test_currency3():
+    interpreter = create_interpreter('cur sum = a * b;')
+    interpreter.scope_manager.current_scope.add_symbol('a', CurrencyVariable('a', 5, 'pln'))
+    interpreter.scope_manager.current_scope.add_symbol('b', CurrencyVariable('b', 10, 'usd'))
+    init_statement = interpreter.parser.parse_init_statement()
+    interpreter.visit_init_statement(init_statement)
+    variable = interpreter.scope_manager.current_scope.symbols['sum']
+    assert isinstance(variable, CurrencyVariable)
+    print(variable.value)
+    assert variable.currency == 'pln'
+
+
+def test_currency4():
+    interpreter = create_interpreter('cur sum = (eur a + b) chf;')
+    interpreter.scope_manager.current_scope.add_symbol('a', CurrencyVariable('a', 5, 'pln'))
+    interpreter.scope_manager.current_scope.add_symbol('b', CurrencyVariable('b', 10, 'usd'))
+    init_statement = interpreter.parser.parse_init_statement()
+    interpreter.visit_init_statement(init_statement)
+    variable = interpreter.scope_manager.current_scope.symbols['sum']
+    assert isinstance(variable, CurrencyVariable)
+    print(variable.value)
+    assert variable.currency == 'chf'
+
+
+def test_currency5():
+    interpreter = create_interpreter('cur sum = gbd (eur a + b) chf;')
+    interpreter.scope_manager.current_scope.add_symbol('a', CurrencyVariable('a', 5, 'pln'))
+    interpreter.scope_manager.current_scope.add_symbol('b', CurrencyVariable('b', 10, 'usd'))
+    init_statement = interpreter.parser.parse_init_statement()
+    interpreter.visit_init_statement(init_statement)
+    variable = interpreter.scope_manager.current_scope.symbols['sum']
+    assert isinstance(variable, CurrencyVariable)
+    print(variable.value)
+    assert variable.currency == 'chf'
+

@@ -106,7 +106,10 @@ class Interpreter:
         self.execute_function(function, arguments)
 
     def visit_expression(self, expression):  # multiplExpr, { additiveOp, multiplExpr } ;
+        currency = None
         expression.multipl_exprs[0].accept(self)
+        if isinstance(self.scope_manager.last_result, CurrencyVariable):
+            currency = self.scope_manager.last_result.currency
         result = self.scope_manager.last_result.value  # TODO for CurrencyVariables
         for additive_op, multipl_expr in zip(expression.additive_ops, expression.multipl_exprs[1:]):
             multipl_expr.accept(self)
@@ -116,10 +119,15 @@ class Interpreter:
             elif additive_op == TokenTypes.MINUS:
                 if isinstance(self.scope_manager.last_result, DecimalVariable):
                     result -= self.scope_manager.last_result.value
+        if currency is not None:
+            self.scope_manager.last_result.currency = currency
         self.scope_manager.last_result.value = result
 
     def visit_multipl_expr(self, multipl_expr):  # primaryExpr, { multiplOp, primaryExpr } ;
+        currency = None
         multipl_expr.primary_exprs[0].accept(self)
+        if isinstance(self.scope_manager.last_result, CurrencyVariable):
+            currency = self.scope_manager.last_result.currency
         result = self.scope_manager.last_result.value  # TODO for CurrencyVariables
         for multipl_op, primary_expr in zip(multipl_expr.multipl_ops, multipl_expr.primary_exprs[1:]):
             primary_expr.accept(self)
@@ -131,6 +139,8 @@ class Interpreter:
                     raise DivisionZeroError
                 if isinstance(self.scope_manager.last_result, DecimalVariable):
                     result /= self.scope_manager.last_result.value
+        if currency is not None:
+            self.scope_manager.last_result.currency = currency
         self.scope_manager.last_result.value = result
 
     # TODO test, minus, currency
@@ -154,11 +164,15 @@ class Interpreter:
         elif primary_expr.id is not None:
             variable = self.scope_manager.get_variable(primary_expr.id)
             var = copy.copy(variable)
+            if currency is not None:
+                var.currency = currency
             self.scope_manager.last_result = var
             if minus is True:
                 self.scope_manager.last_result.value *= -1
         elif primary_expr.parenth_expr is not None:  # TODO
             primary_expr.parenth_expr.accept(self)
+            if isinstance(self.scope_manager.last_result, CurrencyVariable):
+                self.scope_manager.last_result.currency = currency
         elif primary_expr.function_call is not None:  # TODO
             primary_expr.function_call.accept(self)
 
@@ -275,7 +289,6 @@ class Interpreter:
         else:
             raise GetCurrencyError(get_currency.id)
 
-    # TODO test
     def execute_function(self, function, arguments):
         check_arguments(function, arguments)
         self.scope_manager.create_new_scope_and_switch(function)
@@ -292,13 +305,13 @@ class Interpreter:
     # TODO test
     def check_primary_expr_currency(self, primary_expr):
         currency = None
-        if primary_expr is not None and primary_expr.currency1 is not None:
+        if primary_expr is not None and primary_expr.currency2 is not None:
+            currency = primary_expr.currency2
+        elif primary_expr is not None and primary_expr.currency1 is not None:
             currency = primary_expr.currency1
-        if primary_expr is not None and primary_expr.id is not None:
+        elif primary_expr is not None and primary_expr.id is not None:
             _id = primary_expr.id
             variable = self.scope_manager.get_variable(_id)
             if isinstance(variable, CurrencyVariable):
                 currency = variable.currency
-        if primary_expr is not None and primary_expr.currency2 is not None:
-            currency = primary_expr.currency2
         return currency
