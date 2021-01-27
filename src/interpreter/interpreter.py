@@ -173,8 +173,12 @@ class Interpreter:
             primary_expr.parenth_expr.accept(self)
             if isinstance(self.scope_manager.last_result, CurrencyVariable):
                 self.scope_manager.last_result.currency = currency
+            if minus is True:
+                self.scope_manager.last_result.value *= -1
         elif primary_expr.function_call is not None:  # TODO
             primary_expr.function_call.accept(self)
+            if minus is True:
+                self.scope_manager.last_result.value *= -1
 
     def visit_parenth_expr(self, parenth_expr):  # “(”, expression, “)” ;
         parenth_expr.expression.accept(self)
@@ -297,12 +301,10 @@ class Interpreter:
         check_returned_type(function, self.scope_manager.last_result)
         self.scope_manager.switch_to_parent_context()
 
-    # TODO test
     def add_arguments_to_function_scope(self, function, arguments):
         for argument, parameter_signature in zip(arguments, function.parameters.signatures):
             self.scope_manager.add_variable(parameter_signature.id, argument)
 
-    # TODO test
     def check_primary_expr_currency(self, primary_expr):
         currency = None
         if primary_expr is not None and primary_expr.currency2 is not None:

@@ -3,6 +3,7 @@ import pytest
 from ..src.lexer.lexer import Lexer
 from ..src.lexer.tokens import Tokens
 from ..src.source.currencies_reader import CurrenciesReader
+from ..src.source.currencies import Currencies
 from ..src.source.source import FileSource
 from ..src.parser.parser import Parser
 from ..src.parser.grammar import *
@@ -10,8 +11,8 @@ from ..src.exceptions.exceptions import SyntaxxError
 
 
 def create_parser(source_string):
-    currencies_reader = CurrenciesReader("resources/currencies.json")
-    currencies = currencies_reader.currencies
+    CurrenciesReader("resources/currencies.json")
+    currencies = Currencies.currencies
     for currency in currencies:
         Tokens.keywords[currency] = TokenTypes.CURRENCY_TYPE
     lexer = Lexer(FileSource(io.StringIO(source_string)))

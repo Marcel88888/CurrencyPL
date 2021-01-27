@@ -5,22 +5,19 @@ from ..src.parser.parser import Parser
 from ..src.parser.grammar import *
 from ..src.interpreter.scope import *
 from ..src.exceptions.exceptions import *
+from ..src.source.currencies import Currencies
 import io
 import pytest
 
 
 def create_interpreter(source_string):
-    parser = create_parser(source_string)
-    return Interpreter(parser)
-
-
-def create_parser(source_string):
-    currencies_reader = CurrenciesReader("resources/currencies.json")
-    currencies = currencies_reader.currencies
+    CurrenciesReader("resources/currencies.json")
+    currencies = Currencies.currencies
     for currency in currencies:
         Tokens.keywords[currency] = TokenTypes.CURRENCY_TYPE
     lexer = Lexer(FileSource(io.StringIO(source_string)))
-    return Parser(lexer)
+    parser = Parser(lexer)
+    return Interpreter(parser)
 
 
 def test_get_currency():
@@ -459,6 +456,18 @@ def test_init_statement13():
     assert variable.currency == 'eur'
 
 
+def test_init_statement14():
+    interpreter = create_interpreter('dec result = - (a + b);')
+    interpreter.scope_manager.current_scope.add_symbol('a', DecimalVariable('a', 5))
+    interpreter.scope_manager.current_scope.add_symbol('b', DecimalVariable('b', 3))
+    init_statement = interpreter.parser.parse_init_statement()
+    interpreter.visit_init_statement(init_statement)
+    variable = interpreter.scope_manager.current_scope.symbols['result']
+    assert isinstance(variable, DecimalVariable)
+    assert variable.name == 'result'
+    assert variable.value == -8
+
+
 def test_assign_statement():  # with 'a' already declared
     interpreter = create_interpreter('a = 5;')
     interpreter.scope_manager.current_scope.add_symbol('a', DecimalVariable('a', 10))
@@ -832,6 +841,23 @@ def test_program8():
         interpreter.interpret()
 
 
+def test_program9():
+    interpreter = create_interpreter('dec add(dec a, dec b) {'
+                                     'return a + b;'
+                                     '}'
+                                     ''
+                                     'void main() {'
+                                     'dec result = -add(1, 2);'
+                                     '}')
+    interpreter.interpret()
+    assert len(interpreter.scope_manager.global_scope.symbols) == 2
+    assert len(interpreter.scope_manager.current_scope.symbols) == 1
+    result = interpreter.scope_manager.current_scope.symbols['result']
+    assert isinstance(result, DecimalVariable)
+    assert result.name == 'result'
+    assert result.value == -3
+
+
 def test_currency():
     interpreter = create_interpreter('cur sum = eur a + b;')
     interpreter.scope_manager.current_scope.add_symbol('a', CurrencyVariable('a', 5, 'pln'))
@@ -840,7 +866,6 @@ def test_currency():
     interpreter.visit_init_statement(init_statement)
     variable = interpreter.scope_manager.current_scope.symbols['sum']
     assert isinstance(variable, CurrencyVariable)
-    print(variable.value)
     assert variable.currency == 'eur'
 
 
@@ -852,7 +877,6 @@ def test_currency2():
     interpreter.visit_init_statement(init_statement)
     variable = interpreter.scope_manager.current_scope.symbols['sum']
     assert isinstance(variable, CurrencyVariable)
-    print(variable.value)
     assert variable.currency == 'pln'
 
 
@@ -864,7 +888,6 @@ def test_currency3():
     interpreter.visit_init_statement(init_statement)
     variable = interpreter.scope_manager.current_scope.symbols['sum']
     assert isinstance(variable, CurrencyVariable)
-    print(variable.value)
     assert variable.currency == 'pln'
 
 
@@ -876,7 +899,6 @@ def test_currency4():
     interpreter.visit_init_statement(init_statement)
     variable = interpreter.scope_manager.current_scope.symbols['sum']
     assert isinstance(variable, CurrencyVariable)
-    print(variable.value)
     assert variable.currency == 'chf'
 
 
@@ -888,6 +910,5 @@ def test_currency5():
     interpreter.visit_init_statement(init_statement)
     variable = interpreter.scope_manager.current_scope.symbols['sum']
     assert isinstance(variable, CurrencyVariable)
-    print(variable.value)
     assert variable.currency == 'chf'
 
