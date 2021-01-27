@@ -1,5 +1,5 @@
 from typing import Union
-from ..source.currencies_reader import CurrenciesReader
+from ..source.currencies import Currencies
 
 
 # TODO tests for exceptions
@@ -11,7 +11,9 @@ class CurrencyVariable:
         self.currency = currency
 
     def exchange(self, new_currency: str):
-        rate = CurrenciesReader.c
+        rate = Currencies.currencies[self.currency][new_currency]
+        self.value *= rate
+        self.currency = new_currency
 
 
     # TODO mathematical methods to calculate currency value

@@ -106,22 +106,29 @@ class Interpreter:
         self.execute_function(function, arguments)
 
     def visit_expression(self, expression):  # multiplExpr, { additiveOp, multiplExpr } ;
-        currency = None
         expression.multipl_exprs[0].accept(self)
-        if isinstance(self.scope_manager.last_result, CurrencyVariable):
-            currency = self.scope_manager.last_result.currency
-        result = self.scope_manager.last_result.value  # TODO for CurrencyVariables
+        if isinstance(self.scope_manager.last_result, DecimalVariable):
+            result = self.scope_manager.last_result.value
+        else:  # CurrencyVariable
+            result = self.scope_manager.last_result
         for additive_op, multipl_expr in zip(expression.additive_ops, expression.multipl_exprs[1:]):
             multipl_expr.accept(self)
             if additive_op == TokenTypes.PLUS:
                 if isinstance(self.scope_manager.last_result, DecimalVariable):
                     result += self.scope_manager.last_result.value
+                    self.scope_manager.last_result.value = result
+                else:  # CurrencyVariable
+                    self.scope_manager.last_result.exchange(result.currency)
+                    result.value += self.scope_manager.last_result.value
+                    self.scope_manager.last_result.value = result.value
             elif additive_op == TokenTypes.MINUS:
                 if isinstance(self.scope_manager.last_result, DecimalVariable):
                     result -= self.scope_manager.last_result.value
-        if currency is not None:
-            self.scope_manager.last_result.currency = currency
-        self.scope_manager.last_result.value = result
+                    self.scope_manager.last_result.value = result
+                else:
+                    self.scope_manager.last_result.exchange(result.currency)
+                    result.value -= self.scope_manager.last_result.value
+                    self.scope_manager.last_result.value = result.value
 
     def visit_multipl_expr(self, multipl_expr):  # primaryExpr, { multiplOp, primaryExpr } ;
         currency = None
@@ -146,16 +153,16 @@ class Interpreter:
     # TODO test, minus, currency
     def visit_primary_expr(self, primary_expr):  # [ “-” ], [currency | getCurrency], ( number | id |
         # parenthExpr | functionCall ), [currency | getCurrency] ;  TODO for currencies
-        currency = self.check_primary_expr_currency(primary_expr)
+        currencies = self.check_primary_expr_currency(primary_expr)
         minus = False
         if primary_expr.minus:
             minus = True
         if primary_expr.number is not None:
-            if currency is not None:
+            if currencies:
                 if minus is False:
-                    self.scope_manager.last_result = CurrencyVariable('', primary_expr.number, currency)
+                    self.scope_manager.last_result = CurrencyVariable('', primary_expr.number, currencies[0])
                 else:
-                    self.scope_manager.last_result = CurrencyVariable('', -primary_expr.number, currency)
+                    self.scope_manager.last_result = CurrencyVariable('', -primary_expr.number, currencies[0])
             else:
                 if minus is False:
                     self.scope_manager.last_result = DecimalVariable('', primary_expr.number)
@@ -163,22 +170,45 @@ class Interpreter:
                     self.scope_manager.last_result = DecimalVariable('', -primary_expr.number)
         elif primary_expr.id is not None:
             variable = self.scope_manager.get_variable(primary_expr.id)
-            var = copy.copy(variable)
-            if currency is not None:
-                var.currency = currency
+            var = copy.copy(variable)  # TODO
+            if currencies:
+                for currency in currencies[1:]:  # first is variable own currency
+                    var.exchange(currency)
             self.scope_manager.last_result = var
             if minus is True:
                 self.scope_manager.last_result.value *= -1
-        elif primary_expr.parenth_expr is not None:  # TODO
+        elif primary_expr.parenth_expr is not None:
             primary_expr.parenth_expr.accept(self)
             if isinstance(self.scope_manager.last_result, CurrencyVariable):
-                self.scope_manager.last_result.currency = currency
+                self.scope_manager.last_result.currency = currencies[0]
             if minus is True:
                 self.scope_manager.last_result.value *= -1
-        elif primary_expr.function_call is not None:  # TODO
+        elif primary_expr.function_call is not None:
             primary_expr.function_call.accept(self)
             if minus is True:
                 self.scope_manager.last_result.value *= -1
+
+    def check_primary_expr_currency(self, primary_expr):
+        currencies = []
+        if primary_expr is not None:
+            if primary_expr.id is not None:
+                _id = primary_expr.id
+                variable = self.scope_manager.get_variable(_id)
+                if isinstance(variable, CurrencyVariable):
+                    currencies.append(variable.currency)
+            if primary_expr.currency1 is not None or primary_expr.get_currency1 is not None:
+                if primary_expr.currency1 is not None:
+                    currencies.append(primary_expr.currency1)
+                else:
+                    primary_expr.get_currency1.accept(self)
+                    currencies.append(self.scope_manager.last_result)
+            if primary_expr.currency2 is not None or primary_expr.get_currency2 is not None:
+                if primary_expr.currency2 is not None:
+                    currencies.append(primary_expr.currency2)
+                else:
+                    primary_expr.get_currency2.accept(self)
+                    currencies.append(self.scope_manager.last_result)
+        return currencies
 
     def visit_parenth_expr(self, parenth_expr):  # “(”, expression, “)” ;
         parenth_expr.expression.accept(self)
@@ -304,16 +334,3 @@ class Interpreter:
     def add_arguments_to_function_scope(self, function, arguments):
         for argument, parameter_signature in zip(arguments, function.parameters.signatures):
             self.scope_manager.add_variable(parameter_signature.id, argument)
-
-    def check_primary_expr_currency(self, primary_expr):
-        currency = None
-        if primary_expr is not None and primary_expr.currency2 is not None:
-            currency = primary_expr.currency2
-        elif primary_expr is not None and primary_expr.currency1 is not None:
-            currency = primary_expr.currency1
-        elif primary_expr is not None and primary_expr.id is not None:
-            _id = primary_expr.id
-            variable = self.scope_manager.get_variable(_id)
-            if isinstance(variable, CurrencyVariable):
-                currency = variable.currency
-        return currency

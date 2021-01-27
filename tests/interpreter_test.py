@@ -5,6 +5,7 @@ from ..src.parser.parser import Parser
 from ..src.parser.grammar import *
 from ..src.interpreter.scope import *
 from ..src.exceptions.exceptions import *
+from ..src.source.currencies_reader import CurrenciesReader
 from ..src.source.currencies import Currencies
 import io
 import pytest
@@ -18,6 +19,41 @@ def create_interpreter(source_string):
     lexer = Lexer(FileSource(io.StringIO(source_string)))
     parser = Parser(lexer)
     return Interpreter(parser)
+
+
+def set_currencies():
+    Currencies.currencies = {
+        "pln": {
+            "chf": 1,
+            "gbd": 2,
+            "usd": 3,
+            "eur": 4
+        },
+        "chf": {
+            "pln": 5,
+            "gbd": 6,
+            "usd": 7,
+            "eur": 8
+        },
+        "gbd": {
+            "pln": 9,
+            "chf": 10,
+            "usd": 11,
+            "eur": 12
+        },
+        "usd": {
+            "pln": 13,
+            "chf": 14,
+            "gbd": 15,
+            "eur": 16
+        },
+        "eur": {
+            "pln": 17,
+            "chf": 18,
+            "gbd": 19,
+            "usd": 20
+        }
+    }
 
 
 def test_get_currency():
@@ -858,57 +894,101 @@ def test_program9():
     assert result.value == -3
 
 
-def test_currency():
-    interpreter = create_interpreter('cur sum = eur a + b;')
+def test_exchange():
+    Currencies.currencies = {
+        "pln": {
+            "chf": 1,
+            "gbd": 50
+        },
+        "chf": {
+            "pln": 1,
+            "gbd": 1
+        },
+        "gbd": {
+            "pln": 1,
+            "chf": 1
+        }
+    }
+    var = CurrencyVariable('var', 10, 'pln')
+    var.exchange('gbd')
+    assert var.value == 500
+    assert var.currency == 'gbd'
+
+
+def test_currency_calculations():
+    interpreter = create_interpreter('cur result = a + b;')
+    set_currencies()
     interpreter.scope_manager.current_scope.add_symbol('a', CurrencyVariable('a', 5, 'pln'))
-    interpreter.scope_manager.current_scope.add_symbol('b', CurrencyVariable('b', 10, 'usd'))
+    interpreter.scope_manager.current_scope.add_symbol('b', CurrencyVariable('b', 10, 'eur'))
     init_statement = interpreter.parser.parse_init_statement()
     interpreter.visit_init_statement(init_statement)
-    variable = interpreter.scope_manager.current_scope.symbols['sum']
-    assert isinstance(variable, CurrencyVariable)
-    assert variable.currency == 'eur'
+    result = interpreter.scope_manager.current_scope.symbols['result']
+    assert isinstance(result, CurrencyVariable)
+    assert result.currency == 'pln'
+    assert result.value == 175
 
 
-def test_currency2():
-    interpreter = create_interpreter('cur sum = a + b;')
+def test_currency_calculations2():
+    interpreter = create_interpreter('cur result = a - b;')
+    set_currencies()
     interpreter.scope_manager.current_scope.add_symbol('a', CurrencyVariable('a', 5, 'pln'))
-    interpreter.scope_manager.current_scope.add_symbol('b', CurrencyVariable('b', 10, 'usd'))
+    interpreter.scope_manager.current_scope.add_symbol('b', CurrencyVariable('b', 10, 'eur'))
     init_statement = interpreter.parser.parse_init_statement()
     interpreter.visit_init_statement(init_statement)
-    variable = interpreter.scope_manager.current_scope.symbols['sum']
-    assert isinstance(variable, CurrencyVariable)
-    assert variable.currency == 'pln'
+    result = interpreter.scope_manager.current_scope.symbols['result']
+    assert isinstance(result, CurrencyVariable)
+    assert result.currency == 'pln'
+    assert result.value == -165
 
 
-def test_currency3():
-    interpreter = create_interpreter('cur sum = a * b;')
+def test_currency_calculations3():
+    interpreter = create_interpreter('cur result = a + b chf;')
+    set_currencies()
     interpreter.scope_manager.current_scope.add_symbol('a', CurrencyVariable('a', 5, 'pln'))
-    interpreter.scope_manager.current_scope.add_symbol('b', CurrencyVariable('b', 10, 'usd'))
+    interpreter.scope_manager.current_scope.add_symbol('b', CurrencyVariable('b', 10, 'eur'))
     init_statement = interpreter.parser.parse_init_statement()
     interpreter.visit_init_statement(init_statement)
-    variable = interpreter.scope_manager.current_scope.symbols['sum']
-    assert isinstance(variable, CurrencyVariable)
-    assert variable.currency == 'pln'
+    result = interpreter.scope_manager.current_scope.symbols['result']
+    assert isinstance(result, CurrencyVariable)
+    assert result.currency == 'pln'
+    assert result.value == 905
 
 
-def test_currency4():
-    interpreter = create_interpreter('cur sum = (eur a + b) chf;')
+def test_currency_calculations4():
+    interpreter = create_interpreter('cur result = gbd a + b;')
+    set_currencies()
     interpreter.scope_manager.current_scope.add_symbol('a', CurrencyVariable('a', 5, 'pln'))
-    interpreter.scope_manager.current_scope.add_symbol('b', CurrencyVariable('b', 10, 'usd'))
+    interpreter.scope_manager.current_scope.add_symbol('b', CurrencyVariable('b', 10, 'eur'))
     init_statement = interpreter.parser.parse_init_statement()
     interpreter.visit_init_statement(init_statement)
-    variable = interpreter.scope_manager.current_scope.symbols['sum']
-    assert isinstance(variable, CurrencyVariable)
-    assert variable.currency == 'chf'
+    result = interpreter.scope_manager.current_scope.symbols['result']
+    assert isinstance(result, CurrencyVariable)
+    assert result.currency == 'gbd'
+    assert result.value == 200
 
 
-def test_currency5():
-    interpreter = create_interpreter('cur sum = gbd (eur a + b) chf;')
+def test_currency_calculations5():
+    interpreter = create_interpreter('cur result = a gbd + b;')
+    set_currencies()
     interpreter.scope_manager.current_scope.add_symbol('a', CurrencyVariable('a', 5, 'pln'))
-    interpreter.scope_manager.current_scope.add_symbol('b', CurrencyVariable('b', 10, 'usd'))
+    interpreter.scope_manager.current_scope.add_symbol('b', CurrencyVariable('b', 10, 'eur'))
     init_statement = interpreter.parser.parse_init_statement()
     interpreter.visit_init_statement(init_statement)
-    variable = interpreter.scope_manager.current_scope.symbols['sum']
-    assert isinstance(variable, CurrencyVariable)
-    assert variable.currency == 'chf'
+    result = interpreter.scope_manager.current_scope.symbols['result']
+    assert isinstance(result, CurrencyVariable)
+    assert result.currency == 'gbd'
+    assert result.value == 200
+
+
+def test_currency_calculations6():
+    interpreter = create_interpreter('cur result = a + chf b gbd;')
+    set_currencies()
+    interpreter.scope_manager.current_scope.add_symbol('a', CurrencyVariable('a', 5, 'pln'))
+    interpreter.scope_manager.current_scope.add_symbol('b', CurrencyVariable('b', 10, 'eur'))
+    init_statement = interpreter.parser.parse_init_statement()
+    interpreter.visit_init_statement(init_statement)
+    result = interpreter.scope_manager.current_scope.symbols['result']
+    assert isinstance(result, CurrencyVariable)
+    assert result.currency == 'pln'
+    assert result.value == 9725
 
