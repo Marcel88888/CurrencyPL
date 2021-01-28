@@ -153,3 +153,9 @@ class CurrencyNotDefinedOrChangeVariableTypeError(Exception):
         self.__message = f"Variable ('{self.__name}') is already CurrencyVariable type. Attempt to change its type or" \
                          f"currency is not defined.)"
         super().__init__(self.__message)
+
+
+class IllicitOperationError(Exception):
+    def __init__(self):
+        self.__message = "Illicit operation"
+        super().__init__(self.__message)

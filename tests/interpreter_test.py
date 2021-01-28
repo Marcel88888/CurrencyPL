@@ -1069,3 +1069,123 @@ def test_currency_calculations12():
     assert result.currency == 'eur'
     assert result.value == 20
 
+
+def test_currency_calculations13():
+    interpreter = create_interpreter('cur result = 4 * 5 eur;')
+    set_currencies()
+    init_statement = interpreter.parser.parse_init_statement()
+    interpreter.visit_init_statement(init_statement)
+    result = interpreter.scope_manager.current_scope.symbols['result']
+    assert isinstance(result, CurrencyVariable)
+    assert result.currency == 'eur'
+    assert result.value == 20
+
+
+def test_currency_calculations14():
+    interpreter = create_interpreter('cur result = a * b;')
+    set_currencies()
+    interpreter.scope_manager.current_scope.add_symbol('a', DecimalVariable('a', 5))
+    interpreter.scope_manager.current_scope.add_symbol('b', CurrencyVariable('b', 10, 'eur'))
+    init_statement = interpreter.parser.parse_init_statement()
+    interpreter.visit_init_statement(init_statement)
+    result = interpreter.scope_manager.current_scope.symbols['result']
+    assert isinstance(result, CurrencyVariable)
+    assert result.currency == 'eur'
+    assert result.value == 50
+
+
+def test_currency_calculations15():
+    interpreter = create_interpreter('cur result = 5 eur * a;')
+    set_currencies()
+    interpreter.scope_manager.current_scope.add_symbol('a', DecimalVariable('a', 4))
+    init_statement = interpreter.parser.parse_init_statement()
+    interpreter.visit_init_statement(init_statement)
+    result = interpreter.scope_manager.current_scope.symbols['result']
+    assert isinstance(result, CurrencyVariable)
+    assert result.currency == 'eur'
+    assert result.value == 20
+
+
+def test_currency_calculations16():
+    interpreter = create_interpreter('cur result = eur 20 / 4;')
+    set_currencies()
+    init_statement = interpreter.parser.parse_init_statement()
+    interpreter.visit_init_statement(init_statement)
+    result = interpreter.scope_manager.current_scope.symbols['result']
+    assert isinstance(result, CurrencyVariable)
+    assert result.currency == 'eur'
+    assert result.value == 5
+
+
+def test_currency_calculations17():
+    interpreter = create_interpreter('cur result = a * b;')
+    set_currencies()
+    interpreter.scope_manager.current_scope.add_symbol('a', CurrencyVariable('a', 12, 'usd'))
+    interpreter.scope_manager.current_scope.add_symbol('b', CurrencyVariable('b', 10, 'eur'))
+    init_statement = interpreter.parser.parse_init_statement()
+    with pytest.raises(IllicitOperationError):
+        interpreter.visit_init_statement(init_statement)
+
+
+def test_currency_calculations18():
+    interpreter = create_interpreter('cur result = a / b;')
+    set_currencies()
+    interpreter.scope_manager.current_scope.add_symbol('a', CurrencyVariable('a', 20, 'usd'))
+    interpreter.scope_manager.current_scope.add_symbol('b', CurrencyVariable('b', 10, 'eur'))
+    init_statement = interpreter.parser.parse_init_statement()
+    with pytest.raises(IllicitOperationError):
+        interpreter.visit_init_statement(init_statement)
+
+
+def test_currency_calculations19():
+    interpreter = create_interpreter('cur result = a + 5;')
+    set_currencies()
+    interpreter.scope_manager.current_scope.add_symbol('a', CurrencyVariable('a', 20, 'usd'))
+    init_statement = interpreter.parser.parse_init_statement()
+    with pytest.raises(IllicitOperationError):
+        interpreter.visit_init_statement(init_statement)
+
+
+def test_currency_calculations20():
+    interpreter = create_interpreter('cur result = 5 + a;')
+    set_currencies()
+    interpreter.scope_manager.current_scope.add_symbol('a', CurrencyVariable('a', 20, 'usd'))
+    init_statement = interpreter.parser.parse_init_statement()
+    with pytest.raises(IllicitOperationError):
+        interpreter.visit_init_statement(init_statement)
+
+
+def test_currency_calculations21():
+    interpreter = create_interpreter('cur result = 5 - a;')
+    set_currencies()
+    interpreter.scope_manager.current_scope.add_symbol('a', CurrencyVariable('a', 20, 'usd'))
+    init_statement = interpreter.parser.parse_init_statement()
+    with pytest.raises(IllicitOperationError):
+        interpreter.visit_init_statement(init_statement)
+
+
+def test_currency_calculations22():
+    interpreter = create_interpreter('cur result = a - b;')
+    set_currencies()
+    interpreter.scope_manager.current_scope.add_symbol('a', CurrencyVariable('a', 20, 'usd'))
+    interpreter.scope_manager.current_scope.add_symbol('b', DecimalVariable('b', 20))
+    init_statement = interpreter.parser.parse_init_statement()
+    with pytest.raises(IllicitOperationError):
+        interpreter.visit_init_statement(init_statement)
+
+
+def test_currency_calculations23():
+    interpreter = create_interpreter('cur result = a / b;')
+    set_currencies()
+    interpreter.scope_manager.current_scope.add_symbol('a', DecimalVariable('a', 20))
+    interpreter.scope_manager.current_scope.add_symbol('b', CurrencyVariable('b', 5, 'usd'))
+    init_statement = interpreter.parser.parse_init_statement()
+    with pytest.raises(IllicitOperationError):
+        interpreter.visit_init_statement(init_statement)
+
+
+
+
+
+
+

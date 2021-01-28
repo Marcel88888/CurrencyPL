@@ -3,7 +3,7 @@ from .scope import ScopeManager
 from .utils import *
 from ..lexer.token_types import TokenTypes
 from ..exceptions.exceptions import MainNotDeclaredError, CurrencyNotDefinedError, InvalidVariableTypeError, \
-    GetCurrencyError, DivisionZeroError, CurrencyUsedForDecimalVariableError
+    GetCurrencyError, DivisionZeroError, CurrencyUsedForDecimalVariableError, IllicitOperationError
 
 
 class Interpreter:
@@ -22,7 +22,7 @@ class Interpreter:
             if function_def.signature.id == "main":
                 main_declared = True
         if not main_declared:
-            raise MainNotDeclaredError
+            raise MainNotDeclaredError()
 
     def visit_function_def(self, function_def):
         self.scope_manager.add_function(function_def.signature.id, function_def)
@@ -58,7 +58,7 @@ class Interpreter:
             if init_statement.expression is not None:
                 init_statement.expression.accept(self)
                 if isinstance(self.scope_manager.last_result, CurrencyVariable):
-                    raise CurrencyUsedForDecimalVariableError
+                    raise CurrencyUsedForDecimalVariableError()
                 else:
                     variable = DecimalVariable(name, self.scope_manager.last_result.value)
                     self.scope_manager.add_variable(name, variable)
@@ -95,7 +95,6 @@ class Interpreter:
         self.scope_manager.last_result = print_string  # only for testing
         print(print_string)
 
-    # TODO test
     def visit_function_call(self, function_call):
         name = function_call.id
         function = self.scope_manager.get_function(name)
@@ -107,52 +106,65 @@ class Interpreter:
 
     def visit_expression(self, expression):  # multiplExpr, { additiveOp, multiplExpr } ;
         expression.multipl_exprs[0].accept(self)
-        if isinstance(self.scope_manager.last_result, DecimalVariable):
-            result = self.scope_manager.last_result.value
-        else:  # CurrencyVariable
-            result = self.scope_manager.last_result
+        result = self.scope_manager.last_result
         for additive_op, multipl_expr in zip(expression.additive_ops, expression.multipl_exprs[1:]):
             multipl_expr.accept(self)
-            if additive_op == TokenTypes.PLUS:
-                if isinstance(self.scope_manager.last_result, DecimalVariable):
-                    result += self.scope_manager.last_result.value
-                    self.scope_manager.last_result.value = result
-                else:  # CurrencyVariable
+            if isinstance(self.scope_manager.last_result, DecimalVariable):
+                if isinstance(result, DecimalVariable):
+                    if additive_op == TokenTypes.PLUS:
+                        result.value += self.scope_manager.last_result.value
+                    elif additive_op == TokenTypes.MINUS:
+                        result.value -= self.scope_manager.last_result.value
+                    self.scope_manager.last_result = result
+                elif isinstance(result, CurrencyVariable):
+                    raise IllicitOperationError()
+            elif isinstance(self.scope_manager.last_result, CurrencyVariable):
+                if isinstance(result, CurrencyVariable):
                     self.scope_manager.last_result.exchange(result.currency)
-                    result.value += self.scope_manager.last_result.value
-                    self.scope_manager.last_result.value = result.value
-            elif additive_op == TokenTypes.MINUS:
-                if isinstance(self.scope_manager.last_result, DecimalVariable):
-                    result -= self.scope_manager.last_result.value
-                    self.scope_manager.last_result.value = result
-                else:
-                    self.scope_manager.last_result.exchange(result.currency)
-                    result.value -= self.scope_manager.last_result.value
-                    self.scope_manager.last_result.value = result.value
+                    if additive_op == TokenTypes.PLUS:
+                        result.value += self.scope_manager.last_result.value
+                    elif additive_op == TokenTypes.MINUS:
+                        result.value -= self.scope_manager.last_result.value
+                    self.scope_manager.last_result = result
+                elif isinstance(result, DecimalVariable):
+                    raise IllicitOperationError()
 
     def visit_multipl_expr(self, multipl_expr):  # primaryExpr, { multiplOp, primaryExpr } ;
         currency = None
         multipl_expr.primary_exprs[0].accept(self)
         if isinstance(self.scope_manager.last_result, CurrencyVariable):
             currency = self.scope_manager.last_result.currency
-        result = self.scope_manager.last_result.value
+        result = self.scope_manager.last_result
         for multipl_op, primary_expr in zip(multipl_expr.multipl_ops, multipl_expr.primary_exprs[1:]):
             primary_expr.accept(self)
             if multipl_op == TokenTypes.MULTIPLY:
                 if isinstance(self.scope_manager.last_result, DecimalVariable):
-                    result *= self.scope_manager.last_result.value
+                    result.value *= self.scope_manager.last_result.value
+                    if isinstance(result, CurrencyVariable):
+                        self.scope_manager.last_result = result
+                        return
+                elif isinstance(self.scope_manager.last_result, CurrencyVariable):
+                    if isinstance(result, CurrencyVariable):
+                        raise IllicitOperationError()
+                    elif isinstance(result, DecimalVariable):
+                        self.scope_manager.last_result.value *= result.value
+                        return
             elif multipl_op == TokenTypes.DIVIDE:
                 if self.scope_manager.last_result.value == 0:
-                    raise DivisionZeroError
+                    raise DivisionZeroError()
                 if isinstance(self.scope_manager.last_result, DecimalVariable):
-                    result /= self.scope_manager.last_result.value
+                    result.value /= self.scope_manager.last_result.value
+                    if isinstance(result, CurrencyVariable):
+                        self.scope_manager.last_result = result
+                        return
+                elif isinstance(self.scope_manager.last_result, CurrencyVariable):
+                    raise IllicitOperationError()
         if currency is not None:
             self.scope_manager.last_result.currency = currency
-        self.scope_manager.last_result.value = result
+        self.scope_manager.last_result.value = result.value
 
-    # TODO test, minus, currency
     def visit_primary_expr(self, primary_expr):  # [ “-” ], [currency | getCurrency], ( number | id |
-        # parenthExpr | functionCall ), [currency | getCurrency] ;  TODO for currencies
+        # parenthExpr | functionCall ), [currency | getCurrency] ;
         currencies = self.check_primary_expr_currency(primary_expr)
         minus = False
         if primary_expr.minus:
@@ -198,10 +210,6 @@ class Interpreter:
                     variable = self.scope_manager.get_variable(_id)
                     if isinstance(variable, CurrencyVariable):
                         currencies.append(variable.currency)
-                # elif primary_expr.parenth_expr is not None:
-                #     primary_expr.parenth_expr.accept(self)
-                #     if isinstance(self.scope_manager.last_result, CurrencyVariable):
-                #         currencies.append(self.scope_manager.last_result.currency)
             if primary_expr.currency1 is not None or primary_expr.get_currency1 is not None:
                 if primary_expr.currency1 is not None:
                     currencies.append(primary_expr.currency1)
