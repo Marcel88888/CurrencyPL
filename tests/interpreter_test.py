@@ -1184,6 +1184,72 @@ def test_currency_calculations23():
         interpreter.visit_init_statement(init_statement)
 
 
+def test_currency_conditions():
+    interpreter = create_interpreter(' a >= b;')
+    set_currencies()
+    interpreter.scope_manager.current_scope.add_symbol('a', CurrencyVariable('a', 4, 'eur'))
+    interpreter.scope_manager.current_scope.add_symbol('b', DecimalVariable('b', 4))
+    condition = interpreter.parser.parse_condition()
+    interpreter.visit_condition(condition)
+    assert interpreter.scope_manager.last_result is True
+
+
+def test_currency_conditions2():
+    interpreter = create_interpreter(' 4 < a;')
+    set_currencies()
+    interpreter.scope_manager.current_scope.add_symbol('a', CurrencyVariable('a', 4.1, 'eur'))
+    condition = interpreter.parser.parse_condition()
+    interpreter.visit_condition(condition)
+    assert interpreter.scope_manager.last_result is True
+
+
+def test_currency_conditions3():
+    interpreter = create_interpreter('! a >= b;')
+    set_currencies()
+    interpreter.scope_manager.current_scope.add_symbol('a', CurrencyVariable('a', 20, 'eur'))
+    interpreter.scope_manager.current_scope.add_symbol('b', CurrencyVariable('b', 5, 'pln'))
+    condition = interpreter.parser.parse_condition()
+    interpreter.visit_condition(condition)
+    assert interpreter.scope_manager.last_result is False
+
+
+def test_currency_conditions4():
+    interpreter = create_interpreter(' a == b;')
+    set_currencies()
+    interpreter.scope_manager.current_scope.add_symbol('a', CurrencyVariable('a', 4, 'eur'))
+    interpreter.scope_manager.current_scope.add_symbol('b', CurrencyVariable('b', 1, 'pln'))
+    condition = interpreter.parser.parse_condition()
+    interpreter.visit_condition(condition)
+    assert interpreter.scope_manager.last_result is True
+
+
+def test_currency_conditions5():
+    interpreter = create_interpreter(' a != b;')
+    set_currencies()
+    interpreter.scope_manager.current_scope.add_symbol('a', CurrencyVariable('a', 400, 'usd'))
+    interpreter.scope_manager.current_scope.add_symbol('b', CurrencyVariable('b', 20, 'eur'))
+    condition = interpreter.parser.parse_condition()
+    interpreter.visit_condition(condition)
+    assert interpreter.scope_manager.last_result is False
+
+
+def test_currency_conditions6():
+    interpreter = create_interpreter(' a == 400;')
+    set_currencies()
+    interpreter.scope_manager.current_scope.add_symbol('a', CurrencyVariable('a', 400, 'usd'))
+    condition = interpreter.parser.parse_condition()
+    interpreter.visit_condition(condition)
+    assert interpreter.scope_manager.last_result is True
+
+
+def test_currency_conditions7():
+    interpreter = create_interpreter('! 123 != b;')
+    set_currencies()
+    interpreter.scope_manager.current_scope.add_symbol('b', CurrencyVariable('b', 123, 'eur'))
+    condition = interpreter.parser.parse_condition()
+    interpreter.visit_condition(condition)
+    assert interpreter.scope_manager.last_result is True
+
 
 
 

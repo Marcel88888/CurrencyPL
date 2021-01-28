@@ -262,15 +262,16 @@ class Interpreter:
                 result1 = self.scope_manager.last_result
             equality_condition.relational_cond2.accept(self)
             result2 = self.scope_manager.last_result
-            if isinstance(result1, DecimalVariable) and isinstance(result2, DecimalVariable):
-                if equality_condition.equal_op == TokenTypes.EQUAL:
-                    if result1.value == result2.value and unary_op is False \
-                            or result1.value != result2.value and unary_op is True:
-                        result = True
-                elif equality_condition.equal_op == TokenTypes.NOT_EQUAL:
-                    if result1.value != result2.value and unary_op is False \
-                            or result1.value == result2.value and unary_op is True:
-                        result = True
+            if isinstance(result1, CurrencyVariable) and isinstance(result2, CurrencyVariable):
+                result2.exchange(result1.currency)
+            if equality_condition.equal_op == TokenTypes.EQUAL:
+                if result1.value == result2.value and unary_op is False \
+                        or result1.value != result2.value and unary_op is True:
+                    result = True
+            elif equality_condition.equal_op == TokenTypes.NOT_EQUAL:
+                if result1.value != result2.value and unary_op is False \
+                        or result1.value == result2.value and unary_op is True:
+                    result = True
         self.scope_manager.last_result = result
 
     def visit_relational_cond(self, relational_cond):  # primaryCond, [ relationOp, primaryCond ];
@@ -294,23 +295,24 @@ class Interpreter:
                 result1 = self.scope_manager.last_result
             relational_cond.primary_cond2.accept(self)
             result2 = self.scope_manager.last_result
-            if isinstance(result1, DecimalVariable) and isinstance(result2, DecimalVariable):
-                if relational_cond.relation_op == TokenTypes.GREATER_THAN:
-                    if result1.value > result2.value and unary_op is False \
-                            or result1.value <= result2.value and unary_op is True:
-                        result = True
-                elif relational_cond.relation_op == TokenTypes.LESS_THAN:
-                    if result1.value < result2.value and unary_op is False \
-                            or result1.value >= result2.value and unary_op is True:
-                        result = True
-                elif relational_cond.relation_op == TokenTypes.GREATER_OR_EQUAL:
-                    if result1.value >= result2.value and unary_op is False \
-                            or result1.value < result2.value and unary_op is True:
-                        result = True
-                elif relational_cond.relation_op == TokenTypes.LESS_OR_EQUAL:
-                    if result1.value <= result2.value and unary_op is False \
-                            or result1.value > result2.value and unary_op is True:
-                        result = True
+            if isinstance(result1, CurrencyVariable) and isinstance(result2, CurrencyVariable):
+                result2.exchange(result1.currency)
+            if relational_cond.relation_op == TokenTypes.GREATER_THAN:
+                if result1.value > result2.value and unary_op is False \
+                        or result1.value <= result2.value and unary_op is True:
+                    result = True
+            elif relational_cond.relation_op == TokenTypes.LESS_THAN:
+                if result1.value < result2.value and unary_op is False \
+                        or result1.value >= result2.value and unary_op is True:
+                    result = True
+            elif relational_cond.relation_op == TokenTypes.GREATER_OR_EQUAL:
+                if result1.value >= result2.value and unary_op is False \
+                        or result1.value < result2.value and unary_op is True:
+                    result = True
+            elif relational_cond.relation_op == TokenTypes.LESS_OR_EQUAL:
+                if result1.value <= result2.value and unary_op is False \
+                        or result1.value > result2.value and unary_op is True:
+                    result = True
         self.scope_manager.last_result = result
 
     def visit_primary_cond(self, primary_cond):  # [ unaryOp ], ( parenthCond | expression ) ;

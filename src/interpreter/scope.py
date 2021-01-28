@@ -4,9 +4,6 @@ from .variables import *
 from typing import Optional, Tuple
 
 
-# TODO tests for errors
-
-
 class Scope:
     def __init__(self, name: str, parent=None):
         self.name = name

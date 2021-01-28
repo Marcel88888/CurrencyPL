@@ -2,8 +2,6 @@ from typing import Union
 from ..source.currencies import Currencies
 
 
-# TODO tests for exceptions
-
 class CurrencyVariable:
     def __init__(self, name: str, value: Union[int, float] = None, currency: str = None):
         self.name = name
@@ -16,9 +14,6 @@ class CurrencyVariable:
         rate = Currencies.currencies[self.currency][new_currency]
         self.value *= rate
         self.currency = new_currency
-
-
-    # TODO mathematical methods to calculate currency value
 
 
 class DecimalVariable:
