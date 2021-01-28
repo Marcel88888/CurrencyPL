@@ -135,7 +135,7 @@ class Interpreter:
         multipl_expr.primary_exprs[0].accept(self)
         if isinstance(self.scope_manager.last_result, CurrencyVariable):
             currency = self.scope_manager.last_result.currency
-        result = self.scope_manager.last_result.value  # TODO for CurrencyVariables
+        result = self.scope_manager.last_result.value
         for multipl_op, primary_expr in zip(multipl_expr.multipl_ops, multipl_expr.primary_exprs[1:]):
             primary_expr.accept(self)
             if multipl_op == TokenTypes.MULTIPLY:
@@ -170,17 +170,18 @@ class Interpreter:
                     self.scope_manager.last_result = DecimalVariable('', -primary_expr.number)
         elif primary_expr.id is not None:
             variable = self.scope_manager.get_variable(primary_expr.id)
-            var = copy.copy(variable)  # TODO
+            var = copy.copy(variable)
             if currencies:
-                for currency in currencies[1:]:  # first is variable own currency
+                for currency in currencies[1:]: # first is variable own currency
                     var.exchange(currency)
             self.scope_manager.last_result = var
             if minus is True:
                 self.scope_manager.last_result.value *= -1
         elif primary_expr.parenth_expr is not None:
             primary_expr.parenth_expr.accept(self)
-            if isinstance(self.scope_manager.last_result, CurrencyVariable):
-                self.scope_manager.last_result.currency = currencies[0]
+            if currencies:
+                for currency in currencies:
+                    self.scope_manager.last_result.exchange(currency)
             if minus is True:
                 self.scope_manager.last_result.value *= -1
         elif primary_expr.function_call is not None:
@@ -191,11 +192,16 @@ class Interpreter:
     def check_primary_expr_currency(self, primary_expr):
         currencies = []
         if primary_expr is not None:
-            if primary_expr.id is not None:
-                _id = primary_expr.id
-                variable = self.scope_manager.get_variable(_id)
-                if isinstance(variable, CurrencyVariable):
-                    currencies.append(variable.currency)
+            if primary_expr.id is not None or primary_expr.parenth_expr is not None:
+                if primary_expr.id is not None:
+                    _id = primary_expr.id
+                    variable = self.scope_manager.get_variable(_id)
+                    if isinstance(variable, CurrencyVariable):
+                        currencies.append(variable.currency)
+                # elif primary_expr.parenth_expr is not None:
+                #     primary_expr.parenth_expr.accept(self)
+                #     if isinstance(self.scope_manager.last_result, CurrencyVariable):
+                #         currencies.append(self.scope_manager.last_result.currency)
             if primary_expr.currency1 is not None or primary_expr.get_currency1 is not None:
                 if primary_expr.currency1 is not None:
                     currencies.append(primary_expr.currency1)

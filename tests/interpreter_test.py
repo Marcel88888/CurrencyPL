@@ -992,3 +992,67 @@ def test_currency_calculations6():
     assert result.currency == 'pln'
     assert result.value == 9725
 
+
+def test_currency_calculations7():
+    interpreter = create_interpreter('cur result = gbd (a + b);')
+    set_currencies()
+    interpreter.scope_manager.current_scope.add_symbol('a', CurrencyVariable('a', 5, 'pln'))
+    interpreter.scope_manager.current_scope.add_symbol('b', CurrencyVariable('b', 10, 'eur'))
+    init_statement = interpreter.parser.parse_init_statement()
+    interpreter.visit_init_statement(init_statement)
+    result = interpreter.scope_manager.current_scope.symbols['result']
+    assert isinstance(result, CurrencyVariable)
+    assert result.currency == 'gbd'
+    assert result.value == 350
+
+
+def test_currency_calculations8():
+    interpreter = create_interpreter('cur result = gbd (a + b) pln;')
+    set_currencies()
+    interpreter.scope_manager.current_scope.add_symbol('a', CurrencyVariable('a', 5, 'pln'))
+    interpreter.scope_manager.current_scope.add_symbol('b', CurrencyVariable('b', 10, 'eur'))
+    init_statement = interpreter.parser.parse_init_statement()
+    interpreter.visit_init_statement(init_statement)
+    result = interpreter.scope_manager.current_scope.symbols['result']
+    assert isinstance(result, CurrencyVariable)
+    assert result.currency == 'pln'
+    assert result.value == 3150
+
+
+def test_currency_calculations9():
+    interpreter = create_interpreter('cur result = gbd (eur a + b) chf;')
+    set_currencies()
+    interpreter.scope_manager.current_scope.add_symbol('a', CurrencyVariable('a', 5, 'pln'))
+    interpreter.scope_manager.current_scope.add_symbol('b', CurrencyVariable('b', 10, 'usd'))
+    init_statement = interpreter.parser.parse_init_statement()
+    interpreter.visit_init_statement(init_statement)
+    result = interpreter.scope_manager.current_scope.symbols['result']
+    assert isinstance(result, CurrencyVariable)
+    assert result.currency == 'chf'
+    assert result.value == 34200
+
+
+def test_currency_calculations10():
+    interpreter = create_interpreter('cur result = pln a pln;')
+    set_currencies()
+    interpreter.scope_manager.current_scope.add_symbol('a', CurrencyVariable('a', 5, 'pln'))
+    init_statement = interpreter.parser.parse_init_statement()
+    interpreter.visit_init_statement(init_statement)
+    result = interpreter.scope_manager.current_scope.symbols['result']
+    assert isinstance(result, CurrencyVariable)
+    assert result.currency == 'pln'
+    assert result.value == 5
+
+
+def test_currency_calculations11():
+    interpreter = create_interpreter('cur result = pln (a + b) pln;')
+    set_currencies()
+    interpreter.scope_manager.current_scope.add_symbol('a', CurrencyVariable('a', 5, 'pln'))
+    interpreter.scope_manager.current_scope.add_symbol('b', CurrencyVariable('b', 10, 'pln'))
+    init_statement = interpreter.parser.parse_init_statement()
+    interpreter.visit_init_statement(init_statement)
+    result = interpreter.scope_manager.current_scope.symbols['result']
+    assert isinstance(result, CurrencyVariable)
+    assert result.currency == 'pln'
+    assert result.value == 15
+

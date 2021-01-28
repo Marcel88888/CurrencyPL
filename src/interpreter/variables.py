@@ -11,6 +11,8 @@ class CurrencyVariable:
         self.currency = currency
 
     def exchange(self, new_currency: str):
+        if self.currency == new_currency:
+            return
         rate = Currencies.currencies[self.currency][new_currency]
         self.value *= rate
         self.currency = new_currency
