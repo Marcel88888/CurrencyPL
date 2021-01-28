@@ -824,6 +824,38 @@ def test_primary_expr13():  # def __init__(self, minus=False, currency1=None, ge
     assert primary_expr.get_currency2 is None
 
 
+def test_primary_expr14():  # def __init__(self, minus=False, currency1=None, get_currency1=None, number=None,
+    # _id=None, parenth_expr=None, function_call=None, currency2=None, get_currency2=None):
+    parser = create_parser("a b.get_currency()")
+    primary_expr = parser.parse_primary_expr()
+    assert primary_expr is not None
+    assert primary_expr.minus is False
+    assert primary_expr.currency1 is None
+    assert primary_expr.get_currency1 is None
+    assert primary_expr.number is None
+    assert primary_expr.id == 'a'
+    assert primary_expr.parenth_expr is None
+    assert primary_expr.function_call is None
+    assert primary_expr.currency2 is None
+    assert primary_expr.get_currency2.id == 'b'
+
+
+def test_primary_expr15():  # def __init__(self, minus=False, currency1=None, get_currency1=None, number=None,
+    # _id=None, parenth_expr=None, function_call=None, currency2=None, get_currency2=None):
+    parser = create_parser("a.get_currency() b c.get_currency()")
+    primary_expr = parser.parse_primary_expr()
+    assert primary_expr is not None
+    assert primary_expr.minus is False
+    assert primary_expr.currency1 is None
+    assert primary_expr.get_currency1.id == 'a'
+    assert primary_expr.number is None
+    assert primary_expr.id == 'b'
+    assert primary_expr.parenth_expr is None
+    assert primary_expr.function_call is None
+    assert primary_expr.currency2 is None
+    assert primary_expr.get_currency2.id == 'c'
+
+
 def test_primary_expr_with_error():  # def __init__(self, minus=False, currency1=None, get_currency1=None, number=None,
     # _id=None, parenth_expr=None, function_call=None, currency2=None, get_currency2=None):
     parser = create_parser("a 5 eur")

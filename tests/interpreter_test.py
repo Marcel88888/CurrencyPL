@@ -1056,3 +1056,16 @@ def test_currency_calculations11():
     assert result.currency == 'pln'
     assert result.value == 15
 
+
+def test_currency_calculations12():
+    interpreter = create_interpreter('cur result = a b.get_currency();')
+    set_currencies()
+    interpreter.scope_manager.current_scope.add_symbol('a', CurrencyVariable('a', 5, 'pln'))
+    interpreter.scope_manager.current_scope.add_symbol('b', CurrencyVariable('b', 10, 'eur'))
+    init_statement = interpreter.parser.parse_init_statement()
+    interpreter.visit_init_statement(init_statement)
+    result = interpreter.scope_manager.current_scope.symbols['result']
+    assert isinstance(result, CurrencyVariable)
+    assert result.currency == 'eur'
+    assert result.value == 20
+

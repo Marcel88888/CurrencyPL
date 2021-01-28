@@ -26,21 +26,14 @@ class Parser:
             if self.__lexer.token.type == TokenTypes.OP_BRACKET:
                 self.__lexer.get_next_token()
                 parameters = self.parse_parameters()
-                print(parameters)
                 if parameters:
-                    print('1')
                     if self.__lexer.token.type == TokenTypes.CL_BRACKET:
-                        print('2')
                         self.__lexer.get_next_token()
                         if self.__lexer.token.type == TokenTypes.OP_CURLY_BRACKET:
-                            print('3')
                             self.__lexer.get_next_token()
                             block = self.parse_block()
                             if block:
-                                print('4')
-                                print(self.__lexer.token.type)
                                 if self.__lexer.token.type == TokenTypes.CL_CURLY_BRACKET:
-                                    print('5')
                                     self.__lexer.get_next_token()
                                     return FunctionDef(signature, parameters, block)
             raise SyntaxxError(self.__lexer.line, self.__lexer.column)
@@ -379,14 +372,18 @@ class Parser:
         return None
 
     def parse_primary_expr(self):  # [ “-” ], [currency | getCurrency], ( number | id | parenthExpr | functionCall ),
+        # [currency | getCurrency] ;
         minus = False
         currency1 = None
         get_currency1 = None
+        get_currency2 = None
         _id = None
+        _id2 = None
+        _id3 = None
         number = None
         parenth_expr = None
         function_call = None
-        counter = 0
+        id_first = False
         if self.__lexer.token.type == TokenTypes.MINUS:
             minus = True
             self.__lexer.get_next_token()
@@ -403,6 +400,8 @@ class Parser:
                 function_call = self.parse_function_call(_id)
                 if function_call:
                     _id = None
+                else:
+                    id_first = True
         if self.__lexer.token.type == TokenTypes.NUMBER:
             number = self.__lexer.token.numerical_value
             self.__lexer.get_next_token()
@@ -414,6 +413,8 @@ class Parser:
                 _id2 = None
                 function_call = function_call2
             else:
+                if id_first is True:
+                    _id3 = _id
                 _id = _id2
         if number is None and not _id and not function_call:  # "is None" with number because number can be 0 and then
             # "if not number" is True
@@ -421,19 +422,32 @@ class Parser:
             if not parenth_expr:
                 return None
         alternatives = [number, _id, parenth_expr, function_call]
-        for alternative in alternatives:
-            if alternative is not None:
-                counter += 1
-        if counter > 1:
+        if len([x for x in alternatives if x is not None]) > 1:
             raise SyntaxxError(self.__lexer.line, self.__lexer.column)
         currency2 = None
-        get_currency2 = None
         if self.__lexer.token.type == TokenTypes.CURRENCY_TYPE:
             currency2 = self.__lexer.token.value
             self.__lexer.get_next_token()
         elif self.__lexer.token.type == TokenTypes.IDENTIFIER:
             get_currency2 = self.parse_get_currency()
             self.__lexer.get_next_token()
+        if id_first is True and _id3 is not None:
+            _id = _id3
+            if self.__lexer.token.type == TokenTypes.DOT:
+                self.__lexer.get_next_token()
+                if self.__lexer.token.type == TokenTypes.GET_CURRENCY:
+                    self.__lexer.get_next_token()
+                    if self.__lexer.token.type == TokenTypes.OP_BRACKET:
+                        self.__lexer.get_next_token()
+                        if self.__lexer.token.type == TokenTypes.CL_BRACKET:
+                            get_currency2 = GetCurrency(_id2)
+                            self.__lexer.get_next_token()
+                        else:
+                            raise SyntaxxError(self.__lexer.line, self.__lexer.column)
+                    else:
+                        raise SyntaxxError(self.__lexer.line, self.__lexer.column)
+                else:
+                    raise SyntaxxError(self.__lexer.line, self.__lexer.column)
         return PrimaryExpr(minus, currency1, get_currency1, number, _id, parenth_expr, function_call, currency2,
                            get_currency2)
 
@@ -461,4 +475,3 @@ class Parser:
                         if self.__lexer.token.type == TokenTypes.CL_BRACKET:
                             return GetCurrency(_id)
         return None
-
