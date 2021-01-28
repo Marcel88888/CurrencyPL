@@ -1,6 +1,3 @@
-from enum import Enum
-
-
 class InvalidTokenError(Exception):
     def __init__(self, line, column):
         self.__line = line
@@ -41,18 +38,6 @@ class SyntaxxError(Exception):
         super().__init__(self.__message)
 
 
-class InterpretationError(Exception):
-    class Types(Enum):
-        VARIABLE = "variable"
-
-
-class UndeclaredError(InterpretationError):
-    def __init__(self, name):
-        self.__name = name
-        self.__message = f"'{self.__name}' undeclared."
-        super().__init__(self.__message)
-
-
 class MainNotDeclaredError(Exception):
     def __init__(self):
         self.__message = "There is no 'main' function in the program."
@@ -66,10 +51,10 @@ class OverwriteError(Exception):
         super().__init__(self.__message)
 
 
-class VariableNotDeclaredError(Exception):
+class UndeclaredError(Exception):
     def __init__(self, name):
         self.__name = name
-        self.__message = f"Variable ('{self.__name}') was not declared yet."
+        self.__message = f"Variable '{self.__name}' not declared."
         super().__init__(self.__message)
 
 
@@ -91,14 +76,14 @@ class InvalidReturnedTypeError(Exception):
     def __init__(self, function_returned_type, result_type):
         self.__function_returned_type = function_returned_type
         self.__result_type = result_type
-        self.__message =  f"Expected return type: {self.__function_returned_type}, got: {self.__result_type}"
+        self.__message = f"Expected return type: {self.__function_returned_type}, got: {self.__result_type}"
         super().__init__(self.__message)
 
 
 class NoParentContextError(Exception):
     def __init__(self, name):
         self.__name = name
-        self.__message =  f"No parent context for context: '{self.__name}'"
+        self.__message = f"No parent context for context: '{self.__name}'"
         super().__init__(self.__message)
 
 

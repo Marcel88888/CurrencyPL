@@ -522,7 +522,7 @@ def test_assign_statement():  # with 'a' already declared
 def test_assign_statement2():  # with 'a' not declared before
     interpreter = create_interpreter('a = 5;')
     assign_statement = interpreter.parser.parse_assign_statement_or_function_call()
-    with pytest.raises(VariableNotDeclaredError):
+    with pytest.raises(UndeclaredError):
         interpreter.visit_assign_statement(assign_statement)
 
 
@@ -546,7 +546,7 @@ def test_assign_statement3():  # with 'a' already declared
 def test_assign_statement4():  # with 'a' not declared before
     interpreter = create_interpreter('a = 5 eur;')
     assign_statement = interpreter.parser.parse_assign_statement_or_function_call()
-    with pytest.raises(VariableNotDeclaredError):
+    with pytest.raises(UndeclaredError):
         interpreter.visit_assign_statement(assign_statement)
 
 
@@ -598,7 +598,7 @@ def test_assign_statement7():  # dec a = 5; a = 10 eur;
 def test_assign_statement8():  # a = 5 without type declared before
     interpreter = create_interpreter('a = 10 eur;')
     assign_statement = interpreter.parser.parse_assign_statement_or_function_call()
-    with pytest.raises(VariableNotDeclaredError):
+    with pytest.raises(UndeclaredError):
         interpreter.visit_assign_statement(assign_statement)
 
 
@@ -1249,6 +1249,31 @@ def test_currency_conditions7():
     condition = interpreter.parser.parse_condition()
     interpreter.visit_condition(condition)
     assert interpreter.scope_manager.last_result is True
+
+
+def test_no_parent_context():
+    interpreter = create_interpreter('dec add(dec a, dec b) {'
+                                     'return a + b;'
+                                     '}')
+    function = interpreter.parser.parse_function_def()
+    interpreter.visit_function_def(function)
+    interpreter.scope_manager.current_scope = None
+    interpreter.scope_manager.create_new_scope_and_switch(function)
+    with pytest.raises(NoParentContextError):
+        interpreter.scope_manager.switch_to_parent_context()
+
+
+def test_function_not_declared():
+    interpreter = create_interpreter('dec add(dec a, dec b) {'
+                                     'return a + b;'
+                                     '}'
+                                     ''
+                                     'void main() {'
+                                     'dec result = divide(1, 2);'
+                                     '}')
+    with pytest.raises(UndeclaredError):
+        interpreter.interpret()
+
 
 
 

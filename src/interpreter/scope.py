@@ -1,4 +1,4 @@
-from ..exceptions.exceptions import UndeclaredError, OverwriteError, VariableNotDeclaredError, NoParentContextError, \
+from ..exceptions.exceptions import UndeclaredError, OverwriteError, NoParentContextError, \
     ChangeVariableTypeError, CurrencyNotDefinedOrChangeVariableTypeError
 from .variables import *
 from typing import Optional, Tuple
@@ -14,9 +14,9 @@ class Scope:
         self.symbols[name] = value
 
     def get_symbol(self, name):
-        symbol = self.symbols[name]
-        if symbol is None:
+        if name not in self.symbols.keys():
             raise UndeclaredError(name)
+        symbol = self.symbols[name]
         return symbol
 
     def copy_symbols_from(self, source):
@@ -36,7 +36,7 @@ class ScopeManager:
 
     def update_variable(self, name, variable):
         if name not in self.current_scope.symbols.keys():
-            raise VariableNotDeclaredError(name)
+            raise UndeclaredError(name)
         if isinstance(self.current_scope.symbols[name], CurrencyVariable) \
                 and self.current_scope.symbols[name].currency is None \
                 and isinstance(variable, DecimalVariable):
