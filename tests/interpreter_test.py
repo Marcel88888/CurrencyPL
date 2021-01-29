@@ -1273,10 +1273,3 @@ def test_function_not_declared():
                                      '}')
     with pytest.raises(UndeclaredError):
         interpreter.interpret()
-
-
-
-
-
-
-

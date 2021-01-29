@@ -184,7 +184,7 @@ class Interpreter:
             variable = self.scope_manager.get_variable(primary_expr.id)
             var = copy.copy(variable)
             if currencies:
-                for currency in currencies[1:]: # first is variable own currency
+                for currency in currencies[1:]:  # first is variable own currency
                     var.exchange(currency)
             self.scope_manager.last_result = var
             if minus is True:
