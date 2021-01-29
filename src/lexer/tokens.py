@@ -19,8 +19,6 @@ class Tokens:
         ')': TokenTypes.CL_BRACKET,
         '{': TokenTypes.OP_CURLY_BRACKET,
         '}': TokenTypes.CL_CURLY_BRACKET,
-        '[': TokenTypes.OP_SQUARE_BRACKET,
-        ']': TokenTypes.CL_SQUARE_BRACKET,
         '+': TokenTypes.PLUS,
         '-': TokenTypes.MINUS,
         '*': TokenTypes.MULTIPLY,
@@ -31,7 +29,6 @@ class Tokens:
         ',': TokenTypes.COMMA,
         ';': TokenTypes.SEMICOLON,
         '.': TokenTypes.DOT,
-        '_': TokenTypes.UNDERLINE,
         '!': TokenTypes.NOT,
         '&': TokenTypes.AND,
         '|': TokenTypes.OR

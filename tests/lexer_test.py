@@ -281,20 +281,6 @@ def test_single_operator_cl_curly_bracket():
     assert lexer.token.type == TokenTypes.CL_CURLY_BRACKET
 
 
-def test_single_operator_op_square_bracket():
-    lexer = create_lexer("[")
-
-    lexer.get_next_token()
-    assert lexer.token.type == TokenTypes.OP_SQUARE_BRACKET
-
-
-def test_single_operator_cl_square_bracket():
-    lexer = create_lexer("]")
-
-    lexer.get_next_token()
-    assert lexer.token.type == TokenTypes.CL_SQUARE_BRACKET
-
-
 def test_single_operator_plus():
     lexer = create_lexer("+")
 
@@ -363,13 +349,6 @@ def test_single_operator_dot():
 
     lexer.get_next_token()
     assert lexer.token.type == TokenTypes.DOT
-
-
-def test_single_operator_underline():
-    lexer = create_lexer("_")
-
-    lexer.get_next_token()
-    assert lexer.token.type == TokenTypes.UNDERLINE
 
 
 def test_single_operator_not():
