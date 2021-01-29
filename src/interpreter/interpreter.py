@@ -23,34 +23,35 @@ class Interpreter:
                 main_declared = True
         if not main_declared:
             raise MainNotDeclaredError()
+        for function_def in program.function_defs:
+            if function_def.signature.id == "main":
+                function_def.block.accept(self)
 
     def visit_function_def(self, function_def):
         self.scope_manager.add_function(function_def.signature.id, function_def)
-        if function_def.signature.id == "main":
-            function_def.block.accept(self)
 
     def visit_block(self, block):
         for statement in block.statements:
             statement.accept(self)
+            if self.scope_manager.return_result is not None:
+                return
 
     def visit_if_statement(self, if_statement):
         if_statement.condition.accept(self)
         if self.scope_manager.last_result:
-            for statement in if_statement.block1.statements:
-                statement.accept(self)
+            if_statement.block1.accept(self)
         else:
-            for statement in if_statement.block2.statements:
-                statement.accept(self)
+            if_statement.block2.accept(self)
 
     def visit_while_statement(self, while_statement):
         while_statement.condition.accept(self)
         while self.scope_manager.last_result:
-            for statement in while_statement.block.statements:
-                statement.accept(self)
+            while_statement.block.accept(self)
             while_statement.condition.accept(self)
 
     def visit_return_statement(self, return_statement):
         return_statement.expression.accept(self)
+        self.scope_manager.return_result = self.scope_manager.last_result
 
     def visit_init_statement(self, init_statement):  # signature, [ assignmentOp, expression ], “;” ;
         name = init_statement.signature.id
@@ -344,7 +345,7 @@ class Interpreter:
         self.scope_manager.create_new_scope_and_switch(function)
         self.add_arguments_to_function_scope(function, arguments)
         function.block.accept(self)
-        check_returned_type(function, self.scope_manager.last_result)
+        check_returned_type(function, self.scope_manager.return_result)
         self.scope_manager.switch_to_parent_context()
 
     def add_arguments_to_function_scope(self, function, arguments):

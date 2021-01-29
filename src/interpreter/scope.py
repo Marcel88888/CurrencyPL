@@ -28,6 +28,7 @@ class ScopeManager:
         self.global_scope = Scope("global")
         self.current_scope = Scope('main')
         self.last_result: Optional[CurrencyVariable, DecimalVariable, bool, str, Tuple, int, float] = None
+        self.return_result: Optional[CurrencyVariable, DecimalVariable, bool, str, Tuple, int, float] = None
 
     def add_variable(self, name, variable):
         if name in self.current_scope.symbols.keys():
@@ -61,4 +62,6 @@ class ScopeManager:
     def switch_to_parent_context(self):
         if not self.current_scope.parent:
             raise NoParentContextError(self.current_scope.name)
+        self.last_result = self.return_result
         self.current_scope = self.current_scope.parent
+        self.return_result = None
