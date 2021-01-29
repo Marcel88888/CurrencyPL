@@ -1,0 +1,13 @@
+dec factorial(dec a) {
+	if (a > 1) {
+		return factorial(a-1) * a;
+	}
+	else {
+		return 1;
+	}
+}
+
+void main() {
+	dec result = factorial(5);
+	print("result: ", result);
+}
