@@ -141,7 +141,7 @@ Sample json file structure (currency rates used are not true values):
 
 ### Tests
 
-For testing, I used the pytest tool. The tests consisted of various language usage scenarios and a comparison of the expected results with the actual results of the lexer, parser and interpreter. The tests also take into account the occurrence of errors while writing the program by the user.
+For testing, I used the _pytest_ tool. The tests consisted of various language usage scenarios and a comparison of the expected results with the actual results of the lexer, parser and interpreter. The tests also take into account the occurrence of errors while writing the program by the user.
 
 ### Sample program
 
@@ -177,6 +177,8 @@ void main() {
 ```
 
 ### Grammar
+
+_Written in EBNF notation_
 
 ![Grammar1](./img/grammar1.png)
 ![Grammar2](./img/grammar2.png)
