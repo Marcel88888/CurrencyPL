@@ -107,34 +107,34 @@ Sample json file structure (currency rates used are not true values):
 ```json
 {
   "pln": {
-  "chf": 1.25,
-  "gbd": 2.15,
-  "usd": 1.16,
-  "eur": 0.15
+      "chf": 1.25,
+      "gbd": 2.15,
+      "usd": 1.16,
+      "eur": 0.15
   },
   "chf": {
-  "pln": 5.25,
-  "gbd": 3.14,
-  "usd": 1.25,
-  "eur": 0.27
+      "pln": 5.25,
+      "gbd": 3.14,
+      "usd": 1.25,
+      "eur": 0.27
   },
   "gbd": {
-  "pln": 1.19,
-  "chf": 5.01,
-  "usd": 2.22,
-  "eur": 0.18
+      "pln": 1.19,
+      "chf": 5.01,
+      "usd": 2.22,
+      "eur": 0.18
   },
   "usd": {
-  "pln": 0.15,
-  "chf": 1.40,
-  "gbd": 1.14,
-  "eur": 0.62
+      "pln": 0.15,
+      "chf": 1.40,
+      "gbd": 1.14,
+      "eur": 0.62
   },
   "eur": {
-  "pln": 1.89,
-  "chf": 4.78,
-  "gbd": 4.21,
-  "usd": 0.58
+      "pln": 1.89,
+      "chf": 4.78,
+      "gbd": 4.21,
+      "usd": 0.58
   }
 }
 ```
